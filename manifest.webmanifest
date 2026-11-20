@@ -1,0 +1,16 @@
+{
+  "name": "Zandvoort Golfsup",
+  "short_name": "Golfsup",
+  "description": "Golfsup-voorspelling voor Zandvoort: Open-Meteo, Rijkswaterstaat en Klodde.",
+  "lang": "nl",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0B2A3C",
+  "theme_color": "#0B2A3C",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
