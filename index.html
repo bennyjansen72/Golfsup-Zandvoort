@@ -92,6 +92,28 @@ td.c.rise { background: transparent; color: var(--muted); font-size: 11px; font-
 td.c.cons { background: transparent; font-weight: 700; color: var(--accent); }
 tr.sepr th, tr.sepr td { padding-top: 6px; }
 .pushtag { background: var(--push-bg); color: var(--push-fg); border-radius: 6px; padding: 1px 6px; font-weight: 600; }
+header.top { display: flex; align-items: center; gap: 12px; flex-wrap: nowrap; }
+header.top .logo { width: 44px; height: 44px; border-radius: 11px; object-fit: cover; flex: none; }
+header.top .ttl { flex: 1; min-width: 0; }
+header.top h1 { font-size: 22px; margin: 0; }
+header.top .sub { font-size: 12px; }
+.days-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+.alert { position: relative; overflow: hidden; border-radius: 20px; padding: 20px 18px 22px; color: #F4FBFD;
+  background: radial-gradient(120% 140% at 100% 0%, #1E9BC0 0%, #0E6B8C 38%, #0B2A3C 100%); box-shadow: 0 10px 30px rgba(11, 42, 60, 0.25); }
+.alert::after { content: ""; position: absolute; left: -10%; right: -10%; bottom: -38px; height: 90px; border-radius: 50%;
+  background: rgba(127, 203, 216, 0.16); box-shadow: 0 -22px 0 rgba(127, 203, 216, 0.08); pointer-events: none; }
+.alert > * { position: relative; z-index: 1; }
+.alert-tag { font-size: clamp(38px, 11vw, 60px); font-weight: 700; letter-spacing: 0.02em; line-height: 0.95; color: #FFE27A; text-transform: uppercase; }
+.alert.none .alert-tag { color: #D7E6EC; font-size: clamp(26px, 7vw, 36px); }
+.alert.none { background: radial-gradient(120% 140% at 100% 0%, #5C7C8C 0%, #33505F 45%, #1B3443 100%); }
+.alert-when { margin: 12px 0 0; font-size: 21px; font-weight: 700; line-height: 1.25; }
+.alert-when small { display: block; font-size: 15px; font-weight: 400; opacity: 0.85; margin-top: 2px; }
+.alert-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px; margin-top: 14px; }
+.alert-stats div { background: rgba(255, 255, 255, 0.12); border: 1px solid rgba(255, 255, 255, 0.14); border-radius: 12px; padding: 9px 11px; min-width: 0; }
+.alert-stats b { display: block; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 600; opacity: 0.8; }
+.alert-stats span { display: block; font-size: clamp(18px, 5.2vw, 22px); white-space: nowrap; font-weight: 700; line-height: 1.2; font-variant-numeric: tabular-nums; }
+.alert-stats em { display: block; font-style: normal; font-size: 13px; opacity: 0.85; }
+.alert-more { margin: 12px 0 0; font-size: 13.5px; opacity: 0.9; }
 .best { font-size: 16px; margin: 0; padding: 12px 14px; border-radius: 12px; background: var(--good-bg); color: var(--good-fg); font-weight: 600; }
 .best.none { background: var(--mid-bg); color: var(--mid-fg); }
 .best small { display: block; font-weight: 400; font-size: 13px; margin-top: 2px; }
@@ -115,9 +137,9 @@ a { color: var(--accent); }
 </head>
 <body>
 <main>
-  <header>
-    <div>
-      <div class="eyebrow">Zandvoort aan Zee</div>
+  <header class="top">
+    <img class="logo" src="icon-192.png" alt="" width="44" height="44">
+    <div class="ttl">
       <h1>Zandvoort Golfsup</h1>
       <p class="sub" id="status">Gegevens ophalen…</p>
     </div>
@@ -126,10 +148,32 @@ a { color: var(--accent); }
 
   <div id="err" class="banner" hidden></div>
 
+  <section class="alert none" id="alert" aria-live="polite">
+    <div class="alert-tag">SUP ALERT</div>
+    <p class="alert-when">Voorspelling laden…</p>
+  </section>
+
+  <section class="card" aria-labelledby="h-days">
+    <div class="days-head"><h2 id="h-days">Per dag</h2><div class="seg" role="group" aria-label="Weergave"><button type="button" id="v-score" aria-pressed="true">Score</button><button type="button" id="v-wind" aria-pressed="false">Wind (kn)</button></div></div>
+    <div id="days" style="display:flex;flex-direction:column;gap:10px"></div>
+  </section>
+
   <section class="card" aria-labelledby="h-sum">
-    <div><h2 id="h-sum">Komende dagen</h2><p class="sub">Meerderheid = minstens twee van Klodde, ECMWF en GFS geven een score van 7 of hoger. Donkere uren staan erbij.</p></div>
-    <p class="best none" id="best">Bezig met laden…</p>
+    <h2 id="h-sum">Komende dagen in het kort</h2>
     <div class="summary" id="summary"></div>
+    <p class="note">Meerderheid = minstens twee van Klodde, ECMWF en GFS geven een score van 7 of hoger. Donkere uren staan erbij.</p>
+  </section>
+
+  <section class="card" aria-labelledby="h-read">
+    <h2 id="h-read">Zo lees je de tabellen</h2>
+    <ul class="plain">
+      <li>Per uur een score van 0 tot 10 voor Klodde (mijn voorspelling, zie Bronnen), ECMWF en GFS. Groen is 7 of hoger: goed. Geel is 4 tot 6, grijs lager.</li>
+      <li>Daaronder de golfhoogte in meters met de periode in seconden, de golfenergie van Klodde (kW per meter golffront) en de wind per model.</li>
+      <li>Klodde-vakjes met een stippelrand komen (deels) uit de boeimetingen van de laatste uren.</li>
+      <li>Windkleuren: blauw binnen je grens, oranje tot 5 kn erboven, rood verder erboven. De letters zijn waaruit de wind komt, de pijl waar hij naartoe waait.</li>
+      <li>Getij: push (blauw) is de twee uur voor hoogwater en telt 1 punt extra. Afgaand tij is paars; de laatste twee uur voor laagwater tellen bij golven onder 1 m 1 punt minder.</li>
+      <li>Met de knop Wind (kn) zie je in de scorerijen de windsnelheid in plaats van de score. Scroll de tabel zijwaarts voor alle uren.</li>
+    </ul>
   </section>
 
   <section class="card" aria-labelledby="h-lim">
@@ -140,13 +184,7 @@ a { color: var(--accent); }
       <label for="maxoff">Aflandig tot (kn)<input id="maxoff" type="number" inputmode="numeric" min="0" max="40" step="1" value="16"></label>
       <label for="maxoth">Zij- of aanlandig tot (kn)<input id="maxoth" type="number" inputmode="numeric" min="0" max="40" step="1" value="6"></label>
     </div>
-    <p class="note">Aflandig is wind uit 65° tot 155° (ONO tot ZZO), aanlandig uit 245° tot 335°, de rest is zijwaarts. Een score van 7 of hoger telt als goed. De push (twee uur voor hoogwater) telt 1 punt extra, de laatste twee uur voor laagwater bij golven onder 1 m 1 punt minder. Je grenzen worden op dit apparaat bewaard. Aflandige wind blaast je van de kust af en het water is koud: leash en wetsuit.</p>
-  </section>
-
-  <section class="card" aria-labelledby="h-days">
-    <div><h2 id="h-days">Per dag: Klodde, ECMWF en GFS</h2><p class="sub">Score per uur voor Klodde (mijn voorspelling, zie onderaan), ECMWF en GFS. Daaronder de golfhoogte met periode, de golfenergie van Klodde en de wind. Klodde-vakjes met een stippelrand komen (deels) uit de boeien. Windkleuren: blauw binnen je grens, oranje tot 5 kn erboven, rood verder erboven. Scroll zijwaarts voor alle uren.</p></div>
-    <div class="seg" role="group" aria-label="Weergave"><button type="button" id="v-score" aria-pressed="true">Score</button><button type="button" id="v-wind" aria-pressed="false">Wind (kn)</button></div>
-    <div id="days" style="display:flex;flex-direction:column;gap:10px"></div>
+    <p class="note">Aflandig is wind uit 65° tot 155° (ONO tot ZZO), aanlandig uit 245° tot 335°, de rest is zijwaarts. Je grenzen worden op dit apparaat bewaard. Aflandige wind blaast je van de kust af en het water is koud: leash en wetsuit.</p>
   </section>
 
   <section class="card" aria-labelledby="h-meas">
@@ -500,34 +538,42 @@ a { color: var(--accent); }
         if (c.s >= 7) { if (cur && u === cur.us[cur.us.length - 1] + 1) { cur.us.push(u); cur.sum += c.s; cur.en += en; } else { cur = { day: day, us: [u], sum: c.s, en: en }; runs.push(cur); } } else cur = null;
       });
     });
-    var el = $("best");
-    function detail(day, us) {
+    var el = $("alert");
+    function rg(a, d, unit, step, sep) { var f = function (x) { return d === 0 ? String(Math.round(x)) : nf(x, d); }, lo = f(Math.min.apply(null, a)), hi = f(Math.max.apply(null, a)); return lo + (hi !== lo ? (sep || "–") + hi : "") + unit; }
+    function tiles(day, us) {
       var cs = us.map(function (u) { return ans[day].cells["Klodde|" + u]; }), v = cs.map(function (c) { return c.v; }), kn = cs.map(function (c) { return Math.round(c.w.kn); });
       var ps = cs.map(function (c) { return c.p; }).filter(Boolean), es = us.map(function (u) { return D.KL[u].e; }).filter(function (x) { return x !== undefined; });
-      var pu = us.filter(function (u) { return phase(D, u) === "push"; });
-      function rg(a, d, unit, step) { var lo = Math.min.apply(null, a), hi = Math.max.apply(null, a); return (d === 0 ? Math.round(lo) : nf(lo, d)) + (hi - lo >= step ? " tot " + (d === 0 ? Math.round(hi) : nf(hi, d)) : "") + unit; }
-      return "Golf " + rg(v, 1, " m", 0.05) + (ps.length ? " (" + rg(ps, 0, " s", 1) + ")" : "") + ", wind " + compass(cs[0].w.deg) + " " + rg(kn, 0, " kn", 1) + " (" + kindW(kind(cs[0].w.deg)) + ")" + (pu.length ? ", push om " + pu.map(function (u) { return pad(local(u).h); }).join(", ") : "") + (es.length ? ", energie " + rg(es, 1, " kW/m", 0.05) : "");
+      var pu = us.filter(function (u) { return phase(D, u) === "push"; }), k = kind(cs[0].w.deg);
+      var t = [["Golf", rg(v, 1, " m", 0.05), ps.length ? "periode " + rg(ps, 0, " s", 1) : ""],
+        ["Wind", rg(kn, 0, " kn", 1), compass(cs[0].w.deg) + " · " + kindW(k)],
+        ["Push", pu.length ? pad(local(pu[0]).h) + "–" + pad((local(pu[pu.length - 1]).h + 1) % 24) : "geen", pu.length ? "voor hoogwater" : "in dit blok"]];
+      if (es.length) t.push(["Energie", rg(es, 1, "", 0.05), "kW per meter"]);
+      return "<div class='alert-stats'>" + t.map(function (x) { return "<div><b>" + x[0] + "</b><span>" + x[1] + "</span><em>" + x[2] + "</em></div>"; }).join("") + "</div>";
     }
+    function rel(day) { var today = local(nowU()).day, tm = local(nowU() + 24).day; return day === today ? "Vandaag, " : day === tm ? "Morgen, " : ""; }
+    function span(us) { return pad(local(us[0]).h) + " – " + pad((local(us[us.length - 1]).h + 1) % 24); }
     if (runs.length) {
       runs.sort(function (a, b) { return (b.sum - a.sum) || (b.en - a.en); });
-      var r = runs[0];
-      el.className = "best";
-      el.innerHTML = "Beste moment: " + dayShort(r.day) + " " + pad(local(r.us[0]).h) + (r.us.length > 1 ? " t/m " + pad(local(r.us[r.us.length - 1]).h) : "") + "<small>" + detail(r.day, r.us) + "</small>";
+      var r = runs[0], more = runs.slice(1, 3).sort(function (a, b) { return a.us[0] - b.us[0]; });
+      el.className = "alert";
+      el.innerHTML = "<div class='alert-tag'>SUP ALERT!</div><p class='alert-when'>" + rel(r.day) + dayLong(r.day).replace(/^./, function (c) { return rel(r.day) ? c.toLowerCase() : c; }) + "<small>" + span(r.us) + "</small></p>" + tiles(r.day, r.us) +
+        (more.length ? "<p class='alert-more'>Ook goed: " + more.map(function (m) { return dayShort(m.day) + " " + span(m.us); }).join(" · ") + "</p>" : "");
     } else if (all.length) {
       all.sort(function (a, b) { return b.c.s - a.c.s; });
       var b0 = all[0];
-      el.className = "best none";
-      el.innerHTML = "Geen goed uur overdag in de komende dagen.<small>Dichtstbij: " + dayShort(b0.day) + " " + pad(local(b0.u).h) + " (score " + b0.c.s + "). " + detail(b0.day, [b0.u]) + "</small>";
-    } else { el.className = "best none"; el.textContent = "Geen voorspelling voor de komende uren."; }
+      el.className = "alert none";
+      el.innerHTML = "<div class='alert-tag'>Geen SUP alert</div><p class='alert-when'>Geen goed uur overdag in de komende dagen<small>Dichtstbij: " + dayShort(b0.day) + " " + pad(local(b0.u).h) + ", score " + b0.c.s + "</small></p>" + tiles(b0.day, [b0.u]);
+    } else { el.className = "alert none"; el.innerHTML = "<div class='alert-tag'>Geen SUP alert</div><p class='alert-when'>Geen voorspelling voor de komende uren.</p>"; }
   }
   function render() {
     if (!D) return;
     var L = limits(), days = daysAhead(), ans = {}, sum = "", dh = "";
+    var anyGood = days.some(function (day) { var an = analyse(day, L); return an.us.some(function (u) { return !isPast(u) && an.avail[u] >= 2 && an.good[u] >= 2; }); });
     days.forEach(function (day) {
       var an = ans[day] = analyse(day, L);
       var fut = an.us.filter(function (u) { return !isPast(u); });
       var maj = fut.filter(function (u) { return an.avail[u] >= 2 && an.good[u] >= 2; }), all3 = fut.filter(function (u) { return an.avail[u] >= 2 && an.good[u] === an.avail[u]; });
-      if (S.first && S.open[day] === undefined) S.open[day] = maj.length > 0;
+      if (S.first && S.open[day] === undefined) S.open[day] = maj.length > 0 || days.indexOf(day) === 0 || (days.indexOf(day) === 1 && !anyGood);
       var ranges = MODELS.map(function (m) { var r = range(an, m); return r ? m + " " + r : null; }).filter(Boolean).join(" · ");
       sum += "<p><b>" + dayShort(day) + "</b><span><strong>Meerderheid goed: " + fmtRuns(maj) + "</strong><span class='sm'>Alle drie goed: " + fmtRuns(all3) + "</span><span class='sm'>Golven: " + ranges + "</span></span></p>";
       dh += "<details data-day='" + day + "'" + (S.open[day] ? " open" : "") + "><summary><span>" + dayLong(day) + "</span><span class='cnt" + (maj.length ? " good" : "") + "'>" + (maj.length ? maj.length + (maj.length === 1 ? " uur" : " uren") + " goed" : "geen meerderheid goed") + "</span></summary><div class='scroll'><table class='grid'>" + tableHtml(day, an) + "</table></div>" + tidesHtml(day) + "</details>";
