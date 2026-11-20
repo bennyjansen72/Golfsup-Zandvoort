@@ -65,9 +65,9 @@ def fetch(loc, grootheid, eenheid, comp, begin, end, procestype=None):
         "Periode": {"Begindatumtijd": iso(begin), "Einddatumtijd": iso(end)},
     }
     req = urllib.request.Request(URL, data=json.dumps(body).encode(), headers={"Content-Type": "application/json"}, method="POST")
-    for attempt in range(3):
+    for attempt in range(2):
         try:
-            with urllib.request.urlopen(req, timeout=40) as r:
+            with urllib.request.urlopen(req, timeout=20) as r:
                 if r.status == 204:
                     return []
                 j = json.loads(r.read().decode())
@@ -82,7 +82,7 @@ def fetch(loc, grootheid, eenheid, comp, begin, end, procestype=None):
             return out
         except Exception as e:  # netwerk of serverfout: even wachten en opnieuw
             print(f"  fout {loc} {grootheid} poging {attempt + 1}: {e}", file=sys.stderr)
-            time.sleep(3)
+            time.sleep(5)
     return None
 
 
@@ -121,16 +121,44 @@ def tide_events(now):
     return [[int(e[0].timestamp()), e[1], round(e[2])] for e in ev]
 
 
+def load_old(path):
+    try:
+        with open(path) as f:
+            return json.load(f)
+    except Exception:
+        return None
+
+
 def main(path):
+    started = time.time()
     now = datetime.now(timezone.utc)
     end_hour = now.replace(minute=0, second=0, microsecond=0)
     start_hour = end_hour - timedelta(hours=HOURS - 1)
     begin, end = start_hour - timedelta(minutes=5), now
     start_u = int(start_hour.timestamp() // 3600)
+    old = load_old(path)
     out = {"generated": now.strftime("%Y-%m-%dT%H:%M:%SZ"), "start": start_u, "hours": HOURS, "s": {}}
-    ok = 0
+
+    # Getij eerst: dat is het belangrijkst en verandert niet. Lukt het niet, dan blijven de oude tijden staan.
+    tides = []
+    try:
+        tides = tide_events(now)
+    except Exception as e:
+        print(f"getij mislukt: {e}", file=sys.stderr)
+    if not tides and old and old.get("tides"):
+        cutoff = now.timestamp() - 86400
+        tides = [t for t in old["tides"] if t[0] >= cutoff]
+        print("getij: oude tijden aangehouden", file=sys.stderr)
+    out["tides"] = tides
+    print(f"getij: {len(tides)} keer hoog- of laagwater", file=sys.stderr)
+
+    ok, fails = 0, 0
     for key, loc, g, u, comp in SERIES:
-        pts = fetch(loc, g, u, comp, begin, end)
+        # Als Rijkswaterstaat traag is: niet eindeloos doorgaan, de rest uit het vorige bestand halen.
+        pts = None
+        if time.time() - started < 420 and fails < 4:
+            pts = fetch(loc, g, u, comp, begin, end)
+            time.sleep(0.4)
         arr = [None] * HOURS
         if pts:
             ok += 1
@@ -150,17 +178,21 @@ def main(path):
                     arr[i] = round(sum(vs) / len(vs))
                 else:
                     arr[i] = round(sum(vs) / len(vs), 1)
+        else:
+            if pts is None:
+                fails += 1
+            if old and key in old.get("s", {}):
+                o0 = old["start"]
+                for j, v in enumerate(old["s"][key]):
+                    i = o0 + j - start_u
+                    if v is not None and 0 <= i < HOURS:
+                        arr[i] = v
+                print(f"{key}: niet opgehaald, oude waarden aangehouden", file=sys.stderr)
         print(f"{key}: {sum(1 for x in arr if x is not None)} uren", file=sys.stderr)
         out["s"][key] = arr
-    try:
-        out["tides"] = tide_events(now)
-        print(f"getij: {len(out['tides'])} keer hoog- of laagwater", file=sys.stderr)
-    except Exception as e:
-        print(f"getij mislukt: {e}", file=sys.stderr)
-        out["tides"] = []
-    if ok == 0:
-        print("Geen enkele reeks opgehaald; oud bestand blijft staan.", file=sys.stderr)
-        sys.exit(1)
+    if ok == 0 and not tides:
+        print("Niets opgehaald; oud bestand blijft staan.", file=sys.stderr)
+        sys.exit(0)
     import os
     os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
     with open(path, "w") as f:
