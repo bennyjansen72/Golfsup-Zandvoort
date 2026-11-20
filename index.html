@@ -110,25 +110,24 @@ header.top h1 { font-size: 22px; margin: 0; color: #FFFFFF; text-shadow: 0 1px 6
 header.top .sub { font-size: 12px; color: rgba(255, 255, 255, 0.88); text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5); }
 .card { background: var(--glass); -webkit-backdrop-filter: blur(4px) saturate(1.1); backdrop-filter: blur(4px) saturate(1.1); border-color: rgba(255, 255, 255, 0.25); box-shadow: 0 6px 22px rgba(8, 30, 44, 0.14); }
 .days-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
-.alert { position: relative; overflow: hidden; border-radius: 20px; padding: 0 18px 22px; color: #F4FBFD;
-  background: linear-gradient(160deg, rgba(14, 107, 140, 0.90) 0%, rgba(11, 42, 60, 0.94) 60%); box-shadow: 0 10px 30px rgba(11, 42, 60, 0.35); border: 1px solid rgba(255, 255, 255, 0.12); }
+.alert { position: relative; overflow: hidden; border-radius: 20px; padding: 18px 16px 16px; color: #F4FBFD; min-height: 520px; display: flex; flex-direction: column;
+  background: radial-gradient(110% 60% at 0% 0%, rgba(8, 30, 44, 0.68) 0%, rgba(8, 30, 44, 0.25) 55%, rgba(8, 30, 44, 0) 80%),
+    linear-gradient(0deg, rgba(8, 30, 44, 0.88) 0%, rgba(8, 30, 44, 0.45) 24%, rgba(8, 30, 44, 0) 42%),
+    url("alert2.jpg") 70% 50% / cover no-repeat, #33505F;
+  box-shadow: 0 10px 30px rgba(11, 42, 60, 0.35); border: 1px solid rgba(255, 255, 255, 0.12); }
 .alert > * { position: relative; z-index: 1; }
-.alert-photo { height: 220px; margin: 0 -18px; background: linear-gradient(0deg, rgba(11, 42, 60, 0.95) 0%, rgba(11, 42, 60, 0.35) 28%, rgba(11, 42, 60, 0) 55%), url("alert.jpg") 55% 32% / cover no-repeat; }
-.alert .alert-tag { margin-top: -52px; }
-.alert-tag { font-size: clamp(38px, 11vw, 60px); font-weight: 700; letter-spacing: 0.02em; line-height: 0.95; color: #FFE27A; text-transform: uppercase; }
-.alert.none .alert-tag { color: #D7E6EC; font-size: clamp(26px, 7vw, 36px); }
-.alert.none { background: linear-gradient(160deg, rgba(92, 124, 140, 0.92) 0%, rgba(27, 52, 67, 0.95) 60%); }
-.alert.none .alert-photo { filter: grayscale(0.5); background: linear-gradient(0deg, rgba(27, 52, 67, 0.95) 0%, rgba(27, 52, 67, 0.35) 32%, rgba(27, 52, 67, 0) 60%), url("alert.jpg") 55% 32% / cover no-repeat; }
-.alert-when, .alert-tag { text-shadow: 0 2px 10px rgba(0, 0, 0, 0.45); }
-.alert-stats div { -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); background: rgba(8, 30, 44, 0.38); }
-.alert-when { margin: 12px 0 0; font-size: 21px; font-weight: 700; line-height: 1.25; }
+.alert-tag { font-size: clamp(34px, 10vw, 60px); font-weight: 700; letter-spacing: 0.02em; line-height: 0.95; color: #FFE27A; text-transform: uppercase; white-space: nowrap; }
+.alert.none .alert-tag { color: #E3EDF1; font-size: clamp(26px, 7vw, 36px); }
+.alert.none { background: linear-gradient(rgba(60, 74, 84, 0.45), rgba(60, 74, 84, 0.45)), radial-gradient(90% 55% at 0% 0%, rgba(8, 30, 44, 0.55) 0%, rgba(8, 30, 44, 0) 70%),
+    linear-gradient(0deg, rgba(8, 30, 44, 0.88) 0%, rgba(8, 30, 44, 0.45) 24%, rgba(8, 30, 44, 0) 42%), url("alert2.jpg") 70% 50% / cover no-repeat, #33505F; }
+.alert-when { margin: 10px 0 0; font-size: 19px; font-weight: 700; line-height: 1.25; max-width: 60%; }
 .alert-when small { display: block; font-size: 15px; font-weight: 400; opacity: 0.85; margin-top: 2px; }
-.alert-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px; margin-top: 14px; }
-.alert-stats div { background: rgba(255, 255, 255, 0.12); border: 1px solid rgba(255, 255, 255, 0.14); border-radius: 12px; padding: 9px 11px; min-width: 0; }
-.alert-stats b { display: block; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 600; opacity: 0.8; }
-.alert-stats span { display: block; font-size: clamp(18px, 5.2vw, 22px); white-space: nowrap; font-weight: 700; line-height: 1.2; font-variant-numeric: tabular-nums; }
-.alert-stats em { display: block; font-style: normal; font-size: 13px; opacity: 0.85; }
-.alert-more { margin: 12px 0 0; font-size: 13.5px; opacity: 0.9; }
+.alert-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin-top: auto; }
+.alert-stats div { background: rgba(8, 30, 44, 0.45); border: 1px solid rgba(255, 255, 255, 0.16); border-radius: 10px; padding: 7px 7px; min-width: 0; }
+.alert-stats b { display: block; font-size: 9.5px; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 600; opacity: 0.8; }
+.alert-stats span { display: block; font-size: clamp(14px, 4.4vw, 21px); font-weight: 700; line-height: 1.2; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.alert-stats em { display: block; font-style: normal; font-size: 11px; opacity: 0.85; line-height: 1.25; }
+.alert-more { margin: 8px 0 0; font-size: 13.5px; opacity: 0.9; }
 .best { font-size: 16px; margin: 0; padding: 12px 14px; border-radius: 12px; background: var(--good-bg); color: var(--good-fg); font-weight: 600; }
 .best.none { background: var(--mid-bg); color: var(--mid-fg); }
 .best small { display: block; font-weight: 400; font-size: 13px; margin-top: 2px; }
@@ -164,7 +163,6 @@ a { color: var(--accent); }
   <div id="err" class="banner" hidden></div>
 
   <section class="alert none" id="alert" aria-live="polite">
-    <div class="alert-photo"></div>
     <div class="alert-tag">SUP ALERT</div>
     <p class="alert-when">Voorspelling laden…</p>
   </section>
@@ -172,25 +170,6 @@ a { color: var(--accent); }
   <section class="card" aria-labelledby="h-days">
     <div class="days-head"><h2 id="h-days">Per dag</h2><div class="seg" role="group" aria-label="Weergave"><button type="button" id="v-score" aria-pressed="true">Score</button><button type="button" id="v-wind" aria-pressed="false">Wind (kn)</button></div></div>
     <div id="days" style="display:flex;flex-direction:column;gap:10px"></div>
-  </section>
-
-  <section class="card" aria-labelledby="h-sum">
-    <h2 id="h-sum">Komende dagen in het kort</h2>
-    <div class="summary" id="summary"></div>
-    <p class="note">Meerderheid = minstens twee van Klodde, ECMWF en GFS geven een score van 7 of hoger. Donkere uren staan erbij.</p>
-  </section>
-
-  <section class="card" aria-labelledby="h-read">
-    <h2 id="h-read">Zo lees je de tabellen</h2>
-    <ul class="plain">
-      <li>Per uur een score van 0 tot 10 voor Klodde (mijn voorspelling, zie Bronnen), ECMWF en GFS. De golfhoogte is de basis: 0,7 m geeft een 7, 0,8 m een 8, 0,9 m een 9 en vanaf 1 m een 10. Te veel wind (boven je grenzen) of een te korte periode verlaagt de score. Groen is 7 of hoger: goed. Geel is 4 tot 6, grijs lager.</li>
-      <li>De SUP ALERT bovenaan komt alleen bij een Klodde-score van 7 of hoger én een golf vanaf je alertgrens (standaard 0,8 m), overdag.</li>
-      <li>Daaronder de golfhoogte in meters met de periode in seconden, de golfenergie van Klodde (kW per meter golffront) en de wind per model.</li>
-      <li>Klodde-vakjes met een stippelrand komen (deels) uit de boeimetingen van de laatste uren.</li>
-      <li>Windkleuren: blauw binnen je grens, oranje tot 5 kn erboven, rood verder erboven. De letters zijn waaruit de wind komt, de pijl waar hij naartoe waait.</li>
-      <li>Getij: push (blauw) is de twee uur voor hoogwater en telt 1 punt extra. Afgaand tij is paars; de laatste twee uur voor laagwater tellen bij golven onder 1 m 1 punt minder.</li>
-      <li>Met de knop Wind (kn) zie je in de scorerijen de windsnelheid in plaats van de score. Scroll de tabel zijwaarts voor alle uren.</li>
-    </ul>
   </section>
 
   <section class="card" aria-labelledby="h-lim">
@@ -232,6 +211,19 @@ a { color: var(--accent); }
       <li>Klodde voorspelt de golfhoogte bij IJmuiden Munitiestort 2 in drie lagen. 1) Modellen: golfhoogte van ECMWF en GFS, gecorrigeerd met hun eigen wind (0,98 keer de hoogte, plus 0,0012 m per knoop aanlandige wind, min 0,0094 m per knoop aflandige wind; gefit op 60 dagen metingen) en geschaald met de fout van de afgelopen zeven dagen, apart voor lage en hoge golven. 2) Getij: kleine factor op de hoogte (gemeten 0 tot 3,5 procent) en een punt erbij of eraf in de score voor push en laagwater. 3) Boeien: tot 3 uur na de laatste meting komt Klodde uit de metingen van Munitiestort 2, K14, J6 en L9 plus de wind, daarna steeds minder tot 0 bij 12 uur. Getest op 60 dagen: 6 tot 19 cm fout tot 9 uur vooruit bij golven onder 1,5 m.</li>
       <li>Swellperiode en -richting voegen in de metingen weinig toe bovenop hoogte en wind, en de golfmodellen rekenen ze al mee. Korte golven (onder 6 s) en swell uit het noorden komen wel zwakker aan. Energie wordt gebruikt om bij gelijke score het beste moment te kiezen.</li>
       <li>De windrichting is waaruit de wind komt. De tabellen beginnen bij het uur van zonsopkomst en stoppen bij het uur van zonsondergang (zontijden van Open-Meteo). Een SUP ALERT komt alleen tussen zonsopkomst en zonsondergang.</li>
+    </ul>
+  </section>
+
+  <section class="card" aria-labelledby="h-read">
+    <h2 id="h-read">Zo lees je de tabellen</h2>
+    <ul class="plain">
+      <li>Per uur een score van 0 tot 10 voor Klodde (mijn voorspelling, zie Bronnen), ECMWF en GFS. De golfhoogte is de basis: 0,7 m geeft een 7, 0,8 m een 8, 0,9 m een 9 en vanaf 1 m een 10. Te veel wind (boven je grenzen) of een te korte periode verlaagt de score. Groen is 7 of hoger: goed. Geel is 4 tot 6, grijs lager.</li>
+      <li>De SUP ALERT bovenaan komt alleen bij een Klodde-score van 7 of hoger én een golf vanaf je alertgrens (standaard 0,8 m), overdag.</li>
+      <li>Daaronder de golfhoogte in meters met de periode in seconden, de golfenergie van Klodde (kW per meter golffront) en de wind per model.</li>
+      <li>Klodde-vakjes met een stippelrand komen (deels) uit de boeimetingen van de laatste uren.</li>
+      <li>Windkleuren: blauw binnen je grens, oranje tot 5 kn erboven, rood verder erboven. De letters zijn waaruit de wind komt, de pijl waar hij naartoe waait.</li>
+      <li>Getij: push (blauw) is de twee uur voor hoogwater en telt 1 punt extra. Afgaand tij is paars; de laatste twee uur voor laagwater tellen bij golven onder 1 m 1 punt minder.</li>
+      <li>Met de knop Wind (kn) zie je in de scorerijen de windsnelheid in plaats van de score. Scroll de tabel zijwaarts voor alle uren.</li>
     </ul>
   </section>
 </main>
@@ -592,9 +584,9 @@ a { color: var(--accent); }
       var ps = cs.map(function (c) { return c.p; }).filter(Boolean), es = us.map(function (u) { return D.KL[u].e; }).filter(function (x) { return x !== undefined; });
       var pu = us.filter(function (u) { return phase(D, u) === "push"; }), k = kind(cs[0].w.deg);
       var t = [["Golf", rg(v, 1, " m", 0.05), ps.length ? "periode " + rg(ps, 0, " s", 1) : ""],
-        ["Wind", rg(kn, 0, " kn", 1), compass(cs[0].w.deg) + " · " + kindW(k)],
-        ["Push", pu.length ? pad(local(pu[0]).h) + "–" + pad((local(pu[pu.length - 1]).h + 1) % 24) : "geen", pu.length ? "voor hoogwater" : "in dit blok"]];
-      if (es.length) t.push(["Energie", rg(es, 1, "", 0.05), "kW per meter"]);
+        ["Wind", rg(kn, 0, " kn", 1), compass(cs[0].w.deg) + " " + kindW(k)],
+        ["Push", pu.length ? pad(local(pu[0]).h) : "geen", pu.length ? "tot " + pad((local(pu[pu.length - 1]).h + 1) % 24) : "in dit blok"]];
+      if (es.length) t.push(["Energie", rg(es, 1, "", 0.05), "kW/m"]);
       return "<div class='alert-stats'>" + t.map(function (x) { return "<div><b>" + x[0] + "</b><span>" + x[1] + "</span><em>" + x[2] + "</em></div>"; }).join("") + "</div>";
     }
     function rel(day) { var today = local(nowU()).day, tm = local(nowU() + 24).day; return day === today ? "Vandaag, " : day === tm ? "Morgen, " : ""; }
@@ -603,14 +595,14 @@ a { color: var(--accent); }
       runs.sort(function (a, b) { return (b.sum - a.sum) || (b.en - a.en); });
       var r = runs[0], more = runs.slice(1, 3).sort(function (a, b) { return a.us[0] - b.us[0]; });
       el.className = "alert";
-      el.innerHTML = "<div class='alert-photo'></div><div class='alert-tag'>SUP ALERT!</div><p class='alert-when'>" + rel(r.day) + dayLong(r.day).replace(/^./, function (c) { return rel(r.day) ? c.toLowerCase() : c; }) + "<small>" + span(r.us) + "</small></p>" + tiles(r.day, r.us) +
+      el.innerHTML = "<div class='alert-tag'>SUP ALERT!</div><p class='alert-when'>" + rel(r.day) + dayLong(r.day).replace(/^./, function (c) { return rel(r.day) ? c.toLowerCase() : c; }) + "<small>" + span(r.us) + "</small></p>" + tiles(r.day, r.us) +
         (more.length ? "<p class='alert-more'>Ook goed: " + more.map(function (m) { return dayShort(m.day) + " " + span(m.us); }).join(" · ") + "</p>" : "");
     } else if (all.length) {
       all.sort(function (a, b) { return b.c.s - a.c.s; });
       var b0 = all[0];
       el.className = "alert none";
-      el.innerHTML = "<div class='alert-photo'></div><div class='alert-tag'>Geen SUP alert</div><p class='alert-when'>Geen goed uur overdag in de komende dagen<small>Dichtstbij: " + dayShort(b0.day) + " " + pad(local(b0.u).h) + ", score " + b0.c.s + "</small></p>" + tiles(b0.day, [b0.u]);
-    } else { el.className = "alert none"; el.innerHTML = "<div class='alert-photo'></div><div class='alert-tag'>Geen SUP alert</div><p class='alert-when'>Geen voorspelling voor de komende uren.</p>"; }
+      el.innerHTML = "<div class='alert-tag'>Geen SUP alert</div><p class='alert-when'>Geen goed uur overdag in de komende dagen<small>Dichtstbij: " + dayShort(b0.day) + " " + pad(local(b0.u).h) + ", score " + b0.c.s + "</small></p>" + tiles(b0.day, [b0.u]);
+    } else { el.className = "alert none"; el.innerHTML = "<div class='alert-tag'>Geen SUP alert</div><p class='alert-when'>Geen voorspelling voor de komende uren.</p>"; }
   }
   // Laat de tabel beginnen bij het beste uur van de dag, of anders bij 08:00.
   function scrollToTarget(det) {
@@ -636,7 +628,7 @@ a { color: var(--accent); }
       sum += "<p><b>" + dayShort(day) + "</b><span><strong>Meerderheid goed: " + fmtRuns(maj) + "</strong><span class='sm'>Alle drie goed: " + fmtRuns(all3) + "</span><span class='sm'>Golven: " + ranges + "</span></span></p>";
       dh += "<details data-day='" + day + "'" + (S.open[day] ? " open" : "") + " data-target='" + target + "'><summary><span>" + dayLong(day) + "</span><span class='cnt" + (bs >= 7 ? " good" : "") + "'>" + bestTxt + (maj.length ? " · " + maj.length + (maj.length === 1 ? " uur" : " uren") + " goed" : "") + "</span></summary><div class='scroll'><table class='grid'>" + tableHtml(day, an) + "</table></div>" + tidesHtml(day) + "</details>";
     });
-    $("summary").innerHTML = sum;
+    if ($("summary")) $("summary").innerHTML = sum;
     $("days").innerHTML = dh;
     [].forEach.call($("days").querySelectorAll("details[open]"), scrollToTarget);
     renderBest(ans, days);
