@@ -89,6 +89,11 @@ td.c.en { background: transparent; color: var(--muted); font-size: 12px; }
 td.c.push { background: var(--push-bg); color: var(--push-fg); font-size: 11px; }
 td.c.ebb { background: var(--ebb-bg); color: var(--ebb-fg); font-size: 11px; }
 td.c.rise { background: transparent; color: var(--muted); font-size: 11px; font-weight: 400; }
+td.c.sun { background: transparent; color: var(--fg); font-size: 11px; padding-top: 2px; }
+svg.sunic { display: inline-block; vertical-align: middle; }
+td.c.sun svg.sunic { display: block; margin: 0 auto; }
+.suntxt { color: var(--fg); font-weight: 600; }
+.suntxt svg.sunic { width: 24px; height: 20px; vertical-align: -4px; }
 td.c.cons { background: transparent; font-weight: 700; color: var(--accent); }
 tr.sepr th, tr.sepr td { padding-top: 6px; }
 .pushtag { background: var(--push-bg); color: var(--push-fg); border-radius: 6px; padding: 1px 6px; font-weight: 600; }
@@ -215,7 +220,7 @@ a { color: var(--accent); }
       <li>Metingen: <a href="https://waterinfo.rws.nl/" target="_blank" rel="noopener">Rijkswaterstaat</a> Waterwebservices (open data), elk uur opgehaald door een automatische taak in de GitHub-repository.</li>
       <li>Klodde voorspelt de golfhoogte bij IJmuiden Munitiestort 2 in drie lagen. 1) Modellen: golfhoogte van ECMWF en GFS, gecorrigeerd met hun eigen wind (0,98 keer de hoogte, plus 0,0012 m per knoop aanlandige wind, min 0,0094 m per knoop aflandige wind; gefit op 60 dagen metingen) en geschaald met de fout van de afgelopen zeven dagen, apart voor lage en hoge golven. 2) Getij: kleine factor op de hoogte (gemeten 0 tot 3,5 procent) en een punt erbij of eraf in de score voor push en laagwater. 3) Boeien: tot 3 uur na de laatste meting komt Klodde uit de metingen van Munitiestort 2, K14, J6 en L9 plus de wind, daarna steeds minder tot 0 bij 12 uur. Getest op 60 dagen: 6 tot 19 cm fout tot 9 uur vooruit bij golven onder 1,5 m.</li>
       <li>Swellperiode en -richting voegen in de metingen weinig toe bovenop hoogte en wind, en de golfmodellen rekenen ze al mee. Korte golven (onder 6 s) en swell uit het noorden komen wel zwakker aan. Energie wordt gebruikt om bij gelijke score het beste moment te kiezen.</li>
-      <li>De windrichting is waaruit de wind komt. "Donker" is een schatting: voor 08:00 en vanaf 17:00.</li>
+      <li>De windrichting is waaruit de wind komt. De tabellen tonen de uren van een uur voor zonsopkomst tot een uur na zonsondergang (zontijden van Open-Meteo); uren in het donker zijn wat lichter. Een SUP ALERT komt alleen tussen zonsopkomst en zonsondergang.</li>
     </ul>
   </section>
 </main>
@@ -229,7 +234,7 @@ a { color: var(--accent); }
   var URLS = {
     ec: OM_WAVE + "&models=ecmwf_wam&hourly=wave_height,wave_peak_period,wave_direction",
     gf: OM_WAVE + "&models=ncep_gfswave025&hourly=wave_height,swell_wave_period,swell_wave_direction",
-    wind: "https://api.open-meteo.com/v1/forecast?latitude=52.38&longitude=4.48&cell_selection=sea&timeformat=unixtime&timezone=Europe%2FAmsterdam&past_days=1&forecast_days=6&wind_speed_unit=kn&hourly=wind_speed_10m,wind_direction_10m,wind_gusts_10m&models=ecmwf_ifs025,gfs_seamless",
+    wind: "https://api.open-meteo.com/v1/forecast?latitude=52.38&longitude=4.48&cell_selection=sea&timeformat=unixtime&timezone=Europe%2FAmsterdam&past_days=1&forecast_days=6&wind_speed_unit=kn&hourly=wind_speed_10m,wind_direction_10m,wind_gusts_10m&models=ecmwf_ifs025,gfs_seamless&daily=sunrise,sunset",
     rws: "data/rws.json"
   };
   var KC = { a: 0.979, on: 0.0012, off: -0.0094, dir: 280 };
@@ -250,6 +255,8 @@ a { color: var(--accent); }
   function compass(deg) { return NAMES[Math.round(deg / 22.5) % 16]; }
   function pad(h) { return (h < 10 ? "0" : "") + h + ":00"; }
   function dark(h) { return h < 8 || h >= 17; }
+  // Donker: het hele uur ligt voor zonsopkomst of na zonsondergang.
+  function darkU(u) { var s = D && D.sun && D.sun[local(u).day]; if (!s) return dark(local(u).h); return u + 1 <= s.rise || u >= s.set; }
   function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
 
   // Lokale tijd in Amsterdam voor een uurindex (uren sinds 1970 UTC).
@@ -331,6 +338,11 @@ a { color: var(--accent); }
     var d = { M: {}, rws: R.rws, tides: [] };
     d.M.ECMWF = { h: R.ec ? omSeries(R.ec, "wave_height") : {}, p: R.ec ? omSeries(R.ec, "wave_peak_period") : {}, dir: R.ec ? omSeries(R.ec, "wave_direction", true) : {} };
     d.M.GFS = { h: R.gf ? omSeries(R.gf, "wave_height") : {}, p: R.gf ? omSeries(R.gf, "swell_wave_period") : {}, dir: R.gf ? omSeries(R.gf, "swell_wave_direction", true) : {} };
+    // Zon: opkomst en ondergang per dag (uurindex met fractie).
+    d.sun = {};
+    if (R.wind && R.wind.daily && R.wind.daily.sunrise) {
+      R.wind.daily.sunrise.forEach(function (sr, i) { var ss = R.wind.daily.sunset[i]; if (sr && ss) d.sun[local(sr / 3600).day] = { rise: sr / 3600, set: ss / 3600 }; });
+    }
     if (R.wind) {
       d.M.ECMWF.kn = omSeries(R.wind, "wind_speed_10m_ecmwf_ifs025"); d.M.ECMWF.g = omSeries(R.wind, "wind_gusts_10m_ecmwf_ifs025"); d.M.ECMWF.deg = omSeries(R.wind, "wind_direction_10m_ecmwf_ifs025", true);
       d.M.GFS.kn = omSeries(R.wind, "wind_speed_10m_gfs_seamless"); d.M.GFS.g = omSeries(R.wind, "wind_gusts_10m_gfs_seamless"); d.M.GFS.deg = omSeries(R.wind, "wind_direction_10m_gfs_seamless", true);
@@ -436,7 +448,8 @@ a { color: var(--accent); }
     return out.slice(0, 5);
   }
   function hoursOf(day) {
-    var us = Object.keys(D.KL).map(Number).filter(function (u) { var l = local(u); return l.day === day && l.h >= HSHOW[0] && l.h <= HSHOW[1]; });
+    var s = D.sun && D.sun[day], a = s ? Math.floor(s.rise - 1) : null, b = s ? Math.floor(s.set + 1) : null;
+    var us = Object.keys(D.KL).map(Number).filter(function (u) { var l = local(u); return l.day === day && (s ? (u >= a && u <= b) : (l.h >= HSHOW[0] && l.h <= HSHOW[1])); });
     return us.sort(function (a, b) { return a - b; });
   }
   function isPast(u) { return u + 1 <= nowU(); }
@@ -461,7 +474,7 @@ a { color: var(--accent); }
     var out = [], cur = null;
     us.forEach(function (u) { if (cur && u === cur.e + 1) { cur.e = u; cur.us.push(u); } else { cur = { s: u, e: u, us: [u] }; out.push(cur); } });
     return out.map(function (c) {
-      var dk = c.us.filter(function (u) { return dark(local(u).h); }).length, tag = dk === c.us.length ? " (donker)" : (dk ? " (deels donker)" : "");
+      var dk = c.us.filter(function (u) { return darkU(u); }).length, tag = dk === c.us.length ? " (donker)" : (dk ? " (deels donker)" : "");
       return (c.s === c.e ? pad(local(c.s).h) : pad(local(c.s).h) + " t/m " + pad(local(c.e).h)) + tag;
     }).join(", ");
   }
@@ -475,9 +488,18 @@ a { color: var(--accent); }
   // ---------- Weergave ----------
   function tableHtml(day, an) {
     var us = an.us, L = limits(), h = "<thead><tr><th class='rn'></th>";
-    us.forEach(function (u) { var l = local(u); h += "<th data-u='" + u + "' class='" + (dark(l.h) ? "dk" : "") + "' scope='col'" + (isPast(u) ? " style='opacity:.45'" : "") + ">" + (l.h < 10 ? "0" : "") + l.h + "</th>"; });
+    us.forEach(function (u) { var l = local(u); h += "<th data-u='" + u + "' class='" + (darkU(u) ? "dk" : "") + "' scope='col'" + (isPast(u) ? " style='opacity:.45'" : "") + ">" + (l.h < 10 ? "0" : "") + l.h + "</th>"; });
     h += "</tr></thead><tbody>";
     function td(cl, inner, u, title) { return "<td class='c " + cl + "'" + (isPast(u) ? " style='opacity:.45'" : "") + (title ? " title='" + esc(title) + "'" : "") + ">" + inner + "</td>"; }
+    var sn = D.sun && D.sun[day];
+    if (sn) {
+      h += "<tr><th class='rn' scope='row'>Zon</th>";
+      us.forEach(function (u) {
+        var up = Math.floor(sn.rise) === u, dn = Math.floor(sn.set) === u;
+        h += up || dn ? td("sun", sunIcon(up) + "<small class='per'>" + hm(up ? sn.rise : sn.set) + "</small>", u, (up ? "Zonsopkomst " : "Zonsondergang ") + hm(up ? sn.rise : sn.set)) : td("na", "", u);
+      });
+      h += "</tr>";
+    }
     h += "<tr><th class='rn' scope='row'>Getij<small>push = 2 u voor HW</small></th>";
     us.forEach(function (u) {
       var ph = phase(D, u), lab = { push: "push", rise: "stijgt", ebb: "afgaand", low: "laag ↓" }[ph];
@@ -522,11 +544,20 @@ a { color: var(--accent); }
     });
     return h + "</tbody>";
   }
+  function sunIcon(up) {
+    // Halve zon boven de horizon met een driehoekje: omhoog = opkomst, omlaag = ondergang.
+    return "<svg class='sunic' viewBox='0 0 28 24' width='28' height='24' aria-hidden='true'>" +
+      "<g stroke='#E08A00' stroke-width='1.8' stroke-linecap='round'><path d='M14 10.2v2'/><path d='M7.2 13.4l1.4 1.2'/><path d='M20.8 13.4l-1.4 1.2'/><path d='M4.4 18.6h1.8'/><path d='M21.8 18.6h1.8'/></g>" +
+      "<path d='M8.6 19.6a5.4 5.4 0 0 1 10.8 0z' fill='#F6B73C' stroke='#E08A00' stroke-width='1.2'/>" +
+      "<path d='M3 20.6h22' stroke='currentColor' stroke-width='1.8' stroke-linecap='round'/>" +
+      (up ? "<path d='M14 1.5l4 5h-8z' fill='#E08A00'/>" : "<path d='M14 7.5l4-5h-8z' fill='#5B6B78'/>") + "</svg>";
+  }
   function tidesHtml(day) {
-    var ev = D.tides.filter(function (e) { return local(e.u).day === day; });
-    if (!ev.length) return "";
+    var ev = D.tides.filter(function (e) { return local(e.u).day === day; }), sn = D.sun && D.sun[day];
+    var sunTxt = sn ? "<span class='suntxt'>" + sunIcon(true) + " " + hm(sn.rise) + " &nbsp; " + sunIcon(false) + " " + hm(sn.set) + "</span><br>" : "";
+    if (!ev.length) return sn ? "<div class='tides'>" + sunTxt + "</div>" : "";
     var pushes = ev.filter(function (e) { return e.k === "H"; }).map(function (e) { return "<span class='pushtag'>push " + hm(e.u - 2) + " t/m " + hm(e.u) + "</span>"; });
-    return "<div class='tides'>Getij IJmuiden (t.o.v. NAP; Zandvoort ongeveer 10 minuten eerder): " + ev.map(function (e) { return "<span class='" + (e.k === "H" ? "hw" : "lw") + "'>" + (e.k === "H" ? "HW" : "LW") + " " + hm(e.u) + "</span> " + (e.v >= 0 ? "+" : "") + nf(e.v, 2) + " m"; }).join(" · ") + (pushes.length ? "<br>" + pushes.join(" ") : "") + "</div>";
+    return "<div class='tides'>" + sunTxt + "Getij IJmuiden (t.o.v. NAP; Zandvoort ongeveer 10 minuten eerder): " + ev.map(function (e) { return "<span class='" + (e.k === "H" ? "hw" : "lw") + "'>" + (e.k === "H" ? "HW" : "LW") + " " + hm(e.u) + "</span> " + (e.v >= 0 ? "+" : "") + nf(e.v, 2) + " m"; }).join(" · ") + (pushes.length ? "<br>" + pushes.join(" ") : "") + "</div>";
   }
   function renderBest(ans, days) {
     var runs = [], all = [], ALERT = limits();
@@ -534,7 +565,7 @@ a { color: var(--accent); }
       var cur = null;
       ans[day].us.forEach(function (u) {
         var c = ans[day].cells["Klodde|" + u];
-        if (!c || isPast(u) || dark(local(u).h)) { cur = null; return; }
+        if (!c || isPast(u) || darkU(u)) { cur = null; return; }
         all.push({ day: day, u: u, c: c });
         var en = D.KL[u].e || 0;
         if (c.s >= 7 && c.v >= ALERT.wave) { if (cur && u === cur.us[cur.us.length - 1] + 1) { cur.us.push(u); cur.sum += c.s; cur.en += en; } else { cur = { day: day, us: [u], sum: c.s, en: en }; runs.push(cur); } } else cur = null;
@@ -584,7 +615,7 @@ a { color: var(--accent); }
       if (S.first && S.open[day] === undefined) S.open[day] = maj.length > 0 || days.indexOf(day) === 0 || (days.indexOf(day) === 1 && !anyGood);
       var ranges = MODELS.map(function (m) { var r = range(an, m); return r ? m + " " + r : null; }).filter(Boolean).join(" · ");
       // Beste Klodde-score van de dag (komende uren, overdag) en het uur waar de tabel naartoe springt.
-      var cand = fut.filter(function (u) { return !dark(local(u).h) && an.cells["Klodde|" + u]; }), bs = -1, bu = null;
+      var cand = fut.filter(function (u) { return !darkU(u) && an.cells["Klodde|" + u]; }), bs = -1, bu = null;
       cand.forEach(function (u) { var sc = an.cells["Klodde|" + u].s; if (sc > bs) { bs = sc; bu = u; } });
       var target = bs >= 7 ? bu : (function () { var t = an.us.filter(function (u) { return local(u).h >= 8 && !isPast(u); }); return t.length ? t[0] : an.us[an.us.length - 1]; })();
       var bestTxt = bs >= 0 ? "beste " + bs + " om " + pad(local(bu).h) : "voorbij";
