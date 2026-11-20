@@ -167,7 +167,8 @@ a { color: var(--accent); }
   <section class="card" aria-labelledby="h-read">
     <h2 id="h-read">Zo lees je de tabellen</h2>
     <ul class="plain">
-      <li>Per uur een score van 0 tot 10 voor Klodde (mijn voorspelling, zie Bronnen), ECMWF en GFS. Groen is 7 of hoger: goed. Geel is 4 tot 6, grijs lager.</li>
+      <li>Per uur een score van 0 tot 10 voor Klodde (mijn voorspelling, zie Bronnen), ECMWF en GFS. De golfhoogte is de basis: 0,7 m geeft een 7, 0,8 m een 8, 0,9 m een 9 en vanaf 1 m een 10. Te veel wind (boven je grenzen) of een te korte periode verlaagt de score. Groen is 7 of hoger: goed. Geel is 4 tot 6, grijs lager.</li>
+      <li>De SUP ALERT bovenaan komt alleen bij een Klodde-score van 7 of hoger én een golf vanaf je alertgrens (standaard 0,8 m), overdag.</li>
       <li>Daaronder de golfhoogte in meters met de periode in seconden, de golfenergie van Klodde (kW per meter golffront) en de wind per model.</li>
       <li>Klodde-vakjes met een stippelrand komen (deels) uit de boeimetingen van de laatste uren.</li>
       <li>Windkleuren: blauw binnen je grens, oranje tot 5 kn erboven, rood verder erboven. De letters zijn waaruit de wind komt, de pijl waar hij naartoe waait.</li>
@@ -179,7 +180,7 @@ a { color: var(--accent); }
   <section class="card" aria-labelledby="h-lim">
     <h2 id="h-lim">Jouw grenzen</h2>
     <div class="limits">
-      <label for="minwave">Golfhoogte vanaf (m)<input id="minwave" type="number" inputmode="decimal" min="0" max="3" step="0.1" value="0.8"></label>
+      <label for="minwave">Alert vanaf golfhoogte (m)<input id="minwave" type="number" inputmode="decimal" min="0" max="3" step="0.1" value="0.8"></label>
       <label for="minper">Periode vanaf (s)<input id="minper" type="number" inputmode="decimal" min="0" max="20" step="0.5" value="5.5"></label>
       <label for="maxoff">Aflandig tot (kn)<input id="maxoff" type="number" inputmode="numeric" min="0" max="40" step="1" value="16"></label>
       <label for="maxoth">Zij- of aanlandig tot (kn)<input id="maxoth" type="number" inputmode="numeric" min="0" max="40" step="1" value="6"></label>
@@ -274,11 +275,12 @@ a { color: var(--accent); }
     return { wave: num("minwave", 0.8), per: num("minper", 5.5), off: num("maxoff", 16), oth: num("maxoth", 6) };
   }
   function score(deg, kn, h, L, p) {
-    var lim = kind(deg) === "af" ? L.off : L.oth, ws, w;
-    ws = h >= L.wave ? 1 : Math.max(0, (h - (L.wave - 0.3)) / 0.3) * 0.6;
+    // Golfhoogte als basisscore: 0,7 m = 7, 0,8 m = 8, 0,9 m = 9, vanaf 1 m = 10. Wind en periode kunnen hem verlagen.
+    var lim = kind(deg) === "af" ? L.off : L.oth, w;
+    var base = Math.min(10, Math.floor(h * 10 + 1e-6));
     if (kn <= lim) w = 1 - 0.1 * Math.max(0, (kn - 6) / 5); else if (kn <= lim + 5) w = 0.35; else if (kn <= lim + 10) w = 0.12; else w = 0;
     var pf = (p === undefined || p === null || p >= L.per) ? 1 : Math.max(0, (p - (L.per - 1.5)) / 1.5) * 0.6;
-    return Math.round(10 * ws * w * pf);
+    return Math.round(base * w * pf);
   }
   function cls(s) { return s >= 7 ? "good" : (s >= 4 ? "mid" : "low"); }
   function wcls(kn, deg, L) { var lim = kind(deg) === "af" ? L.off : L.oth; return kn <= lim ? "wok" : (kn <= lim + 5 ? "wmid" : "whi"); }
@@ -527,7 +529,7 @@ a { color: var(--accent); }
     return "<div class='tides'>Getij IJmuiden (t.o.v. NAP; Zandvoort ongeveer 10 minuten eerder): " + ev.map(function (e) { return "<span class='" + (e.k === "H" ? "hw" : "lw") + "'>" + (e.k === "H" ? "HW" : "LW") + " " + hm(e.u) + "</span> " + (e.v >= 0 ? "+" : "") + nf(e.v, 2) + " m"; }).join(" · ") + (pushes.length ? "<br>" + pushes.join(" ") : "") + "</div>";
   }
   function renderBest(ans, days) {
-    var runs = [], all = [];
+    var runs = [], all = [], ALERT = limits();
     days.forEach(function (day) {
       var cur = null;
       ans[day].us.forEach(function (u) {
@@ -535,7 +537,7 @@ a { color: var(--accent); }
         if (!c || isPast(u) || dark(local(u).h)) { cur = null; return; }
         all.push({ day: day, u: u, c: c });
         var en = D.KL[u].e || 0;
-        if (c.s >= 7) { if (cur && u === cur.us[cur.us.length - 1] + 1) { cur.us.push(u); cur.sum += c.s; cur.en += en; } else { cur = { day: day, us: [u], sum: c.s, en: en }; runs.push(cur); } } else cur = null;
+        if (c.s >= 7 && c.v >= ALERT.wave) { if (cur && u === cur.us[cur.us.length - 1] + 1) { cur.us.push(u); cur.sum += c.s; cur.en += en; } else { cur = { day: day, us: [u], sum: c.s, en: en }; runs.push(cur); } } else cur = null;
       });
     });
     var el = $("alert");
