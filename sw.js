@@ -1,5 +1,5 @@
 // Service worker: app-bestanden bewaren voor offline openen; gegevens altijd eerst van het netwerk.
-const CACHE = "golfsup-v9";
+const CACHE = "golfsup-v11";
 const SHELL = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./bg.jpg"];
 
 self.addEventListener("install", (e) => {

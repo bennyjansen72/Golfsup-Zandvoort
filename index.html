@@ -22,6 +22,7 @@
   --warn-bg: #FBE3D6; --warn-fg: #7A2E0B; --hw: #0E6B8C; --lw: #85600F; --push-bg: #C9ECF5; --push-fg: #07506B; --ebb-bg: #EADFF3; --ebb-fg: #4A2B6B;
   --wok-bg: #D4E6FA; --wok-fg: #0A3A6B; --wmid-bg: #FBDDBF; --wmid-fg: #7A3605; --whi-bg: #F5CFCF; --whi-fg: #7D1616;
   --s1: #0B2A3C; --s2: #B45309; --s3: #6D28D9; --s4: #15803D; --grid: #D3DFE4;
+  --glass: rgba(255, 255, 255, 0.62); --glass2: rgba(242, 246, 247, 0.55); --rn-bg: #EDF2F4; --veil-end: rgba(242, 246, 247, 0.72);
   --font: 'Outfit', system-ui, -apple-system, 'Segoe UI', sans-serif;
   color-scheme: light;
 }
@@ -32,6 +33,7 @@
     --warn-bg: #5A2A12; --warn-fg: #F7D2BC; --hw: #7FCBD8; --lw: #E8C27A; --push-bg: #0F5A73; --push-fg: #BFF0FF; --ebb-bg: #3F2B58; --ebb-fg: #E3D0F7;
     --wok-bg: #1B4A78; --wok-fg: #D4E8FF; --wmid-bg: #6B3A12; --wmid-fg: #FFD9B5; --whi-bg: #6E1F24; --whi-fg: #FFD0D0;
     --s1: #E8F1F5; --s2: #F0A24A; --s3: #B8A2F5; --s4: #7FE0A6; --grid: #2A5A72;
+    --glass: rgba(18, 63, 87, 0.66); --glass2: rgba(11, 42, 60, 0.55); --rn-bg: #0F3449; --veil-end: rgba(11, 42, 60, 0.72);
     color-scheme: dark;
   }
 }
@@ -40,7 +42,7 @@ html { -webkit-text-size-adjust: 100%; }
 html { background: var(--bg); }
 /* Achtergrondfoto: vast achter de app, bovenaan zichtbaar en naar beneden vervagend in de achtergrondkleur. */
 body::before { content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
-  background: linear-gradient(180deg, rgba(8, 30, 44, 0.50) 0%, rgba(8, 30, 44, 0.30) 26%, rgba(8, 30, 44, 0.30) 40%, var(--bg) 80%), url("bg.jpg") 60% 36% / cover no-repeat; }
+  background: linear-gradient(180deg, rgba(8, 30, 44, 0.45) 0%, rgba(8, 30, 44, 0.20) 30%, var(--veil-end) 75%), url("bg.jpg") 60% 45% / cover no-repeat; }
 body { margin: 0; background: transparent; color: var(--fg); font-family: var(--font); font-size: 15px; line-height: 1.5;
   padding-top: calc(env(safe-area-inset-top, 0px) + 18px); padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 40px);
   padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
@@ -65,16 +67,16 @@ button.btn[disabled] { opacity: 0.6; }
 .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; align-self: flex-start; }
 .seg button { font: inherit; font-weight: 600; font-size: 14px; color: var(--muted); background: var(--bg); border: 0; padding: 9px 14px; min-height: 44px; cursor: pointer; }
 .seg button[aria-pressed="true"] { background: var(--accent); color: var(--surface); }
-details { border: 1px solid var(--line); border-radius: 14px; background: var(--bg); }
+details { border: 1px solid var(--line); border-radius: 14px; background: var(--glass2); }
 details > summary { cursor: pointer; padding: 10px 14px; min-height: 44px; font-weight: 600; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
 .cnt { font-size: 12.5px; font-weight: 600; color: var(--muted); }
 .cnt.good { color: var(--good-fg); }
-.scroll { overflow-x: auto; padding: 0 8px 4px; -webkit-overflow-scrolling: touch; }
+.scroll { overflow-x: auto; padding: 0 8px 4px 0; -webkit-overflow-scrolling: touch; }
 table.grid { border-collapse: separate; border-spacing: 2px; font-variant-numeric: tabular-nums; width: max-content; min-width: 100%; }
 table.grid th, table.grid td { text-align: center; font-size: 13px; padding: 0; }
 table.grid thead th { font-weight: 600; color: var(--muted); font-size: 12px; padding-bottom: 2px; }
 table.grid thead th.dk { opacity: 0.6; }
-th.rn { position: sticky; left: 0; background: var(--bg); text-align: left; font-weight: 600; color: var(--fg); padding: 0 8px 0 2px; white-space: nowrap; z-index: 1; font-size: 13px; }
+th.rn { position: sticky; left: 0; background: var(--rn-bg); text-align: left; font-weight: 600; color: var(--fg); padding: 0 8px 0 10px; white-space: nowrap; z-index: 1; font-size: 13px; }
 th.rn small { color: var(--muted); font-weight: 400; font-size: 11px; margin-left: 4px; }
 td.c { min-width: 36px; height: 30px; border-radius: 7px; font-weight: 600; }
 td.c small.per { display: block; font-size: 10px; font-weight: 400; color: var(--muted); }
@@ -106,17 +108,19 @@ header.top .logo { width: 44px; height: 44px; border-radius: 11px; object-fit: c
 header.top .ttl { flex: 1; min-width: 0; }
 header.top h1 { font-size: 22px; margin: 0; color: #FFFFFF; text-shadow: 0 1px 6px rgba(0, 0, 0, 0.45); }
 header.top .sub { font-size: 12px; color: rgba(255, 255, 255, 0.88); text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5); }
-.card { box-shadow: 0 6px 22px rgba(8, 30, 44, 0.12); }
+.card { background: var(--glass); -webkit-backdrop-filter: blur(10px) saturate(1.1); backdrop-filter: blur(10px) saturate(1.1); border-color: rgba(255, 255, 255, 0.25); box-shadow: 0 6px 22px rgba(8, 30, 44, 0.14); }
 .days-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
-.alert { position: relative; overflow: hidden; border-radius: 20px; padding: 20px 18px 22px; color: #F4FBFD;
-  background: radial-gradient(120% 140% at 100% 0%, rgba(30, 155, 192, 0.80) 0%, rgba(14, 107, 140, 0.78) 38%, rgba(11, 42, 60, 0.86) 100%); box-shadow: 0 10px 30px rgba(11, 42, 60, 0.30);
-  -webkit-backdrop-filter: blur(5px); backdrop-filter: blur(5px); border: 1px solid rgba(255, 255, 255, 0.12); }
-.alert::after { content: ""; position: absolute; left: -10%; right: -10%; bottom: -38px; height: 90px; border-radius: 50%;
-  background: rgba(127, 203, 216, 0.16); box-shadow: 0 -22px 0 rgba(127, 203, 216, 0.08); pointer-events: none; }
+.alert { position: relative; overflow: hidden; border-radius: 20px; padding: 0 18px 22px; color: #F4FBFD;
+  background: linear-gradient(160deg, rgba(14, 107, 140, 0.90) 0%, rgba(11, 42, 60, 0.94) 60%); box-shadow: 0 10px 30px rgba(11, 42, 60, 0.35); border: 1px solid rgba(255, 255, 255, 0.12); }
 .alert > * { position: relative; z-index: 1; }
+.alert-photo { height: 190px; margin: 0 -18px; background: linear-gradient(0deg, rgba(11, 42, 60, 0.95) 0%, rgba(11, 42, 60, 0.35) 32%, rgba(11, 42, 60, 0) 60%), url("bg.jpg") 60% 47% / cover no-repeat; }
+.alert .alert-tag { margin-top: -52px; }
 .alert-tag { font-size: clamp(38px, 11vw, 60px); font-weight: 700; letter-spacing: 0.02em; line-height: 0.95; color: #FFE27A; text-transform: uppercase; }
 .alert.none .alert-tag { color: #D7E6EC; font-size: clamp(26px, 7vw, 36px); }
-.alert.none { background: radial-gradient(120% 140% at 100% 0%, rgba(92, 124, 140, 0.82) 0%, rgba(51, 80, 95, 0.82) 45%, rgba(27, 52, 67, 0.88) 100%); }
+.alert.none { background: linear-gradient(160deg, rgba(92, 124, 140, 0.92) 0%, rgba(27, 52, 67, 0.95) 60%); }
+.alert.none .alert-photo { filter: grayscale(0.5); background: linear-gradient(0deg, rgba(27, 52, 67, 0.95) 0%, rgba(27, 52, 67, 0.35) 32%, rgba(27, 52, 67, 0) 60%), url("bg.jpg") 60% 47% / cover no-repeat; }
+.alert-when, .alert-tag { text-shadow: 0 2px 10px rgba(0, 0, 0, 0.45); }
+.alert-stats div { -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); background: rgba(8, 30, 44, 0.38); }
 .alert-when { margin: 12px 0 0; font-size: 21px; font-weight: 700; line-height: 1.25; }
 .alert-when small { display: block; font-size: 15px; font-weight: 400; opacity: 0.85; margin-top: 2px; }
 .alert-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px; margin-top: 14px; }
@@ -160,6 +164,7 @@ a { color: var(--accent); }
   <div id="err" class="banner" hidden></div>
 
   <section class="alert none" id="alert" aria-live="polite">
+    <div class="alert-photo"></div>
     <div class="alert-tag">SUP ALERT</div>
     <p class="alert-when">Voorspelling laden…</p>
   </section>
@@ -598,14 +603,14 @@ a { color: var(--accent); }
       runs.sort(function (a, b) { return (b.sum - a.sum) || (b.en - a.en); });
       var r = runs[0], more = runs.slice(1, 3).sort(function (a, b) { return a.us[0] - b.us[0]; });
       el.className = "alert";
-      el.innerHTML = "<div class='alert-tag'>SUP ALERT!</div><p class='alert-when'>" + rel(r.day) + dayLong(r.day).replace(/^./, function (c) { return rel(r.day) ? c.toLowerCase() : c; }) + "<small>" + span(r.us) + "</small></p>" + tiles(r.day, r.us) +
+      el.innerHTML = "<div class='alert-photo'></div><div class='alert-tag'>SUP ALERT!</div><p class='alert-when'>" + rel(r.day) + dayLong(r.day).replace(/^./, function (c) { return rel(r.day) ? c.toLowerCase() : c; }) + "<small>" + span(r.us) + "</small></p>" + tiles(r.day, r.us) +
         (more.length ? "<p class='alert-more'>Ook goed: " + more.map(function (m) { return dayShort(m.day) + " " + span(m.us); }).join(" · ") + "</p>" : "");
     } else if (all.length) {
       all.sort(function (a, b) { return b.c.s - a.c.s; });
       var b0 = all[0];
       el.className = "alert none";
-      el.innerHTML = "<div class='alert-tag'>Geen SUP alert</div><p class='alert-when'>Geen goed uur overdag in de komende dagen<small>Dichtstbij: " + dayShort(b0.day) + " " + pad(local(b0.u).h) + ", score " + b0.c.s + "</small></p>" + tiles(b0.day, [b0.u]);
-    } else { el.className = "alert none"; el.innerHTML = "<div class='alert-tag'>Geen SUP alert</div><p class='alert-when'>Geen voorspelling voor de komende uren.</p>"; }
+      el.innerHTML = "<div class='alert-photo'></div><div class='alert-tag'>Geen SUP alert</div><p class='alert-when'>Geen goed uur overdag in de komende dagen<small>Dichtstbij: " + dayShort(b0.day) + " " + pad(local(b0.u).h) + ", score " + b0.c.s + "</small></p>" + tiles(b0.day, [b0.u]);
+    } else { el.className = "alert none"; el.innerHTML = "<div class='alert-photo'></div><div class='alert-tag'>Geen SUP alert</div><p class='alert-when'>Geen voorspelling voor de komende uren.</p>"; }
   }
   // Laat de tabel beginnen bij het beste uur van de dag, of anders bij 08:00.
   function scrollToTarget(det) {
