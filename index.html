@@ -220,7 +220,7 @@ a { color: var(--accent); }
       <li>Metingen: <a href="https://waterinfo.rws.nl/" target="_blank" rel="noopener">Rijkswaterstaat</a> Waterwebservices (open data), elk uur opgehaald door een automatische taak in de GitHub-repository.</li>
       <li>Klodde voorspelt de golfhoogte bij IJmuiden Munitiestort 2 in drie lagen. 1) Modellen: golfhoogte van ECMWF en GFS, gecorrigeerd met hun eigen wind (0,98 keer de hoogte, plus 0,0012 m per knoop aanlandige wind, min 0,0094 m per knoop aflandige wind; gefit op 60 dagen metingen) en geschaald met de fout van de afgelopen zeven dagen, apart voor lage en hoge golven. 2) Getij: kleine factor op de hoogte (gemeten 0 tot 3,5 procent) en een punt erbij of eraf in de score voor push en laagwater. 3) Boeien: tot 3 uur na de laatste meting komt Klodde uit de metingen van Munitiestort 2, K14, J6 en L9 plus de wind, daarna steeds minder tot 0 bij 12 uur. Getest op 60 dagen: 6 tot 19 cm fout tot 9 uur vooruit bij golven onder 1,5 m.</li>
       <li>Swellperiode en -richting voegen in de metingen weinig toe bovenop hoogte en wind, en de golfmodellen rekenen ze al mee. Korte golven (onder 6 s) en swell uit het noorden komen wel zwakker aan. Energie wordt gebruikt om bij gelijke score het beste moment te kiezen.</li>
-      <li>De windrichting is waaruit de wind komt. De tabellen tonen de uren van een uur voor zonsopkomst tot een uur na zonsondergang (zontijden van Open-Meteo); uren in het donker zijn wat lichter. Een SUP ALERT komt alleen tussen zonsopkomst en zonsondergang.</li>
+      <li>De windrichting is waaruit de wind komt. De tabellen beginnen bij het uur van zonsopkomst en stoppen bij het uur van zonsondergang (zontijden van Open-Meteo). Een SUP ALERT komt alleen tussen zonsopkomst en zonsondergang.</li>
     </ul>
   </section>
 </main>
@@ -451,7 +451,7 @@ a { color: var(--accent); }
     return out.slice(0, 5);
   }
   function hoursOf(day) {
-    var s = D.sun && D.sun[day], a = s ? Math.floor(s.rise - 1) : null, b = s ? Math.floor(s.set + 1) : null;
+    var s = D.sun && D.sun[day], a = s ? Math.floor(s.rise) : null, b = s ? Math.floor(s.set) : null;
     var us = Object.keys(D.KL).map(Number).filter(function (u) { var l = local(u); return l.day === day && (s ? (u >= a && u <= b) : (l.h >= HSHOW[0] && l.h <= HSHOW[1])); });
     return us.sort(function (a, b) { return a - b; });
   }
