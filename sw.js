@@ -1,5 +1,5 @@
 // Service worker: app-bestanden bewaren voor offline openen; gegevens altijd eerst van het netwerk.
-const CACHE = "golfsup-v14";
+const CACHE = "golfsup-v15";
 const SHELL = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./bg.jpg", "./alert2.jpg"];
 
 self.addEventListener("install", (e) => {
@@ -12,8 +12,10 @@ self.addEventListener("activate", (e) => {
 
 self.addEventListener("fetch", (e) => {
   if (e.request.method !== "GET") return;
+  // Eigen bestanden altijd bij de server controleren (geen verouderde kopie uit de browsercache).
+  const same = new URL(e.request.url).origin === self.location.origin;
   e.respondWith(
-    fetch(e.request)
+    (same ? fetch(e.request.url, { cache: "no-cache" }) : fetch(e.request))
       .then((r) => {
         if (r.ok) { const copy = r.clone(); caches.open(CACHE).then((c) => c.put(e.request, copy)); }
         return r;

@@ -700,7 +700,12 @@ a { color: var(--accent); }
   $("days").addEventListener("toggle", function (e) { var d = e.target.getAttribute && e.target.getAttribute("data-day"); if (d) { S.open[d] = e.target.open; if (e.target.open) scrollToTarget(e.target); } }, true);
   $("refresh").addEventListener("click", load);
   document.addEventListener("visibilitychange", function () { if (document.visibilityState === "visible" && (!D || Date.now() - D.fetched > 30 * 60e3)) load(); });
-  if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js").catch(function () {});
+  if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js", { updateViaCache: "none" }).then(function (reg) {
+    document.addEventListener("visibilitychange", function () { if (document.visibilityState === "visible") reg.update().catch(function () {}); });
+    // Nieuwe versie geïnstalleerd: één keer herladen zodat je hem meteen ziet.
+    var had = !!navigator.serviceWorker.controller;
+    navigator.serviceWorker.addEventListener("controllerchange", function () { if (had && !window.__reloaded) { window.__reloaded = true; location.reload(); } });
+  }).catch(function () {});
   window.__golfsup = { get D() { return D; }, load: load };
   load();
 })();
