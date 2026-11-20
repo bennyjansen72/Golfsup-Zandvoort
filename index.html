@@ -22,7 +22,7 @@
   --warn-bg: #FBE3D6; --warn-fg: #7A2E0B; --hw: #0E6B8C; --lw: #85600F; --push-bg: #C9ECF5; --push-fg: #07506B; --ebb-bg: #EADFF3; --ebb-fg: #4A2B6B;
   --wok-bg: #D4E6FA; --wok-fg: #0A3A6B; --wmid-bg: #FBDDBF; --wmid-fg: #7A3605; --whi-bg: #F5CFCF; --whi-fg: #7D1616;
   --s1: #0B2A3C; --s2: #B45309; --s3: #6D28D9; --s4: #15803D; --grid: #D3DFE4;
-  --glass: rgba(255, 255, 255, 0.50); --glass2: rgba(242, 246, 247, 0.45); --rn-bg: #EDF2F4; --veil-end: rgba(242, 246, 247, 0.30); --photo-tint: rgba(0, 0, 0, 0);
+  --glass: rgba(255, 255, 255, 0.34); --glass2: rgba(242, 246, 247, 0.28); --rn-bg: #EDF2F4; --veil-end: rgba(242, 246, 247, 0.30); --photo-tint: rgba(0, 0, 0, 0);
   --font: 'Outfit', system-ui, -apple-system, 'Segoe UI', sans-serif;
   color-scheme: light;
 }
@@ -33,7 +33,7 @@
     --warn-bg: #5A2A12; --warn-fg: #F7D2BC; --hw: #7FCBD8; --lw: #E8C27A; --push-bg: #0F5A73; --push-fg: #BFF0FF; --ebb-bg: #3F2B58; --ebb-fg: #E3D0F7;
     --wok-bg: #1B4A78; --wok-fg: #D4E8FF; --wmid-bg: #6B3A12; --wmid-fg: #FFD9B5; --whi-bg: #6E1F24; --whi-fg: #FFD0D0;
     --s1: #E8F1F5; --s2: #F0A24A; --s3: #B8A2F5; --s4: #7FE0A6; --grid: #2A5A72;
-    --glass: rgba(18, 63, 87, 0.55); --glass2: rgba(11, 42, 60, 0.45); --rn-bg: #0F3449; --veil-end: rgba(11, 42, 60, 0.40); --photo-tint: rgba(11, 42, 60, 0.45);
+    --glass: rgba(18, 63, 87, 0.40); --glass2: rgba(11, 42, 60, 0.32); --rn-bg: #0F3449; --veil-end: rgba(11, 42, 60, 0.40); --photo-tint: rgba(11, 42, 60, 0.45);
     color-scheme: dark;
   }
 }
@@ -617,7 +617,7 @@ a { color: var(--accent); }
       var an = ans[day] = analyse(day, L);
       var fut = an.us.filter(function (u) { return !isPast(u); });
       var maj = fut.filter(function (u) { return an.avail[u] >= 2 && an.good[u] >= 2; }), all3 = fut.filter(function (u) { return an.avail[u] >= 2 && an.good[u] === an.avail[u]; });
-      if (S.first && S.open[day] === undefined) S.open[day] = maj.length > 0 || days.indexOf(day) === 0 || (days.indexOf(day) === 1 && !anyGood);
+      if (S.first && S.open[day] === undefined) S.open[day] = true;
       var ranges = MODELS.map(function (m) { var r = range(an, m); return r ? m + " " + r : null; }).filter(Boolean).join(" · ");
       // Beste Klodde-score van de dag (komende uren, overdag) en het uur waar de tabel naartoe springt.
       var cand = fut.filter(function (u) { return !darkU(u) && an.cells["Klodde|" + u]; }), bs = -1, bu = null;
