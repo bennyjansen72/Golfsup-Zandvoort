@@ -340,8 +340,11 @@ a { color: var(--accent); }
     d.M.GFS = { h: R.gf ? omSeries(R.gf, "wave_height") : {}, p: R.gf ? omSeries(R.gf, "swell_wave_period") : {}, dir: R.gf ? omSeries(R.gf, "swell_wave_direction", true) : {} };
     // Zon: opkomst en ondergang per dag (uurindex met fractie).
     d.sun = {};
-    if (R.wind && R.wind.daily && R.wind.daily.sunrise) {
-      R.wind.daily.sunrise.forEach(function (sr, i) { var ss = R.wind.daily.sunset[i]; if (sr && ss) d.sun[local(sr / 3600).day] = { rise: sr / 3600, set: ss / 3600 }; });
+    var dl = R.wind && R.wind.daily;
+    if (dl) {
+      // Bij meerdere modellen heten de velden sunrise_<model>; de zontijden zijn per model gelijk.
+      var srk = Object.keys(dl).filter(function (k) { return k.indexOf("sunrise") === 0; })[0], ssk = srk && srk.replace("sunrise", "sunset");
+      if (srk && dl[ssk]) dl[srk].forEach(function (sr, i) { var ss = dl[ssk][i]; if (sr && ss) d.sun[local(sr / 3600).day] = { rise: sr / 3600, set: ss / 3600 }; });
     }
     if (R.wind) {
       d.M.ECMWF.kn = omSeries(R.wind, "wind_speed_10m_ecmwf_ifs025"); d.M.ECMWF.g = omSeries(R.wind, "wind_gusts_10m_ecmwf_ifs025"); d.M.ECMWF.deg = omSeries(R.wind, "wind_direction_10m_ecmwf_ifs025", true);
