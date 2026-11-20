@@ -6,7 +6,7 @@ Web-app met de golfsup-voorspelling voor Zandvoort. Voorspelling van Open-Meteo 
 
 - `index.html`: de app
 - `manifest.webmanifest`, `sw.js`, `icon-192.png`, `icon-512.png`: maken er een installeerbare app van
-- `scripts/rws_fetch.py`: haalt de metingen en het getij van Rijkswaterstaat op
+- `rws_fetch.py`: haalt de metingen en het getij van Rijkswaterstaat op
 - `.github/workflows/rws.yml`: draait dat script elk uur en zet het resultaat in `data/rws.json`
 
 ## Waarom een automatische taak?
