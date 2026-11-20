@@ -185,7 +185,7 @@ a { color: var(--accent); }
       <label for="maxoff">Aflandig tot (kn)<input id="maxoff" type="number" inputmode="numeric" min="0" max="40" step="1" value="16"></label>
       <label for="maxoth">Zij- of aanlandig tot (kn)<input id="maxoth" type="number" inputmode="numeric" min="0" max="40" step="1" value="6"></label>
     </div>
-    <p class="note">Aflandig is wind uit 65° tot 155° (ONO tot ZZO), aanlandig uit 245° tot 335°, de rest is zijwaarts. Je grenzen worden op dit apparaat bewaard. Aflandige wind blaast je van de kust af en het water is koud: leash en wetsuit.</p>
+    <p class="note">Aflandig is wind uit 45° tot 155° (NO tot ZZO), aanlandig uit 245° tot 335°, de rest is zijwaarts. Je grenzen worden op dit apparaat bewaard. Aflandige wind blaast je van de kust af en het water is koud: leash en wetsuit.</p>
   </section>
 
   <section class="card" aria-labelledby="h-meas">
@@ -245,7 +245,7 @@ a { color: var(--accent); }
   var S = { view: "score", open: {}, first: true };
   function $(id) { return document.getElementById(id); }
   function nf(n, d) { return n.toFixed(d === undefined ? 1 : d).replace(".", ","); }
-  function kind(deg) { return (deg >= 65 && deg <= 155) ? "af" : ((deg >= 245 && deg <= 335) ? "aan" : "zij"); }
+  function kind(deg) { return (deg >= 45 && deg <= 155) ? "af" : ((deg >= 245 && deg <= 335) ? "aan" : "zij"); }
   function kindW(k) { return k === "af" ? "aflandig" : k === "aan" ? "aanlandig" : "zijwaarts"; }
   function compass(deg) { return NAMES[Math.round(deg / 22.5) % 16]; }
   function pad(h) { return (h < 10 ? "0" : "") + h + ":00"; }
@@ -475,7 +475,7 @@ a { color: var(--accent); }
   // ---------- Weergave ----------
   function tableHtml(day, an) {
     var us = an.us, L = limits(), h = "<thead><tr><th class='rn'></th>";
-    us.forEach(function (u) { var l = local(u); h += "<th class='" + (dark(l.h) ? "dk" : "") + "' scope='col'" + (isPast(u) ? " style='opacity:.45'" : "") + ">" + (l.h < 10 ? "0" : "") + l.h + "</th>"; });
+    us.forEach(function (u) { var l = local(u); h += "<th data-u='" + u + "' class='" + (dark(l.h) ? "dk" : "") + "' scope='col'" + (isPast(u) ? " style='opacity:.45'" : "") + ">" + (l.h < 10 ? "0" : "") + l.h + "</th>"; });
     h += "</tr></thead><tbody>";
     function td(cl, inner, u, title) { return "<td class='c " + cl + "'" + (isPast(u) ? " style='opacity:.45'" : "") + (title ? " title='" + esc(title) + "'" : "") + ">" + inner + "</td>"; }
     h += "<tr><th class='rn' scope='row'>Getij<small>push = 2 u voor HW</small></th>";
@@ -567,6 +567,12 @@ a { color: var(--accent); }
       el.innerHTML = "<div class='alert-tag'>Geen SUP alert</div><p class='alert-when'>Geen goed uur overdag in de komende dagen<small>Dichtstbij: " + dayShort(b0.day) + " " + pad(local(b0.u).h) + ", score " + b0.c.s + "</small></p>" + tiles(b0.day, [b0.u]);
     } else { el.className = "alert none"; el.innerHTML = "<div class='alert-tag'>Geen SUP alert</div><p class='alert-when'>Geen voorspelling voor de komende uren.</p>"; }
   }
+  // Laat de tabel beginnen bij het beste uur van de dag, of anders bij 08:00.
+  function scrollToTarget(det) {
+    var sc = det.querySelector(".scroll"), th = det.querySelector("thead th[data-u='" + det.getAttribute("data-target") + "']"), rn = det.querySelector("th.rn");
+    if (!sc || !th) return;
+    sc.scrollLeft = Math.max(0, th.offsetLeft - (rn ? rn.offsetWidth : 0) - 6);
+  }
   function render() {
     if (!D) return;
     var L = limits(), days = daysAhead(), ans = {}, sum = "", dh = "";
@@ -577,11 +583,17 @@ a { color: var(--accent); }
       var maj = fut.filter(function (u) { return an.avail[u] >= 2 && an.good[u] >= 2; }), all3 = fut.filter(function (u) { return an.avail[u] >= 2 && an.good[u] === an.avail[u]; });
       if (S.first && S.open[day] === undefined) S.open[day] = maj.length > 0 || days.indexOf(day) === 0 || (days.indexOf(day) === 1 && !anyGood);
       var ranges = MODELS.map(function (m) { var r = range(an, m); return r ? m + " " + r : null; }).filter(Boolean).join(" · ");
+      // Beste Klodde-score van de dag (komende uren, overdag) en het uur waar de tabel naartoe springt.
+      var cand = fut.filter(function (u) { return !dark(local(u).h) && an.cells["Klodde|" + u]; }), bs = -1, bu = null;
+      cand.forEach(function (u) { var sc = an.cells["Klodde|" + u].s; if (sc > bs) { bs = sc; bu = u; } });
+      var target = bs >= 7 ? bu : (function () { var t = an.us.filter(function (u) { return local(u).h >= 8 && !isPast(u); }); return t.length ? t[0] : an.us[an.us.length - 1]; })();
+      var bestTxt = bs >= 0 ? "beste " + bs + " om " + pad(local(bu).h) : "voorbij";
       sum += "<p><b>" + dayShort(day) + "</b><span><strong>Meerderheid goed: " + fmtRuns(maj) + "</strong><span class='sm'>Alle drie goed: " + fmtRuns(all3) + "</span><span class='sm'>Golven: " + ranges + "</span></span></p>";
-      dh += "<details data-day='" + day + "'" + (S.open[day] ? " open" : "") + "><summary><span>" + dayLong(day) + "</span><span class='cnt" + (maj.length ? " good" : "") + "'>" + (maj.length ? maj.length + (maj.length === 1 ? " uur" : " uren") + " goed" : "geen meerderheid goed") + "</span></summary><div class='scroll'><table class='grid'>" + tableHtml(day, an) + "</table></div>" + tidesHtml(day) + "</details>";
+      dh += "<details data-day='" + day + "'" + (S.open[day] ? " open" : "") + " data-target='" + target + "'><summary><span>" + dayLong(day) + "</span><span class='cnt" + (bs >= 7 ? " good" : "") + "'>" + bestTxt + (maj.length ? " · " + maj.length + (maj.length === 1 ? " uur" : " uren") + " goed" : "") + "</span></summary><div class='scroll'><table class='grid'>" + tableHtml(day, an) + "</table></div>" + tidesHtml(day) + "</details>";
     });
     $("summary").innerHTML = sum;
     $("days").innerHTML = dh;
+    [].forEach.call($("days").querySelectorAll("details[open]"), scrollToTarget);
     renderBest(ans, days);
     S.first = false;
   }
@@ -650,7 +662,7 @@ a { color: var(--accent); }
   function setView(v) { S.view = v; $("v-score").setAttribute("aria-pressed", v === "score"); $("v-wind").setAttribute("aria-pressed", v === "wind"); render(); }
   $("v-score").addEventListener("click", function () { setView("score"); });
   $("v-wind").addEventListener("click", function () { setView("wind"); });
-  $("days").addEventListener("toggle", function (e) { var d = e.target.getAttribute && e.target.getAttribute("data-day"); if (d) S.open[d] = e.target.open; }, true);
+  $("days").addEventListener("toggle", function (e) { var d = e.target.getAttribute && e.target.getAttribute("data-day"); if (d) { S.open[d] = e.target.open; if (e.target.open) scrollToTarget(e.target); } }, true);
   $("refresh").addEventListener("click", load);
   document.addEventListener("visibilitychange", function () { if (document.visibilityState === "visible" && (!D || Date.now() - D.fetched > 30 * 60e3)) load(); });
   if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js").catch(function () {});
