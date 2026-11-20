@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Zandvoort Golfsup</title>
-<meta name="description" content="Golfsup-voorspelling voor Zandvoort met Open-Meteo, Rijkswaterstaat en Klodde.">
+<meta name="description" content="Golfsup-voorspelling voor Zandvoort met Open-Meteo, Rijkswaterstaat en Claude.">
 <meta name="theme-color" content="#0B2A3C">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -128,6 +128,10 @@ header.top .sub { font-size: 12px; color: rgba(255, 255, 255, 0.88); text-shadow
 .alert-stats b { display: block; font-size: 9.5px; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 600; opacity: 0.8; }
 .alert-stats span { display: block; font-size: clamp(14px, 4.4vw, 21px); font-weight: 700; line-height: 1.2; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .alert-stats em { display: block; font-style: normal; font-size: 11px; opacity: 0.85; line-height: 1.25; }
+.alert[data-day] { cursor: pointer; }
+.alert-tap { display: inline-block; margin-top: 6px; font-weight: 600; opacity: 0.95; border-bottom: 1px solid rgba(255, 255, 255, 0.5); }
+details { scroll-margin-top: 12px; }
+thead th.flash { color: #FFE27A; background: rgba(14, 107, 140, 0.85); border-radius: 6px; transition: background 0.3s; }
 .alert-more { margin: auto 0 0; padding-top: 12px; font-size: 13.5px; opacity: 0.9; }
 .best { font-size: 16px; margin: 0; padding: 12px 14px; border-radius: 12px; background: var(--good-bg); color: var(--good-fg); font-weight: 600; }
 .best.none { background: var(--mid-bg); color: var(--mid-fg); }
@@ -163,7 +167,7 @@ a { color: var(--accent); }
 
   <div id="err" class="banner" hidden></div>
 
-  <section class="alert none" id="alert" aria-live="polite">
+  <section class="alert none" id="alert" aria-live="polite" role="button" tabindex="0" aria-label="Naar de tabel van de alertdag">
     <div class="alert-tag">SUP ALERT</div>
     <p class="alert-when">Voorspelling laden…</p>
   </section>
@@ -209,7 +213,7 @@ a { color: var(--accent); }
     <ul class="plain">
       <li>Voorspelling: <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a> (gratis voor niet-commercieel gebruik). Golven van ECMWF WAM en NOAA GFS Wave, gemiddeld over de rasterpunten op 52,25° en 52,5° NB, 4,5° OL (Zandvoort ligt ertussen). Wind van ECMWF IFS (0,25°) en GFS. Getij: astronomische getijvoorspelling van Rijkswaterstaat voor IJmuiden. Periode: bij ECMWF de piekperiode, bij GFS de swellperiode.</li>
       <li>Metingen: <a href="https://waterinfo.rws.nl/" target="_blank" rel="noopener">Rijkswaterstaat</a> Waterwebservices (open data), elk uur opgehaald door een automatische taak in de GitHub-repository.</li>
-      <li>Klodde voorspelt de golfhoogte bij IJmuiden Munitiestort 2 in drie lagen. 1) Modellen: golfhoogte van ECMWF en GFS, gecorrigeerd met hun eigen wind (0,98 keer de hoogte, plus 0,0012 m per knoop aanlandige wind, min 0,0094 m per knoop aflandige wind; gefit op 60 dagen metingen) en geschaald met de fout van de afgelopen zeven dagen, apart voor lage en hoge golven. 2) Getij: kleine factor op de hoogte (gemeten 0 tot 3,5 procent) en een punt erbij of eraf in de score voor push en laagwater. 3) Boeien: tot 3 uur na de laatste meting komt Klodde uit de metingen van Munitiestort 2, K14, J6 en L9 plus de wind, daarna steeds minder tot 0 bij 12 uur. Getest op 60 dagen: 6 tot 19 cm fout tot 9 uur vooruit bij golven onder 1,5 m.</li>
+      <li>Claude (mijn eigen voorspelling) voorspelt de golfhoogte bij IJmuiden Munitiestort 2 in drie lagen. 1) Modellen: golfhoogte van ECMWF en GFS, gecorrigeerd met hun eigen wind (0,98 keer de hoogte, plus 0,0012 m per knoop aanlandige wind, min 0,0094 m per knoop aflandige wind; gefit op 60 dagen metingen) en geschaald met de fout van de afgelopen zeven dagen, apart voor lage en hoge golven. 2) Getij: kleine factor op de hoogte (gemeten 0 tot 3,5 procent) en een punt erbij of eraf in de score voor push en laagwater. 3) Boeien: tot 3 uur na de laatste meting komt Claude uit de metingen van Munitiestort 2, K14, J6 en L9 plus de wind, daarna steeds minder tot 0 bij 12 uur. Getest op 60 dagen: 6 tot 19 cm fout tot 9 uur vooruit bij golven onder 1,5 m.</li>
       <li>Swellperiode en -richting voegen in de metingen weinig toe bovenop hoogte en wind, en de golfmodellen rekenen ze al mee. Korte golven (onder 6 s) en swell uit het noorden komen wel zwakker aan. Energie wordt gebruikt om bij gelijke score het beste moment te kiezen.</li>
       <li>De windrichting is waaruit de wind komt. De tabellen beginnen bij het uur van zonsopkomst en stoppen bij het uur van zonsondergang (zontijden van Open-Meteo). Een SUP ALERT komt alleen tussen zonsopkomst en zonsondergang.</li>
     </ul>
@@ -218,10 +222,10 @@ a { color: var(--accent); }
   <section class="card" aria-labelledby="h-read">
     <h2 id="h-read">Zo lees je de tabellen</h2>
     <ul class="plain">
-      <li>Per uur een score van 0 tot 10 voor Klodde (mijn voorspelling, zie Bronnen), ECMWF en GFS. De golfhoogte is de basis: 0,7 m geeft een 7, 0,8 m een 8, 0,9 m een 9 en vanaf 1 m een 10. Te veel wind (boven je grenzen) of een te korte periode verlaagt de score. Groen is 7 of hoger: goed. Geel is 4 tot 6, grijs lager.</li>
-      <li>De SUP ALERT bovenaan komt alleen bij een Klodde-score van 7 of hoger én een golf vanaf je alertgrens (standaard 0,8 m), overdag.</li>
-      <li>Daaronder de golfhoogte in meters met de periode in seconden, de golfenergie van Klodde (kW per meter golffront) en de wind per model.</li>
-      <li>Klodde-vakjes met een stippelrand komen (deels) uit de boeimetingen van de laatste uren.</li>
+      <li>Per uur een score van 0 tot 10 voor ECMWF, GFS en Claude (mijn eigen voorspelling, zie Bronnen). Achter de modelnaam staat "score". De golfhoogte is de basis: 0,7 m geeft een 7, 0,8 m een 8, 0,9 m een 9 en vanaf 1 m een 10. Te veel wind (boven je grenzen) of een te korte periode verlaagt de score. Groen is 7 of hoger: goed. Geel is 4 tot 6, grijs lager.</li>
+      <li>De SUP ALERT bovenaan komt alleen bij een Claude-score van 7 of hoger én een golf vanaf je alertgrens (standaard 0,8 m), overdag.</li>
+      <li>Daaronder de golfhoogte in meters met de periode in seconden, de golfenergie van Claude (kW per meter golffront) en de wind per model.</li>
+      <li>Claude-vakjes met een stippelrand komen (deels) uit de boeimetingen van de laatste uren.</li>
       <li>Windkleuren: blauw binnen je grens, oranje tot 5 kn erboven, rood verder erboven. De letters zijn waaruit de wind komt, de pijl waar hij naartoe waait.</li>
       <li>Getij: push (blauw) is de twee uur voor hoogwater en telt 1 punt extra. Afgaand tij is paars; de laatste twee uur voor laagwater tellen bij golven onder 1 m 1 punt minder.</li>
       <li>Met de knop Wind (kn) zie je in de scorerijen de windsnelheid in plaats van de score. Scroll de tabel zijwaarts voor alle uren.</li>
@@ -245,7 +249,8 @@ a { color: var(--accent); }
   var TF = { push: 1.00, pushhi: 1.02, rise: 1.0, ebb: 0.965, ebbhi: 1.00, low: 0.985, lowhi: 1.00 };
   // Boeivoorspelling MS2 over L uur: [1, MS2, K14, J6, L9 (m), aanlandig, aflandig, |langs| (kn, voorspeld uur), aanlandig, aflandig (kn, nu)].
   var NOWC = {"1":[-0.019,0.9318,0.0088,0.0898,-0.0624,0.0111,0.0078,0.0048,-0.0087,-0.0092],"2":[-0.0383,0.8272,0.0112,0.1641,-0.0777,0.0181,0.0109,0.0104,-0.0123,-0.0129],"3":[-0.0528,0.7206,-0.0012,0.232,-0.0703,0.0244,0.0132,0.0153,-0.015,-0.0154],"4":[-0.0606,0.6564,-0.0593,0.304,-0.0612,0.0296,0.0146,0.0193,-0.0168,-0.0164],"5":[-0.0628,0.6322,-0.1606,0.3808,-0.0506,0.0341,0.0156,0.0225,-0.0183,-0.0166],"6":[-0.06,0.6196,-0.2538,0.4382,-0.0368,0.038,0.0164,0.025,-0.0194,-0.0165],"7":[-0.0532,0.6064,-0.3126,0.458,-0.0177,0.041,0.0172,0.0271,-0.0195,-0.0159],"8":[-0.0449,0.5988,-0.3678,0.4695,0.0024,0.0441,0.0184,0.0289,-0.0197,-0.0157],"9":[-0.0333,0.5782,-0.3646,0.4495,0.0095,0.0464,0.0192,0.0305,-0.019,-0.0151]};
-  var MODELS = ["Klodde", "ECMWF", "GFS"];
+  var MODELS = ["ECMWF", "GFS", "Klodde"];
+  function mname(m) { return m === "Klodde" ? "Claude" : m; }
   var NAMES = ["N","NNO","NO","ONO","O","OZO","ZO","ZZO","Z","ZZW","ZW","WZW","W","WNW","NW","NNW"];
   var DAYN = ["zo", "ma", "di", "wo", "do", "vr", "za"], DAYL = ["Zondag", "Maandag", "Dinsdag", "Woensdag", "Donderdag", "Vrijdag", "Zaterdag"];
   var MON = ["januari","februari","maart","april","mei","juni","juli","augustus","september","oktober","november","december"];
@@ -452,6 +457,8 @@ a { color: var(--accent); }
     var today = local(nowU()).day, out = [], seen = {};
     var us = Object.keys(D.KL).map(Number).sort(function (a, b) { return a - b; });
     us.forEach(function (u) { var l = local(u); if (l.day >= today && !seen[l.day]) { seen[l.day] = 1; out.push(l.day); } });
+    // Een dag verdwijnt na zonsondergang.
+    out = out.filter(function (day) { var s = D.sun && D.sun[day]; return !s || nowU() < s.set; });
     return out.slice(0, 5);
   }
   function hoursOf(day) {
@@ -514,21 +521,18 @@ a { color: var(--accent); }
     });
     h += "</tr>";
     MODELS.forEach(function (m) {
-      h += "<tr><th class='rn' scope='row'>" + m + "</th>";
+      h += "<tr><th class='rn' scope='row'>" + mname(m) + "<small>score</small></th>";
       us.forEach(function (u) {
         var c = an.cells[m + "|" + u];
         if (!c) { h += td("na", "·", u); return; }
-        var k = D.KL[u], t = m + " " + pad(local(u).h) + ": golf " + nf(c.v) + " m" + (c.p ? " (" + Math.round(c.p) + " s)" : "") + ", wind " + Math.round(c.w.kn) + " kn uit " + compass(c.w.deg) + " (" + kindW(kind(c.w.deg)) + ")";
+        var k = D.KL[u], t = mname(m) + " " + pad(local(u).h) + ": golf " + nf(c.v) + " m" + (c.p ? " (" + Math.round(c.p) + " s)" : "") + ", wind " + Math.round(c.w.kn) + " kn uit " + compass(c.w.deg) + " (" + kindW(kind(c.w.deg)) + ")";
         if (m === "Klodde" && k && k.nc) t += ", " + Math.round(k.nc.w * 100) + "% uit de boeien (" + nf(k.nc.h) + " m)";
         h += td(cls(c.s), S.view === "score" ? c.s : Math.round(c.w.kn), u, t);
       });
       h += "</tr>";
     });
-    h += "<tr class='sepr'><th class='rn' scope='row'>Goed (van 3)</th>";
-    us.forEach(function (u) { h += td("cons", an.good[u] + "/" + an.avail[u], u); });
-    h += "</tr>";
     MODELS.forEach(function (m, i) {
-      h += "<tr" + (i === 0 ? " class='sepr'" : "") + "><th class='rn' scope='row'>" + (m === "Klodde" ? "Golf Klodde" : m === "ECMWF" ? "ECMWF WAM" : "GFS Wave") + "<small>m · s</small></th>";
+      h += "<tr" + (i === 0 ? " class='sepr'" : "") + "><th class='rn' scope='row'>" + (m === "Klodde" ? "Golf Claude" : m === "ECMWF" ? "ECMWF WAM" : "GFS Wave") + "<small>m · s</small></th>";
       us.forEach(function (u) {
         var c = cell(m, u);
         if (!c) { h += td("na", "·", u); return; }
@@ -537,7 +541,7 @@ a { color: var(--accent); }
       });
       h += "</tr>";
     });
-    h += "<tr><th class='rn' scope='row'>Energie Klodde<small>kW/m</small></th>";
+    h += "<tr><th class='rn' scope='row'>Energie Claude<small>kW/m</small></th>";
     us.forEach(function (u) { var k = D.KL[u]; h += k && k.e !== undefined ? td("en", nf(k.e), u) : td("na", "·", u); });
     h += "</tr>";
     ["ECMWF", "GFS"].forEach(function (m, i) {
@@ -594,14 +598,16 @@ a { color: var(--accent); }
       runs.sort(function (a, b) { return (b.sum - a.sum) || (b.en - a.en); });
       var r = runs[0], more = runs.slice(1, 3).sort(function (a, b) { return a.us[0] - b.us[0]; });
       el.className = "alert";
+      el.setAttribute("data-day", r.day); el.setAttribute("data-u", r.us[0]);
       el.innerHTML = "<div class='alert-tag'>SUP ALERT!</div><p class='alert-when'>" + rel(r.day) + dayLong(r.day).replace(/^./, function (c) { return rel(r.day) ? c.toLowerCase() : c; }) + "<small>" + span(r.us) + "</small></p>" + tiles(r.day, r.us) +
-        (more.length ? "<p class='alert-more'>Ook goed: " + more.map(function (m) { return dayShort(m.day) + " " + span(m.us); }).join(" · ") + "</p>" : "");
+        "<p class='alert-more'>" + (more.length ? "Ook goed: " + more.map(function (m) { return dayShort(m.day) + " " + span(m.us); }).join(" · ") + "<br>" : "") + "<span class='alert-tap'>Tik voor de tabel van deze dag ›</span></p>";
     } else if (all.length) {
       all.sort(function (a, b) { return b.c.s - a.c.s; });
       var b0 = all[0];
       el.className = "alert none";
+      el.setAttribute("data-day", b0.day); el.setAttribute("data-u", b0.u);
       el.innerHTML = "<div class='alert-tag'>Geen SUP alert</div><p class='alert-when'>Geen goed uur overdag in de komende dagen<small>Dichtstbij: " + dayShort(b0.day) + " " + pad(local(b0.u).h) + ", score " + b0.c.s + "</small></p>" + tiles(b0.day, [b0.u]);
-    } else { el.className = "alert none"; el.innerHTML = "<div class='alert-tag'>Geen SUP alert</div><p class='alert-when'>Geen voorspelling voor de komende uren.</p>"; }
+    } else { el.className = "alert none"; el.removeAttribute("data-day"); el.innerHTML = "<div class='alert-tag'>Geen SUP alert</div><p class='alert-when'>Geen voorspelling voor de komende uren.</p>"; }
   }
   // Laat de tabel beginnen bij het beste uur van de dag, of anders bij 08:00.
   function scrollToTarget(det) {
@@ -618,7 +624,7 @@ a { color: var(--accent); }
       var fut = an.us.filter(function (u) { return !isPast(u); });
       var maj = fut.filter(function (u) { return an.avail[u] >= 2 && an.good[u] >= 2; }), all3 = fut.filter(function (u) { return an.avail[u] >= 2 && an.good[u] === an.avail[u]; });
       if (S.first && S.open[day] === undefined) S.open[day] = true;
-      var ranges = MODELS.map(function (m) { var r = range(an, m); return r ? m + " " + r : null; }).filter(Boolean).join(" · ");
+      var ranges = MODELS.map(function (m) { var r = range(an, m); return r ? mname(m) + " " + r : null; }).filter(Boolean).join(" · ");
       // Beste Klodde-score van de dag (komende uren, overdag) en het uur waar de tabel naartoe springt.
       var cand = fut.filter(function (u) { return !darkU(u) && an.cells["Klodde|" + u]; }), bs = -1, bu = null;
       cand.forEach(function (u) { var sc = an.cells["Klodde|" + u].s; if (sc > bs) { bs = sc; bu = u; } });
@@ -689,7 +695,7 @@ a { color: var(--accent); }
     ["ECMWF", "GFS"].forEach(function (m) { var x = e[m]; if (!x[2]) return; t += "<tr><td>" + m + "</td><td>" + x[2] + "</td><td>" + (x[1] >= 0 ? "+" : "") + Math.round(100 * x[1] / x[2]) + " cm</td><td>" + Math.round(100 * x[0] / x[2]) + " cm</td></tr>"; });
     $("cal-table").innerHTML = t + "</tbody>";
     function f(k) { return c["raw" + k] === null ? "nog geen uren" : "factor " + nf(c[k], 2) + " (" + c["n" + k] + " uren, gemeten verhouding " + nf(c["raw" + k], 2) + ")"; }
-    $("cal-note").textContent = "Positief verschil: de meting was hoger dan het model. Klodde schaalt de modellen hiermee: bij golven onder 1 m " + f("lo") + ", vanaf 1 m " + f("hi") + ". Met weinig uren trek ik de factor richting 1. De modelwaarden van het verleden zijn korte-termijnvoorspellingen; verder vooruit is de fout groter.";
+    $("cal-note").textContent = "Positief verschil: de meting was hoger dan het model. Claude schaalt de modellen hiermee: bij golven onder 1 m " + f("lo") + ", vanaf 1 m " + f("hi") + ". Met weinig uren trek ik de factor richting 1. De modelwaarden van het verleden zijn korte-termijnvoorspellingen; verder vooruit is de fout groter.";
   }
   function renderAll() { renderStatus(); render(); renderMeas(); renderWind(); renderCal(); }
 
@@ -700,6 +706,16 @@ a { color: var(--accent); }
   $("v-wind").addEventListener("click", function () { setView("wind"); });
   $("days").addEventListener("toggle", function (e) { var d = e.target.getAttribute && e.target.getAttribute("data-day"); if (d) { S.open[d] = e.target.open; if (e.target.open) scrollToTarget(e.target); } }, true);
   $("refresh").addEventListener("click", load);
+  // Tik op de banner: naar de tabel van die dag, open, op het uur van de alert.
+  function goAlert() {
+    var a = $("alert"), day = a.getAttribute("data-day"), u = a.getAttribute("data-u"); if (!day) return;
+    var det = $("days").querySelector("details[data-day='" + day + "']"); if (!det) return;
+    det.open = true; S.open[day] = true; if (u) det.setAttribute("data-target", u);
+    det.scrollIntoView({ behavior: "smooth", block: "start" });
+    setTimeout(function () { scrollToTarget(det); var th = det.querySelector("thead th[data-u='" + u + "']"); if (th) { th.classList.add("flash"); setTimeout(function () { th.classList.remove("flash"); }, 1600); } }, 60);
+  }
+  $("alert").addEventListener("click", goAlert);
+  $("alert").addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); goAlert(); } });
   document.addEventListener("visibilitychange", function () { if (document.visibilityState === "visible" && (!D || Date.now() - D.fetched > 30 * 60e3)) load(); });
   if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js", { updateViaCache: "none" }).then(function (reg) {
     document.addEventListener("visibilitychange", function () { if (document.visibilityState === "visible") reg.update().catch(function () {}); });

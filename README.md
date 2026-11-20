@@ -1,6 +1,6 @@
 # Zandvoort Golfsup
 
-Web-app met de golfsup-voorspelling voor Zandvoort. Voorspelling van Open-Meteo (ECMWF en GFS), metingen en getij van Rijkswaterstaat, en Klodde: een eigen voorspelling die modellen, wind, getij en boeimetingen combineert.
+Web-app met de golfsup-voorspelling voor Zandvoort. Voorspelling van Open-Meteo (ECMWF en GFS), metingen en getij van Rijkswaterstaat, en Claude: een eigen voorspelling die modellen, wind, getij en boeimetingen combineert.
 
 ## Bestanden
 

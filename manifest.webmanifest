@@ -1,7 +1,7 @@
 {
   "name": "Zandvoort Golfsup",
   "short_name": "Golfsup",
-  "description": "Golfsup-voorspelling voor Zandvoort: Open-Meteo, Rijkswaterstaat en Klodde.",
+  "description": "Golfsup-voorspelling voor Zandvoort: Open-Meteo, Rijkswaterstaat en Claude.",
   "lang": "nl",
   "start_url": "./",
   "scope": "./",
