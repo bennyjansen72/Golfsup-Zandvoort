@@ -12,6 +12,7 @@ Laten zien wanneer de golven bij Zandvoort goed zijn om te golfsuppen, met een S
 - De gebruiker wil volledige controle over de app houden en altijd de nieuwste voorspelling zien (de oude wens "elke ochtend" is vervangen).
 - Verversen: de app haalt de voorspelling van Open-Meteo zelf op bij het openen, elke 10 minuten zolang hij open staat, en opnieuw bij terugkomen na meer dan 5 minuten. Op de achtergrond doet een dichte web-app niets. ECMWF en GFS worden ongeveer vier keer per dag nieuw berekend, dus vaker ophalen geeft meestal dezelfde modelwaarden. De boeimetingen komen elk kwartier binnen (GitHub Actions) en sturen de Claude-voorspelling voor de komende uren bij.
 - Bovenaan staan links naar de live webcams, in deze volgorde: Reddingsbrigade Bloemendaal, Surfweer.nl Zandvoort, Surfweer.nl Alohacam Wijk aan Zee.
+- Op verzoek van de gebruiker niet (meer) in de app: de tabel "Wind gemeten en voorspeld", "Hoe goed klopt het?" en "Bronnen en werkwijze" (21 nov). De kalibratie draait nog wel op de achtergrond voor Claude.
 - Weer: "Nu gemeten" heeft een tegel Weer (icoon, temperatuur, gevoelstemperatuur) uit de actuele modelwaarde van Open-Meteo voor Zandvoort (`current`, geen meting). In de scoreregels van ECMWF, GFS en Claude staan per uur een weericoon en de temperatuur (Open-Meteo `temperature_2m`, `weather_code`, `is_day`). Claude: gemiddelde temperatuur van beide modellen; als het weer verschilt het nattere/slechtere weer (`wxRank`).
 
 ## Grenzen van de gebruiker (standaardwaarden in `index.html`, aanpasbaar in de app)
