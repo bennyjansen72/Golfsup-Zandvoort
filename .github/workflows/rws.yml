@@ -26,7 +26,7 @@ jobs:
       - name: Vorige metingen ophalen
         run: |
           if git fetch --depth=1 origin data 2>/dev/null; then
-            git show origin/data:rws.json > /tmp/rws.json
+            git show FETCH_HEAD:rws.json > /tmp/rws.json
           elif [ -s data/rws.json ]; then
             cp data/rws.json /tmp/rws.json   # eerste keer: oude kopie uit main
           fi
