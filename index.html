@@ -101,6 +101,12 @@ td.c.wv.nc { border-style: dashed; border-width: 2px; }
 td.c.en { background: transparent; color: var(--muted); font-size: 12px; }
 td.c.push { background: var(--push-bg); color: var(--push-fg); font-size: 11px; }
 td.c.ebb { background: var(--ebb-bg); color: var(--ebb-fg); font-size: 11px; }
+td.c.cur { background: transparent; font-size: 11px; font-weight: 600; color: var(--muted); padding: 2px 0 1px; }
+td.c.cur svg.curv { display: block; width: calc(100% + 2px); margin-left: -1px; height: 28px; overflow: visible; }
+td.c.cur svg.curv .z { stroke: var(--grid); stroke-width: 1; vector-effect: non-scaling-stroke; }
+td.c.cur svg.curv .fn { fill: var(--push-fg); opacity: 0.28; }
+td.c.cur svg.curv .fs { fill: var(--ebb-fg); opacity: 0.28; }
+td.c.cur svg.curv .ln { fill: none; stroke: var(--fg); stroke-width: 1.8; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
 td.c.rise { background: transparent; color: var(--muted); font-size: 11px; font-weight: 400; }
 td.c.sun { background: transparent; color: var(--fg); font-size: 11px; padding-top: 2px; }
 svg.sunic { display: inline-block; vertical-align: middle; }
@@ -293,6 +299,8 @@ a { color: var(--accent); }
     gf: OM_WAVE + "&models=ncep_gfswave025&hourly=wave_height,swell_wave_period,swell_wave_direction",
     wind: "https://api.open-meteo.com/v1/forecast?latitude=52.38&longitude=4.48&cell_selection=sea&timeformat=unixtime&timezone=Europe%2FAmsterdam&past_days=1&forecast_days=6&wind_speed_unit=kn&hourly=wind_speed_10m,wind_direction_10m,wind_gusts_10m,temperature_2m,weather_code,is_day&models=ecmwf_ifs025,gfs_seamless&daily=sunrise,sunset",
     // Weer nu bij Zandvoort (Open-Meteo, beste model voor NL; dit is een modelwaarde, geen meting).
+    // Getijdestroming (en stroming door wind en golven) bij Zandvoort: Météo-France SMOC via Open-Meteo, richting = waarheen.
+    cur: "https://marine-api.open-meteo.com/v1/marine?latitude=52.37&longitude=4.48&cell_selection=sea&timeformat=unixtime&timezone=Europe%2FAmsterdam&past_days=1&forecast_days=6&wind_speed_unit=kn&hourly=ocean_current_velocity,ocean_current_direction",
     now: "https://api.open-meteo.com/v1/forecast?latitude=52.37&longitude=4.53&timeformat=unixtime&timezone=Europe%2FAmsterdam&current=temperature_2m,apparent_temperature,weather_code,is_day,cloud_cover,precipitation",
     // Metingen staan op de branch "data" (zie .github/workflows/rws.yml); als dat niet lukt, de oude kopie naast de app.
     rws: "https://raw.githubusercontent.com/bennyjansen72/Golfsup-Zandvoort/data/rws.json",
@@ -402,7 +410,7 @@ a { color: var(--accent); }
   function load() {
     $("refresh").disabled = true;
     $("status").textContent = "Gegevens ophalen…";
-    var jobs = ["ec", "gf", "wind", "now", "rws"].map(function (k) {
+    var jobs = ["ec", "gf", "wind", "now", "cur", "rws"].map(function (k) {
       var p = k === "rws"
         ? getJSON(URLS.rws + "?t=" + Date.now(), true).catch(function () { return getJSON(URLS.rwsOld + "?t=" + Date.now(), true); })
         : getJSON(URLS[k]);
@@ -410,7 +418,7 @@ a { color: var(--accent); }
     });
     return Promise.all(jobs).then(function (res) {
       var R = {}, errs = [];
-      res.forEach(function (r) { R[r[0]] = r[1]; if (r[2]) errs.push(r[0] === "rws" ? "metingen van Rijkswaterstaat" : r[0] === "now" ? "weer nu (Open-Meteo)" : "Open-Meteo (" + r[0] + ")"); });
+      res.forEach(function (r) { R[r[0]] = r[1]; if (r[2]) errs.push(r[0] === "rws" ? "metingen van Rijkswaterstaat" : r[0] === "now" ? "weer nu (Open-Meteo)" : r[0] === "cur" ? "getijdestroming (Open-Meteo)" : "Open-Meteo (" + r[0] + ")"); });
       $("refresh").disabled = false;
       if (!R.ec && !R.gf) { showErr("De voorspelling kon niet worden opgehaald. Controleer je internetverbinding en probeer Ververs."); return; }
       D = build(R);
@@ -444,6 +452,7 @@ a { color: var(--accent); }
       M.t = R.wind ? omVals(R.wind, "temperature_2m_" + x[1]) : {}; M.wc = R.wind ? omVals(R.wind, "weather_code_" + x[1]) : {}; M.day = R.wind ? omVals(R.wind, "is_day_" + x[1]) : {};
     });
     d.now = R.now && R.now.current ? R.now.current : null;
+    d.cur = { v: R.cur ? omVals(R.cur, "ocean_current_velocity") : {}, dir: R.cur ? omVals(R.cur, "ocean_current_direction") : {} };
     // Getij: hoog- en laagwater IJmuiden uit het astronomische getij van Rijkswaterstaat (via data/rws.json).
     if (R.rws && R.rws.tides) d.tides = R.rws.tides.map(function (e) { return { u: e[0] / 3600, k: e[1], v: e[2] / 100 }; });
     // Rijkswaterstaat
@@ -621,6 +630,16 @@ a { color: var(--accent); }
       h += ph ? td(ph === "low" ? "ebb" : ph, lab, u) : td("na", "·", u);
     });
     h += "</tr>";
+    if (Object.keys(D.cur.v).length) {
+      h += "<tr><th class='rn' scope='row'>Stroming<small>kn · boven = noord (vloed)</small></th>";
+      us.forEach(function (u) {
+        var v = D.cur.v[u], dr = D.cur.dir[u];
+        if (v === undefined || dr === undefined) { h += td("na", "·", u); return; }
+        var al = curAlong(u), t = "Stroming " + pad(local(u).h) + ": " + nf(v) + " kn naar " + compass(dr) + " " + Math.round(dr) + "°" + (Math.abs(al) < 0.15 ? " (kentering)" : al > 0 ? " (vloed, noordwaarts)" : " (eb, zuidwaarts)");
+        h += td("cur", curSvg(u) + "<small class='per'><span style='display:inline-block;transform:rotate(" + Math.round(dr) + "deg)'>↑</span> " + nf(v) + "</small>", u, t);
+      });
+      h += "</tr>";
+    }
     MODELS.forEach(function (m) {
       h += "<tr><th class='rn' scope='row'>" + mname(m) + "<small>score · weer</small></th>";
       us.forEach(function (u) {
@@ -660,6 +679,31 @@ a { color: var(--accent); }
       h += "</tr>";
     });
     return h + "</tbody>";
+  }
+  // Stroming langs de kust (kust loopt ongeveer naar 20°): positief = noordwaarts (vloed), negatief = zuidwaarts (eb).
+  var COAST = 20, CMAX = 1.4;
+  function curAlong(u) { var v = D.cur.v[u], dr = D.cur.dir[u]; return v === undefined || dr === undefined ? undefined : v * Math.cos((dr - COAST) * Math.PI / 180); }
+  // Vloeiende doorlopende lijn (Catmull-Rom) door de uurwaarden; elk vakje tekent zijn eigen stuk van u-0,5 tot u+0,5.
+  function curAt(t) {
+    var i = Math.floor(t), f = t - i, p = [i - 1, i, i + 1, i + 2].map(function (k) { return curAlong(k); });
+    if (p[1] === undefined) return p[2];
+    if (p[2] === undefined) return p[1];
+    if (p[0] === undefined) p[0] = p[1];
+    if (p[3] === undefined) p[3] = p[2];
+    return 0.5 * (2 * p[1] + (-p[0] + p[2]) * f + (2 * p[0] - 5 * p[1] + 4 * p[2] - p[3]) * f * f + (-p[0] + 3 * p[1] - 3 * p[2] + p[3]) * f * f * f);
+  }
+  function curSvg(u) {
+    var H = 14, pts = [];
+    for (var k = 0; k <= 12; k++) { var v = curAt(u - 0.5 + k / 12); pts.push([k * 100 / 12, Math.max(-CMAX, Math.min(CMAX, v)) / CMAX * H]); }
+    // Nuldoorgangen invoegen zodat boven (noord) en onder (zuid) apart gekleurd kunnen worden.
+    var q = [pts[0]];
+    for (var k = 1; k < pts.length; k++) { var a = pts[k - 1], b = pts[k]; if (a[1] * b[1] < 0) q.push([a[0] + (b[0] - a[0]) * a[1] / (a[1] - b[1]), 0]); q.push(b); }
+    function y(v) { return (H - v).toFixed(2); }
+    function area(sign) { return "M0," + H + " " + q.map(function (p) { return "L" + p[0].toFixed(2) + "," + y(sign > 0 ? Math.max(0, p[1]) : Math.min(0, p[1])); }).join(" ") + " L100," + H + "Z"; }
+    return "<svg class='curv' viewBox='0 0 100 " + (2 * H) + "' preserveAspectRatio='none' aria-hidden='true'>" +
+      "<line x1='0' x2='100' y1='" + H + "' y2='" + H + "' class='z'/>" +
+      "<path d='" + area(1) + "' class='fn'/><path d='" + area(-1) + "' class='fs'/>" +
+      "<polyline points='" + q.map(function (p) { return p[0].toFixed(2) + "," + y(p[1]); }).join(" ") + "' class='ln'/></svg>";
   }
   function sunIcon(up) {
     // Halve zon boven de horizon met een driehoekje: omhoog = opkomst, omlaag = ondergang.

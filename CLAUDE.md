@@ -30,6 +30,7 @@ Laten zien wanneer de golven bij Zandvoort goed zijn om te golfsuppen, met een S
 - De push (2 uur voor hoogwater) geeft vaak betere golven: blauw in de tabel, +1 punt.
 - Afgaand tij paars. De laatste 2 uur voor laagwater bij golven onder 1 m: -1 punt.
 - Getij van Rijkswaterstaat voor IJmuiden; Zandvoort ligt ongeveer 10 minuten eerder.
+- Rij "Stroming" in de dagtabellen (onder Getij): getijdestroom bij Zandvoort uit Open-Meteo `ocean_current_velocity`/`ocean_current_direction` (Météo-France SMOC, ~8 km, inclusief getij, wind en golven; richting = waarheen). Doorlopende curve van de stroom langs de kust (kust ≈ 20°): boven de lijn noordwaarts (vloed), onder zuidwaarts (eb); per uur een pijl en de snelheid in kn (`curAlong`, `curAt`, `curSvg`).
 
 ## Bronnen
 
@@ -56,4 +57,4 @@ In de code heet het model nog `Klodde` (oude naam); op het scherm staat "Claude"
 ## Geschiedenis
 
 - 20 nov 2026: app gebouwd als eigen web-app op GitHub; Windy losgelaten, Open-Meteo en Rijkswaterstaat als bronnen; alertgrens naar 0,8 m.
-- 21 nov 2026: het oorspronkelijke bouwgesprek was per ongeluk verwijderd; de app zelf stond nog volledig op GitHub. Dit bestand gemaakt. Service worker bewaart rws.json niet meer bij elke verversing opnieuw, windtabel-fix, `__pycache__` weg, metingen naar de branch `data` (één commit) in plaats van elk kwartier een commit op main. Webcams Zandvoort en Wijk aan Zee toegevoegd; temperatuur en weericonen toegevoegd. Piekperiode en richting van K14, L9 en Eierlandse Gat erbij; aantal golven weg uit de opbouw van de golven.
+- 21 nov 2026: het oorspronkelijke bouwgesprek was per ongeluk verwijderd; de app zelf stond nog volledig op GitHub. Dit bestand gemaakt. Service worker bewaart rws.json niet meer bij elke verversing opnieuw, windtabel-fix, `__pycache__` weg, metingen naar de branch `data` (één commit) in plaats van elk kwartier een commit op main. Webcams Zandvoort en Wijk aan Zee toegevoegd; temperatuur en weericonen toegevoegd. Piekperiode en richting van K14, L9 en Eierlandse Gat erbij; aantal golven weg uit de opbouw van de golven. Rij Stroming (getijdestroom) toegevoegd.
