@@ -1,5 +1,5 @@
 // Service worker: app-bestanden bewaren voor offline openen; gegevens altijd eerst van het netwerk.
-const CACHE = "golfsup-v26";
+const CACHE = "golfsup-v27";
 const SHELL = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./apple-touch-icon.png", "./favicon-32.png", "./bg.jpg", "./alert2.jpg"];
 
 self.addEventListener("install", (e) => {

@@ -28,6 +28,8 @@ SERIES = [
     ("ep", "europlatform", "Hm0", "cm", "OW"),
     ("ms2_tm10", "ijmuiden.munitiestort.2", "Tm-10", "s", "OW"),
     ("ms2_tm02", "ijmuiden.munitiestort.2", "Tm02", "s", "OW"),
+    ("ms2_hmax", "ijmuiden.munitiestort.2", "Hmax", "cm", "OW"),
+    ("ms2_tmax", "ijmuiden.munitiestort.2", "Tmax", "s", "OW"),
     ("hkw_tm10", "hollandsekust.west.alpha", "Tm-10", "s", "OW"),
     ("hkw_tm02", "hollandsekust.west.alpha", "Tm02", "s", "OW"),
     ("k14_tm10", "k14", "Tm-10", "s", "OW"),
@@ -209,6 +211,23 @@ def main(path):
         else:
             val = round(sum(vs) / len(vs) * 1.94384, 1)
         return int(tmax.timestamp()), val
+    # Laatste 10-minutenmeting van de golven bij Munitiestort 2.
+    def last_plain(key):
+        pts = raw.get(key)
+        if not pts:
+            return None
+        tmax = max(t for t, v in pts)
+        vs = [v for t, v in pts if t == tmax]
+        return int(tmax.timestamp()), sum(vs) / len(vs)
+    wv = {k: last_plain("ms2" + k) for k in ("", "_hmax", "_tm10", "_tm02", "_tmax")}
+    if wv[""] and now.timestamp() - wv[""][0] < 3 * 3600:
+        t0 = wv[""][0]
+        def at(k, nd):
+            x = wv[k]
+            return round(x[1], nd) if x and abs(x[0] - t0) <= 1800 else None
+        out["wave_now"] = {"t": t0, "hm0": at("", 0), "hmax": at("_hmax", 0), "tm10": at("_tm10", 1), "tm02": at("_tm02", 1), "tmax": at("_tmax", 1)}
+    else:
+        out["wave_now"] = None
     out["wind_now"] = None
     for name, ws, wd in (("IJmuiden havenhoofd", "ijm_ws", "ijm_wd"), ("IJmuiden buitenhaven", "ijb_ws", "ijb_wd"), ("Hollandse Kust Noord", "hkn_ws", "hkn_wd")):
         a, b = latest(ws), latest(wd, True)
