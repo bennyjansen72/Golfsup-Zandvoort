@@ -663,7 +663,6 @@ a { color: var(--accent); }
   function render() {
     if (!D) return;
     var L = limits(), days = daysAhead(), ans = {}, sum = "", dh = "";
-    var anyGood = days.some(function (day) { var an = analyse(day, L); return an.us.some(function (u) { return !isPast(u) && an.avail[u] >= 2 && an.good[u] >= 2; }); });
     days.forEach(function (day) {
       var an = ans[day] = analyse(day, L);
       var fut = an.us.filter(function (u) { return !isPast(u); });
@@ -724,7 +723,7 @@ a { color: var(--accent); }
   }
   function renderWind() {
     var L = limits();
-    if (!D.meas.hkn_ws) { $("wind-table").innerHTML = ""; $("wind-sub").textContent = "Geen windmetingen beschikbaar."; return; }
+    if (!D.meas.hkn_ws || D.end === null || D.end === undefined) { $("wind-table").innerHTML = ""; $("wind-sub").textContent = "Geen windmetingen beschikbaar."; return; }
     var us = []; for (var u = D.end - 7; u <= D.end; u++) us.push(u);
     var t = "<thead><tr><th></th>" + us.map(function (u) { var h = local(u).h; return "<th>" + (h < 10 ? "0" : "") + h + "</th>"; }).join("") + "</tr></thead><tbody>";
     function c(kn, deg) { return kn === undefined || deg === undefined ? "<td>·</td>" : "<td class='c " + wcls(kn, deg, L) + "'>" + Math.round(kn) + "<small class='per'>" + compass(deg) + "</small></td>"; }

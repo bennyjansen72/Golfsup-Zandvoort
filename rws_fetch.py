@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Haalt de laatste 8 dagen metingen van Rijkswaterstaat op en schrijft ze als uurgemiddelden naar een JSON-bestand.
 
-Draait elk uur via GitHub Actions (.github/workflows/rws.yml). De app leest data/rws.json,
+Draait elk kwartier via GitHub Actions (.github/workflows/rws.yml). De app leest data/rws.json,
 omdat de Rijkswaterstaat-API geen verzoeken van andere websites toestaat (geen CORS).
 Gebruikt alleen de standaardbibliotheek van Python.
 """
