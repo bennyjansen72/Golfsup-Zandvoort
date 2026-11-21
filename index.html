@@ -133,12 +133,15 @@ header.top .sub { font-size: 12px; color: rgba(255, 255, 255, 0.88); text-shadow
 .alert-stats span { display: block; font-size: clamp(14px, 4.4vw, 21px); font-weight: 700; line-height: 1.2; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .alert-stats em { display: block; font-style: normal; font-size: 11px; opacity: 0.85; line-height: 1.25; }
 .alert[data-day] { cursor: pointer; }
-.alert-stats div.now { border-color: rgba(255, 226, 122, 0.65); background: rgba(8, 30, 44, 0.55); }
-.alert-stats div.now b { color: #FFE27A; opacity: 1; }
 .alert-tap { display: inline-block; margin-top: 6px; font-weight: 600; opacity: 0.95; border-bottom: 1px solid rgba(255, 255, 255, 0.5); }
 details { scroll-margin-top: 12px; }
 thead th.flash { color: #FFE27A; background: rgba(14, 107, 140, 0.85); border-radius: 6px; transition: background 0.3s; }
-.alert-more { margin: auto 0 0; padding-top: 12px; font-size: 13.5px; opacity: 0.9; }
+.alert-foot { margin-top: auto; padding-top: 12px; }
+.alert-now { display: inline-block; max-width: 210px; background: rgba(8, 30, 44, 0.55); border: 1px solid rgba(255, 226, 122, 0.65); border-radius: 10px; padding: 7px 9px; }
+.alert-now b { display: block; font-size: 9.5px; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 600; color: #FFE27A; }
+.alert-now span { display: block; font-size: clamp(16px, 4.6vw, 21px); font-weight: 700; line-height: 1.2; white-space: nowrap; }
+.alert-now em { display: block; font-style: normal; font-size: 11px; opacity: 0.85; line-height: 1.25; }
+.alert-more { margin: 8px 0 0; font-size: 13.5px; opacity: 0.9; }
 .best { font-size: 16px; margin: 0; padding: 12px 14px; border-radius: 12px; background: var(--good-bg); color: var(--good-fg); font-weight: 600; }
 .best.none { background: var(--mid-bg); color: var(--mid-fg); }
 .best small { display: block; font-weight: 400; font-size: 13px; margin-top: 2px; }
@@ -598,17 +601,18 @@ a { color: var(--accent); }
     });
     var el = $("alert");
     function rg(a, d, unit, step, sep) { var f = function (x) { return d === 0 ? String(Math.round(x)) : nf(x, d); }, lo = f(Math.min.apply(null, a)), hi = f(Math.max.apply(null, a)); return lo + (hi !== lo ? (sep || "–") + hi : "") + unit; }
+    // Actuele meting: golf en periode Munitiestort 2, wind Hollandse Kust Noord. Altijd linksonder in de banner.
+    function nowTile() {
+      var mh = lastMeas(D, "ms2", 3), mt = lastMeas(D, "ms2_tm10", 3) || lastMeas(D, "ms2_tm02", 3), ws = lastMeas(D, "hkn_ws", 3), wd = lastMeas(D, "hkn_wd", 3);
+      if (!mh) return "";
+      return "<div class='alert-now'><b>Nu gemeten · " + hm(mh.u + 1) + "</b><span>" + nf(mh.v / 100) + " m" + (mt ? " · " + Math.round(mt.v) + " s" : "") + "</span><em>" + (ws && wd ? "wind " + Math.round(ws.v) + " kn " + compass(wd.v) + " " + kindW(kind(wd.v)) + "<br>" : "") + "boei IJmuiden</em></div>";
+    }
     function tiles(day, us) {
       var cs = us.map(function (u) { return ans[day].cells["Klodde|" + u]; }), v = cs.map(function (c) { return c.v; }), kn = cs.map(function (c) { return Math.round(c.w.kn); });
       var ps = cs.map(function (c) { return c.p; }).filter(Boolean), es = us.map(function (u) { return D.KL[u].e; }).filter(function (x) { return x !== undefined; });
       var pu = us.filter(function (u) { return phase(D, u) === "push"; }), k = kind(cs[0].w.deg);
       var t = [["Golf", rg(v, 1, " m", 0.05), ps.length ? "periode " + rg(ps, 0, " s", 1) : ""],
         ["Wind", rg(kn, 0, " kn", 1), compass(cs[0].w.deg) + " " + kindW(k)]];
-      // Altijd ook de actuele meting (golf en periode Munitiestort 2, wind Hollandse Kust Noord).
-      {
-        var mh = lastMeas(D, "ms2", 3), mt = lastMeas(D, "ms2_tm10", 3) || lastMeas(D, "ms2_tm02", 3), ws = lastMeas(D, "hkn_ws", 3), wd = lastMeas(D, "hkn_wd", 3);
-        if (mh) t.push(["Nu gemeten · " + hm(mh.u + 1), nf(mh.v / 100) + " m" + (mt ? " · " + Math.round(mt.v) + " s" : ""), (ws && wd ? "wind " + Math.round(ws.v) + " kn " + compass(wd.v) + " " + kindW(kind(wd.v)) : "") + "<br>boei IJmuiden", "now"]);
-      }
       return "<div class='alert-stats'>" + t.map(function (x) { return "<div" + (x[3] ? " class='" + x[3] + "'" : "") + "><b>" + x[0] + "</b><span>" + x[1] + "</span><em>" + x[2] + "</em></div>"; }).join("") + "</div>";
     }
     function rel(day) { var today = local(nowU()).day, tm = local(nowU() + 24).day; return day === today ? "Vandaag, " : day === tm ? "Morgen, " : ""; }
@@ -619,13 +623,13 @@ a { color: var(--accent); }
       el.className = "alert";
       el.setAttribute("data-day", r.day); el.setAttribute("data-u", r.us[0]);
       el.innerHTML = "<div class='alert-tag'>SUP ALERT!</div><p class='alert-when'>" + rel(r.day) + dayLong(r.day).replace(/^./, function (c) { return rel(r.day) ? c.toLowerCase() : c; }) + "<small>" + span(r.us) + "</small></p>" + tiles(r.day, r.us) +
-        "<p class='alert-more'>" + (more.length ? "Ook goed: " + more.map(function (m) { return dayShort(m.day) + " " + span(m.us); }).join(" · ") + "<br>" : "") + "<span class='alert-tap'>Tik voor de tabel van deze dag ›</span></p>";
+        "<div class='alert-foot'>" + nowTile() + "<p class='alert-more'>" + (more.length ? "Ook goed: " + more.map(function (m) { return dayShort(m.day) + " " + span(m.us); }).join(" · ") + "<br>" : "") + "<span class='alert-tap'>Tik voor de tabel van deze dag ›</span></p></div>";
     } else if (all.length) {
       all.sort(function (a, b) { return b.c.s - a.c.s; });
       var b0 = all[0];
       el.className = "alert none";
       el.setAttribute("data-day", b0.day); el.setAttribute("data-u", b0.u);
-      el.innerHTML = "<div class='alert-tag'>Geen SUP alert</div><p class='alert-when'>Geen goed uur overdag in de komende dagen<small>Dichtstbij: " + dayShort(b0.day) + " " + pad(local(b0.u).h) + ", score " + b0.c.s + "</small></p>" + tiles(b0.day, [b0.u]);
+      el.innerHTML = "<div class='alert-tag'>Geen SUP alert</div><p class='alert-when'>Geen goed uur overdag in de komende dagen<small>Dichtstbij: " + dayShort(b0.day) + " " + pad(local(b0.u).h) + ", score " + b0.c.s + "</small></p>" + tiles(b0.day, [b0.u]) + "<div class='alert-foot'>" + nowTile() + "</div>";
     } else { el.className = "alert none"; el.removeAttribute("data-day"); el.innerHTML = "<div class='alert-tag'>Geen SUP alert</div><p class='alert-when'>Geen voorspelling voor de komende uren.</p>"; }
   }
   // Laat de tabel beginnen bij het beste uur van de dag, of anders bij 08:00.
