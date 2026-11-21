@@ -127,12 +127,14 @@ header.top .sub { font-size: 12px; color: rgba(255, 255, 255, 0.88); text-shadow
     linear-gradient(0deg, rgba(8, 30, 44, 0.88) 0%, rgba(8, 30, 44, 0.45) 24%, rgba(8, 30, 44, 0) 42%), url("alert2.jpg") 70% 22% / auto 112% no-repeat, #33505F; }
 .alert-when { margin: 10px 0 0; font-size: 19px; font-weight: 700; line-height: 1.25; max-width: 60%; }
 .alert-when small { display: block; font-size: 15px; font-weight: 400; opacity: 0.85; margin-top: 2px; }
-.alert-stats { display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; margin-top: 14px; max-width: 165px; }
+.alert-stats { display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; margin-top: 14px; max-width: 175px; }
 .alert-stats div { background: rgba(8, 30, 44, 0.45); border: 1px solid rgba(255, 255, 255, 0.16); border-radius: 10px; padding: 7px 7px; min-width: 0; }
 .alert-stats b { display: block; font-size: 9.5px; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 600; opacity: 0.8; }
 .alert-stats span { display: block; font-size: clamp(14px, 4.4vw, 21px); font-weight: 700; line-height: 1.2; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .alert-stats em { display: block; font-style: normal; font-size: 11px; opacity: 0.85; line-height: 1.25; }
 .alert[data-day] { cursor: pointer; }
+.alert-stats div.now { border-color: rgba(255, 226, 122, 0.65); background: rgba(8, 30, 44, 0.55); }
+.alert-stats div.now b { color: #FFE27A; opacity: 1; }
 .alert-tap { display: inline-block; margin-top: 6px; font-weight: 600; opacity: 0.95; border-bottom: 1px solid rgba(255, 255, 255, 0.5); }
 details { scroll-margin-top: 12px; }
 thead th.flash { color: #FFE27A; background: rgba(14, 107, 140, 0.85); border-radius: 6px; transition: background 0.3s; }
@@ -602,7 +604,12 @@ a { color: var(--accent); }
       var pu = us.filter(function (u) { return phase(D, u) === "push"; }), k = kind(cs[0].w.deg);
       var t = [["Golf", rg(v, 1, " m", 0.05), ps.length ? "periode " + rg(ps, 0, " s", 1) : ""],
         ["Wind", rg(kn, 0, " kn", 1), compass(cs[0].w.deg) + " " + kindW(k)]];
-      return "<div class='alert-stats'>" + t.map(function (x) { return "<div><b>" + x[0] + "</b><span>" + x[1] + "</span><em>" + x[2] + "</em></div>"; }).join("") + "</div>";
+      // Alert voor vandaag: ook de actuele meting (golf en periode Munitiestort 2, wind Hollandse Kust Noord).
+      if (day === local(nowU()).day) {
+        var mh = lastMeas(D, "ms2", 3), mt = lastMeas(D, "ms2_tm10", 3) || lastMeas(D, "ms2_tm02", 3), ws = lastMeas(D, "hkn_ws", 3), wd = lastMeas(D, "hkn_wd", 3);
+        if (mh) t.push(["Nu gemeten · " + hm(mh.u + 1), nf(mh.v / 100) + " m" + (mt ? " · " + Math.round(mt.v) + " s" : ""), (ws && wd ? "wind " + Math.round(ws.v) + " kn " + compass(wd.v) + " " + kindW(kind(wd.v)) : "") + "<br>boei IJmuiden", "now"]);
+      }
+      return "<div class='alert-stats'>" + t.map(function (x) { return "<div" + (x[3] ? " class='" + x[3] + "'" : "") + "><b>" + x[0] + "</b><span>" + x[1] + "</span><em>" + x[2] + "</em></div>"; }).join("") + "</div>";
     }
     function rel(day) { var today = local(nowU()).day, tm = local(nowU() + 24).day; return day === today ? "Vandaag, " : day === tm ? "Morgen, " : ""; }
     function span(us) { return pad(local(us[0]).h) + " – " + pad((local(us[us.length - 1]).h + 1) % 24); }
