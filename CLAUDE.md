@@ -11,7 +11,7 @@ Laten zien wanneer de golven bij Zandvoort goed zijn om te golfsuppen, met een S
 - Claude-Project: "zandvoort golfsup", met een kopie van dit bestand als `claude/golfsup-app-projectnotities.md`. Houd beide gelijk.
 - De gebruiker wil volledige controle over de app houden en altijd de nieuwste voorspelling zien (de oude wens "elke ochtend" is vervangen).
 - Verversen: de app haalt de voorspelling van Open-Meteo zelf op bij het openen, elke 10 minuten zolang hij open staat, en opnieuw bij terugkomen na meer dan 5 minuten. Op de achtergrond doet een dichte web-app niets. ECMWF en GFS worden ongeveer vier keer per dag nieuw berekend, dus vaker ophalen geeft meestal dezelfde modelwaarden. De boeimetingen komen elk kwartier binnen (GitHub Actions) en sturen de Claude-voorspelling voor de komende uren bij.
-- Bovenaan staan links naar de live webcams van Reddingsbrigade Bloemendaal en daaronder Surfweer.nl Zandvoort.
+- Bovenaan staan links naar de live webcams, in deze volgorde: Reddingsbrigade Bloemendaal, Surfweer.nl Zandvoort, Surfweer.nl Alohacam Wijk aan Zee.
 
 ## Grenzen van de gebruiker (standaardwaarden in `index.html`, aanpasbaar in de app)
 
