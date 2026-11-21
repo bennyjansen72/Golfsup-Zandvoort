@@ -757,12 +757,14 @@ a { color: var(--accent); }
     var m0 = lastMeas(D, "ms2"), m1 = D.meas.ms2[D.end - 1], m3 = D.meas.ms2[D.end - 3];
     $("meas-lead").innerHTML = "IJmuiden Munitiestort 2 meet nu <b>" + nf(m0.v / 100) + " m</b>" + (m1 !== undefined ? ", een uur eerder " + nf(m1 / 100) + " m" : "") + (m3 !== undefined ? ", drie uur eerder " + nf(m3 / 100) + " m" : "") + ".";
     var st = [["IJmuiden Munitiestort 2", "ms2", "doel"], ["Hollandse Kust West", "hkw", "22 km NW"], ["Hollandse Kust Noord", "hkn", "23 km NO"], ["K14", "k14", "85 km NNW"], ["K13a", "k13a", "93 km NW"], ["Eierlandse Gat", "eg", "100 km N"], ["L9", "l9", "134 km NNO"], ["J6", "j6", "160 km NNW"], ["Europlatform", "ep", "65 km ZW"]];
-    var t = "<thead><tr><th>Station</th><th>Ligging</th><th>Hm0</th><th>3 u geleden</th><th>Tm-1,0</th><th>Tm02</th><th>Energie</th><th>Richting</th></tr></thead><tbody>";
+    var t = "<thead><tr><th>Station</th><th>Ligging</th><th>Hm0</th><th>3 u geleden</th><th>Tm-1,0</th><th>Tm02</th><th>Piek</th><th>Energie</th><th>Richting</th></tr></thead><tbody>";
     st.forEach(function (s) {
       var h = lastMeas(D, s[1], 3); if (!h) return;
-      var h3 = D.meas[s[1]][h.u - 3], t1 = lastMeas(D, s[1] + "_tm10", 3), t2 = lastMeas(D, s[1] + "_tm02", 3), dr = lastMeas(D, s[1] + "_dir", 3);
+      var h3 = D.meas[s[1]][h.u - 3], t1 = lastMeas(D, s[1] + "_tm10", 3), t2 = lastMeas(D, s[1] + "_tm02", 3), dr = lastMeas(D, s[1] + "_dir", 3), fp = lastMeas(D, s[1] + "_fp", 3);
+      // Fp komt binnen in mHz (bijv. 140) of in Hz (0,14); piekperiode = 1 / frequentie.
+      var tp = fp && fp.v > 0 ? (fp.v > 1 ? 1000 / fp.v : 1 / fp.v) : null;
       var e = t1 ? 0.49 * Math.pow(h.v / 100, 2) * t1.v : null;
-      t += "<tr" + (s[1] === "ms2" ? " class='ref'" : "") + "><td>" + s[0] + "</td><td>" + s[2] + "</td><td>" + nf(h.v / 100) + " m</td><td>" + (h3 !== undefined ? nf(h3 / 100) + " m" : "·") + "</td><td>" + (t1 ? nf(t1.v) + " s" : "·") + "</td><td>" + (t2 ? nf(t2.v) + " s" : "·") + "</td><td>" + (e !== null ? nf(e) + " kW/m" : "·") + "</td><td>" + (dr ? compass(dr.v) + " " + dr.v + "°" : "·") + "</td></tr>";
+      t += "<tr" + (s[1] === "ms2" ? " class='ref'" : "") + "><td>" + s[0] + "</td><td>" + s[2] + "</td><td>" + nf(h.v / 100) + " m</td><td>" + (h3 !== undefined ? nf(h3 / 100) + " m" : "·") + "</td><td>" + (t1 ? nf(t1.v) + " s" : "·") + "</td><td>" + (t2 ? nf(t2.v) + " s" : "·") + "</td><td>" + (tp ? (tp >= 9 ? "<b>" + nf(tp) + " s</b>" : nf(tp) + " s") : "·") + "</td><td>" + (e !== null ? nf(e) + " kW/m" : "·") + "</td><td>" + (dr ? compass(dr.v) + " " + dr.v + "°" : "·") + "</td></tr>";
     });
     $("meas-table").innerHTML = t + "</tbody>";
     var series = [["ms2", "Munitiestort 2", "var(--s1)", "", 3], ["hkw", "Hollandse Kust West", "var(--s2)", "", 2], ["k14", "K14", "var(--s3)", "6 4", 2], ["j6", "J6", "var(--s4)", "2 3", 2]];

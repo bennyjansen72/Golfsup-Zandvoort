@@ -53,6 +53,12 @@ SERIES = [
     ("eg_tm02", "eierlandsegat", "Tm02", "s", "OW"),
     ("eg_dir", "eierlandsegat", "Th3", "graad", "OW"),
     ("k13a_dir", "k13a.1", "Th3", "graad", "OW"),
+    # Piekperiode (uit Fp) en richting verder noordwest: een swell met lange periode is hier uren eerder te zien dan bij IJmuiden.
+    ("k14_fp", "k14", "Fp", "Hz", "OW"),
+    ("l9_fp", "l9", "Fp", "Hz", "OW"),
+    ("eg_fp", "eierlandsegat", "Fp", "Hz", "OW"),
+    ("k14_dir", "k14", "Th3", "graad", "OW"),
+    ("l9_dir", "l9", "Th3", "graad", "OW"),
     ("hkn_ws", "hollandsekust.noord.alpha", "WINDSHD", "m/s", "LT"),
     ("hkn_wd", "hollandsekust.noord.alpha", "WINDRTG", "graad", "LT"),
     ("ijm_ws", "ijmuiden.havenhoofd.zuid", "WINDSHD", "m/s", "LT"),

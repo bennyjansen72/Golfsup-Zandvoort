@@ -35,6 +35,7 @@ Laten zien wanneer de golven bij Zandvoort goed zijn om te golfsuppen, met een S
 
 - Open-Meteo: golven ECMWF WAM en GFS Wave, wind ECMWF IFS en GFS, zontijden. Windy en Windfinder zijn bewust geschrapt.
 - Rijkswaterstaat (via `rws_fetch.py` en GitHub Actions, want geen CORS): boeien IJmuiden Munitiestort 2 (referentie, gebruiker kijkt hier zelf altijd naar), Hollandse Kust West/Noord, K14, K13a, J6, L9, Eierlandse Gat, Europlatform; wind pier IJmuiden, buitenhaven, Hollandse Kust Noord, K14; astronomisch getij.
+- Piekperiode (uit Fp, in mHz of Hz) en richting (Th3) van K14, L9 en Eierlandse Gat (`k14_fp`, `l9_fp`, `eg_fp`, `k14_dir`, `l9_dir`), zodat swell met lange periode uren eerder zichtbaar is dan bij IJmuiden. In de stationstabel kolom "Piek", vet vanaf 9 s (22 nov).
 - De gebruiker wil dat boeien verder noordwest worden gebruikt om de afname van golfhoogte richting IJmuiden te leren en de voorspelling daarop te baseren. Dat zit nu in de "nowcast" (`NOWC`) en de kalibratie.
 - Bij swell vindt de gebruiker naast hoogte ook periode, richting en energie belangrijk.
 
