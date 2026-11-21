@@ -151,6 +151,17 @@ thead th.flash { color: #FFE27A; background: rgba(14, 107, 140, 0.85); border-ra
 .nowbar-grid span { display: block; font-size: clamp(17px, 5vw, 24px); font-weight: 700; line-height: 1.2; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .nowbar-grid em { display: block; font-style: normal; font-size: 11.5px; opacity: 0.85; line-height: 1.3; }
 .nowbar-src { margin: 8px 0 0; font-size: 11.5px; opacity: 0.8; }
+.wb-bars { display: flex; flex-direction: column; gap: 7px; margin-top: 12px; }
+.wb-row { display: grid; grid-template-columns: 118px 1fr 62px; align-items: center; gap: 8px; font-size: 12.5px; }
+.wb-row b { font-weight: 600; line-height: 1.15; }
+.wb-row b small { display: block; font-size: 10.5px; font-weight: 400; opacity: 0.75; }
+.wb-row span { text-align: right; font-weight: 700; font-size: 15px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.wb-bar { height: 14px; border-radius: 7px; background: rgba(255, 255, 255, 0.10); overflow: hidden; }
+.wb-bar i { display: block; height: 100%; border-radius: 7px; background: linear-gradient(90deg, #7FD3E8, #FFE27A); }
+.wb-row.est .wb-bar i { background: repeating-linear-gradient(135deg, rgba(127, 211, 232, 0.85) 0 6px, rgba(127, 211, 232, 0.45) 6px 12px); }
+.wb-row.est span { font-weight: 600; opacity: 0.9; }
+.wb-row.sw .wb-bar i { background: #A9B8FF; }
+.wavebar .nowbar-grid { margin-top: 12px; }
 .cam { display: flex; align-items: center; gap: 12px; text-decoration: none; color: var(--fg); background: var(--glass); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
   border: 1px solid rgba(255, 255, 255, 0.25); border-radius: 16px; padding: 12px 14px; min-height: 56px; box-shadow: 0 6px 22px rgba(8, 30, 44, 0.14); }
 .cam-dot { width: 12px; height: 12px; border-radius: 50%; background: #E5484D; box-shadow: 0 0 0 4px rgba(229, 72, 77, 0.25); flex: none; animation: campulse 1.6s ease-in-out infinite; }
@@ -205,6 +216,13 @@ a { color: var(--accent); }
     <div class="nowbar-head"><h2 id="h-now">Nu gemeten</h2><span id="now-time"></span></div>
     <div class="nowbar-grid" id="now-grid"></div>
     <p class="nowbar-src" id="now-src"></p>
+  </section>
+
+  <section class="nowbar wavebar" id="wavebar" aria-labelledby="h-waves" hidden>
+    <div class="nowbar-head"><h2 id="h-waves">Opbouw van de golven</h2><span id="waves-time"></span></div>
+    <div class="wb-bars" id="waves-bars"></div>
+    <div class="nowbar-grid" id="waves-grid"></div>
+    <p class="nowbar-src" id="waves-src"></p>
   </section>
 
   <a class="cam" href="https://reddingsbrigade-bloemendaal.nl/beachcam/" target="_blank" rel="noopener">
@@ -795,7 +813,37 @@ a { color: var(--accent); }
     $("now-grid").innerHTML = tiles.map(function (x) { return "<div><b>" + x[0] + "</b><span>" + x[1] + "</span><em>" + x[2] + "</em></div>"; }).join("");
     $("now-src").textContent = "Meest recente 10-minutenmeting. " + src.join(" · ").replace(/^./, function (c) { return c.toUpperCase(); }) + ".";
   }
-  function renderAll() { renderStatus(); render(); renderNow(); renderMeas(); }
+  // Opbouw van de golven: laatste 10-minutenmeting bij Munitiestort 2 (anders het laatste uurgemiddelde).
+  function renderWaves() {
+    var box = $("wavebar"), wv = D.rws && D.rws.wave_now, fresh = wv && nowU() - wv.t / 3600 < 3, ten = fresh && wv.h13;
+    function g(k, sk) { if (ten && wv[k] !== null && wv[k] !== undefined) return wv[k]; var m = lastMeas(D, sk, 3); return m ? m.v : null; }
+    var hmax = g("hmax", "ms2_hmax"), h150 = g("h150", "ms2_h150"), h110 = g("h110", "ms2_h110"), h13 = g("h13", "ms2_h13"), hm0 = g("hm0", "ms2"), hte3 = g("hte3", "ms2_hte3");
+    var tm02 = g("tm02", "ms2_tm02"), t13 = g("t13", "ms2_t13"), tmax = g("tmax", "ms2_tmax"), fp = g("fp", "ms2_fp"), th0 = g("th0", "ms2_th0"), tw = g("tw", "ms2_tw");
+    if (!h13 || !hmax) { box.hidden = true; return; }
+    box.hidden = false;
+    var t = ten ? wv.t / 3600 : (lastMeas(D, "ms2_h13", 3).u + 1);
+    $("waves-time").textContent = hm(t);
+    var mean = 0.63 * h13, top = Math.max(hmax, h150 || 0, h110 || 0, h13);
+    function m(cm) { return nf(cm / 100, 2) + " m"; }
+    var rows = [["Hoogste golf", "uitschieter", hmax, ""], ["Hoogste 2%", "1 op de 50", h150, ""], ["Hoogste 10%", "1 op de 10", h110, ""], ["Hoogste derde", "significante golf", h13, ""],
+      ["Gemiddelde golf", "schatting", mean, "est"], ["Deining", "lange golven", hte3, "sw"]];
+    $("waves-bars").innerHTML = rows.filter(function (r) { return r[2] !== null && r[2] !== undefined; }).map(function (r) {
+      return "<div class='wb-row " + r[3] + "'><b>" + r[0] + "<small>" + r[1] + "</small></b><div class='wb-bar'><i style='width:" + Math.max(2, Math.round(100 * r[2] / top)) + "%'></i></div><span>" + (r[3] === "est" ? "≈ " : "") + m(r[2]) + "</span></div>";
+    }).join("");
+    var tiles = [];
+    if (tm02) tiles.push(["Aantal golven", "≈ " + Math.round(1200 / tm02), "in 20 minuten (schatting)"]);
+    var tp = fp ? 1 / (fp > 2 ? fp / 1000 : fp) : null, per = [];
+    if (t13) per.push("hoogste derde " + nf(t13) + " s");
+    if (tp) per.push("piek " + nf(tp) + " s");
+    if (tmax) per.push("langste " + nf(tmax) + " s");
+    if (tm02) tiles.push(["Periode", nf(tm02) + " s", "gemiddeld<br>" + per.join("<br>")]);
+    if (hte3 !== null && hm0) { var sw = Math.pow(hte3 / hm0, 2) * 100; tiles.push(["Windzee", (sw < 1 ? "> 99" : Math.round(100 - sw)) + "%", "deining " + (sw < 1 ? "< 1" : Math.round(sw)) + "% van de energie"]); }
+    if (th0 !== null) tiles.push(["Richting", compass(th0) + " " + Math.round(th0) + "°", "waar de golven vandaan komen"]);
+    if (tw !== null) tiles.push(["Water", nf(tw) + "°", "zeewatertemperatuur"]);
+    $("waves-grid").innerHTML = tiles.map(function (x) { return "<div><b>" + x[0] + "</b><span>" + x[1] + "</span><em>" + x[2] + "</em></div>"; }).join("");
+    $("waves-src").textContent = "Boei IJmuiden Munitiestort 2, " + (ten ? "10-minutenmeting" : "uurgemiddelde") + " van " + hm(t) + ". Hoogtes uit de losse golven (tijdsdomein); deining is het deel met lange golven (vanaf ongeveer 10 s). ≈ is een schatting: de gemiddelde golf is op zee ongeveer 0,63 keer de hoogste derde, het aantal golven is 20 minuten gedeeld door de gemiddelde periode. De laagste golf wordt niet gemeten.";
+  }
+  function renderAll() { renderStatus(); render(); renderNow(); renderWaves(); renderMeas(); }
 
   // ---------- Bediening ----------
   LIM_IDS.forEach(function (id) { $(id).addEventListener("input", function () { try { var o = {}; LIM_IDS.forEach(function (k) { o[k] = $(k).value; }); localStorage.setItem("golfsup-limits", JSON.stringify(o)); } catch (e) {} render(); }); });
@@ -819,7 +867,7 @@ a { color: var(--accent); }
     var had = !!navigator.serviceWorker.controller;
     navigator.serviceWorker.addEventListener("controllerchange", function () { if (had && !window.__reloaded) { window.__reloaded = true; location.reload(); } });
   }).catch(function () {});
-  window.__golfsup = { get D() { return D; }, load: load };
+  window.__golfsup = { get D() { return D; }, load: load, renderAll: renderAll };
   load();
 })();
 </script>

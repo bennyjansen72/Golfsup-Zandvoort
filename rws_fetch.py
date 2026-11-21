@@ -30,6 +30,15 @@ SERIES = [
     ("ms2_tm02", "ijmuiden.munitiestort.2", "Tm02", "s", "OW"),
     ("ms2_hmax", "ijmuiden.munitiestort.2", "Hmax", "cm", "OW"),
     ("ms2_tmax", "ijmuiden.munitiestort.2", "Tmax", "s", "OW"),
+    # Opbouw van de golven bij Munitiestort 2 (tijdsdomein, deining, piekfrequentie, richting, watertemperatuur).
+    ("ms2_h13", "ijmuiden.munitiestort.2", "H1/3", "cm", "OW"),
+    ("ms2_h110", "ijmuiden.munitiestort.2", "H1/10", "cm", "OW"),
+    ("ms2_h150", "ijmuiden.munitiestort.2", "H1/50", "cm", "OW"),
+    ("ms2_hte3", "ijmuiden.munitiestort.2", "HTE3", "cm", "OW"),
+    ("ms2_t13", "ijmuiden.munitiestort.2", "T1/3", "s", "OW"),
+    ("ms2_fp", "ijmuiden.munitiestort.2", "Fp", "Hz", "OW"),
+    ("ms2_th0", "ijmuiden.munitiestort.2", "Th0", "graad", "OW"),
+    ("ms2_tw", "ijmuiden.munitiestort.2", "T", "oC", "OW"),
     ("hkw_tm10", "hollandsekust.west.alpha", "Tm-10", "s", "OW"),
     ("hkw_tm02", "hollandsekust.west.alpha", "Tm02", "s", "OW"),
     ("k14_tm10", "k14", "Tm-10", "s", "OW"),
@@ -135,7 +144,7 @@ def load_old(path):
         return None
 
 
-PRIORITY = ["ms2", "ms2_tm10", "ms2_tm02", "ms2_hmax", "ms2_tmax", "ijm_ws", "ijm_wd", "hkn_ws", "hkn_wd"]
+PRIORITY = ["ms2", "ms2_tm10", "ms2_tm02", "ms2_hmax", "ms2_tmax", "ms2_h13", "ms2_h110", "ms2_h150", "ms2_hte3", "ms2_t13", "ms2_fp", "ms2_th0", "ms2_tw", "ijm_ws", "ijm_wd", "hkn_ws", "hkn_wd"]
 
 
 def main(path):
@@ -220,13 +229,15 @@ def main(path):
 
     # Laatste 10-minutenmeting van de golven bij Munitiestort 2.
     out["wave_now"] = None
-    wv = {k: latest("ms2" + k) for k in ("", "_hmax", "_tm10", "_tm02", "_tmax")}
+    wv = {k: latest("ms2" + k, deg=(k == "_th0")) for k in ("", "_hmax", "_tm10", "_tm02", "_tmax", "_h13", "_h110", "_h150", "_hte3", "_t13", "_fp", "_th0", "_tw")}
     if wv[""] and now.timestamp() - wv[""][0] < 3 * 3600:
         t0 = wv[""][0]
         def at(k, nd):
             x = wv[k]
             return round(x[1], nd) if x and abs(x[0] - t0) <= 1800 else None
-        out["wave_now"] = {"t": t0, "hm0": at("", 0), "hmax": at("_hmax", 0), "tm10": at("_tm10", 1), "tm02": at("_tm02", 1), "tmax": at("_tmax", 1)}
+        out["wave_now"] = {"t": t0, "hm0": at("", 0), "hmax": at("_hmax", 0), "tm10": at("_tm10", 1), "tm02": at("_tm02", 1), "tmax": at("_tmax", 1),
+                           "h13": at("_h13", 0), "h110": at("_h110", 0), "h150": at("_h150", 0), "hte3": at("_hte3", 0), "t13": at("_t13", 1),
+                           "fp": at("_fp", 3), "th0": at("_th0", 0), "tw": at("_tw", 1)}
 
     # Laatste 10-minutenmeting van de wind (pier IJmuiden, anders buitenhaven, anders Hollandse Kust Noord).
     out["wind_now"] = None
