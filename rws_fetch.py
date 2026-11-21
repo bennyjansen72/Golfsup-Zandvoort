@@ -135,38 +135,51 @@ def load_old(path):
         return None
 
 
+PRIORITY = ["ms2", "ms2_tm10", "ms2_tm02", "ms2_hmax", "ms2_tmax", "ijm_ws", "ijm_wd", "hkn_ws", "hkn_wd"]
+
+
 def main(path):
     started = time.time()
     now = datetime.now(timezone.utc)
     end_hour = now.replace(minute=0, second=0, microsecond=0)
     start_hour = end_hour - timedelta(hours=HOURS - 1)
-    begin, end = start_hour - timedelta(minutes=5), now
     start_u = int(start_hour.timestamp() // 3600)
     old = load_old(path)
     out = {"generated": now.strftime("%Y-%m-%dT%H:%M:%SZ"), "start": start_u, "hours": HOURS, "s": {}}
+    # Elk kwartier alleen de laatste 6 uur ophalen en aanvullen; de volledige 8 dagen eens per dag (rond 04:00 UTC) of zonder oud bestand.
+    full = not old or not old.get("s") or (now.hour == 4 and now.minute < 20)
+    begin = (start_hour - timedelta(minutes=5)) if full else (now - timedelta(hours=6))
+    end = now
+    print(f"{'volledig (8 dagen)' if full else 'aanvullen (6 uur)'}", file=sys.stderr)
 
-    # Getij eerst: dat is het belangrijkst en verandert niet. Lukt het niet, dan blijven de oude tijden staan.
-    tides = []
-    try:
-        tides = tide_events(now)
-    except Exception as e:
-        print(f"getij mislukt: {e}", file=sys.stderr)
-    if not tides and old and old.get("tides"):
-        cutoff = now.timestamp() - 86400
-        tides = [t for t in old["tides"] if t[0] >= cutoff]
-        print("getij: oude tijden aangehouden", file=sys.stderr)
+    # Getij: alleen opnieuw ophalen als de oude tijden minder dan 5 dagen vooruit reiken.
+    tides = [t for t in (old or {}).get("tides", []) if t[0] >= now.timestamp() - 86400]
+    if not tides or tides[-1][0] < now.timestamp() + 5 * 86400:
+        try:
+            new = tide_events(now)
+            if new:
+                tides = new
+        except Exception as e:
+            print(f"getij mislukt: {e}", file=sys.stderr)
     out["tides"] = tides
     print(f"getij: {len(tides)} keer hoog- of laagwater", file=sys.stderr)
 
+    order = sorted(SERIES, key=lambda x: PRIORITY.index(x[0]) if x[0] in PRIORITY else 99)
     ok, fails = 0, 0
     raw = {}
-    for key, loc, g, u, comp in SERIES:
-        # Als Rijkswaterstaat traag is: niet eindeloos doorgaan, de rest uit het vorige bestand halen.
-        pts = None
-        if time.time() - started < 420 and fails < 4:
-            pts = fetch(loc, g, u, comp, begin, end)
-            time.sleep(0.4)
+    for key, loc, g, u, comp in order:
+        # Oude waarden eerst overnemen (verschoven naar het nieuwe venster); nieuwe metingen overschrijven ze.
         arr = [None] * HOURS
+        if old and key in old.get("s", {}):
+            o0 = old["start"]
+            for j, v in enumerate(old["s"][key]):
+                i = o0 + j - start_u
+                if v is not None and 0 <= i < HOURS:
+                    arr[i] = v
+        pts = None
+        if time.time() - started < 480 and fails < 6:
+            pts = fetch(loc, g, u, comp, begin, end)
+            time.sleep(0.3)
         if pts:
             raw[key] = pts
             ok += 1
@@ -189,17 +202,12 @@ def main(path):
         else:
             if pts is None:
                 fails += 1
-            if old and key in old.get("s", {}):
-                o0 = old["start"]
-                for j, v in enumerate(old["s"][key]):
-                    i = o0 + j - start_u
-                    if v is not None and 0 <= i < HOURS:
-                        arr[i] = v
-                print(f"{key}: niet opgehaald, oude waarden aangehouden", file=sys.stderr)
+            print(f"{key}: niet opgehaald, oude waarden aangehouden", file=sys.stderr)
         print(f"{key}: {sum(1 for x in arr if x is not None)} uren", file=sys.stderr)
         out["s"][key] = arr
-    # Laatste 10-minutenmeting van de wind (IJmuiden havenhoofd zuid, anders buitenhaven, anders Hollandse Kust Noord).
-    def latest(key, deg=False):
+    out["s"] = {k: out["s"][k] for k, *_ in SERIES}
+
+    def latest(key, deg=False, scale=1.0):
         pts = raw.get(key)
         if not pts:
             return None
@@ -207,33 +215,33 @@ def main(path):
         vs = [v for t, v in pts if t == tmax]
         if deg:
             sx = sum(math.cos(math.radians(v)) for v in vs); sy = sum(math.sin(math.radians(v)) for v in vs)
-            val = round((math.degrees(math.atan2(sy, sx)) + 360) % 360)
-        else:
-            val = round(sum(vs) / len(vs) * 1.94384, 1)
-        return int(tmax.timestamp()), val
+            return int(tmax.timestamp()), round((math.degrees(math.atan2(sy, sx)) + 360) % 360)
+        return int(tmax.timestamp()), sum(vs) / len(vs) * scale
+
     # Laatste 10-minutenmeting van de golven bij Munitiestort 2.
-    def last_plain(key):
-        pts = raw.get(key)
-        if not pts:
-            return None
-        tmax = max(t for t, v in pts)
-        vs = [v for t, v in pts if t == tmax]
-        return int(tmax.timestamp()), sum(vs) / len(vs)
-    wv = {k: last_plain("ms2" + k) for k in ("", "_hmax", "_tm10", "_tm02", "_tmax")}
+    out["wave_now"] = None
+    wv = {k: latest("ms2" + k) for k in ("", "_hmax", "_tm10", "_tm02", "_tmax")}
     if wv[""] and now.timestamp() - wv[""][0] < 3 * 3600:
         t0 = wv[""][0]
         def at(k, nd):
             x = wv[k]
             return round(x[1], nd) if x and abs(x[0] - t0) <= 1800 else None
         out["wave_now"] = {"t": t0, "hm0": at("", 0), "hmax": at("_hmax", 0), "tm10": at("_tm10", 1), "tm02": at("_tm02", 1), "tmax": at("_tmax", 1)}
-    else:
-        out["wave_now"] = None
+
+    # Laatste 10-minutenmeting van de wind (pier IJmuiden, anders buitenhaven, anders Hollandse Kust Noord).
     out["wind_now"] = None
     for name, ws, wd in (("IJmuiden havenhoofd", "ijm_ws", "ijm_wd"), ("IJmuiden buitenhaven", "ijb_ws", "ijb_wd"), ("Hollandse Kust Noord", "hkn_ws", "hkn_wd")):
-        a, b = latest(ws), latest(wd, True)
+        a, b = latest(ws, scale=1.94384), latest(wd, True)
         if a and b and now.timestamp() - a[0] < 3 * 3600:
-            out["wind_now"] = {"name": name, "t": a[0], "kn": a[1], "deg": b[1]}
+            out["wind_now"] = {"name": name, "t": a[0], "kn": round(a[1], 1), "deg": b[1]}
             break
+
+    # Mislukt het nu, dan de vorige actuele meting houden zolang die minder dan 3 uur oud is.
+    for k in ("wave_now", "wind_now"):
+        if not out[k] and old and old.get(k) and now.timestamp() - old[k]["t"] < 3 * 3600:
+            out[k] = old[k]
+            print(f"{k}: vorige meting aangehouden", file=sys.stderr)
+
     if ok == 0 and not tides:
         print("Niets opgehaald; oud bestand blijft staan.", file=sys.stderr)
         sys.exit(0)
