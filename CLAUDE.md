@@ -9,7 +9,8 @@ Laten zien wanneer de golven bij Zandvoort goed zijn om te golfsuppen, met een S
 - Live: https://bennyjansen72.github.io/Golfsup-Zandvoort/
 - Repo: https://github.com/bennyjansen72/Golfsup-Zandvoort (GitHub Pages vanaf main)
 - Claude-Project: "zandvoort golfsup", met een kopie van dit bestand als `claude/golfsup-app-projectnotities.md`. Houd beide gelijk.
-- De gebruiker wil volledige controle over de app houden en elke ochtend een verse voorspelling hebben. De app ververst zichzelf elke 10 minuten zolang hij open staat.
+- De gebruiker wil volledige controle over de app houden en altijd de nieuwste voorspelling zien (de oude wens "elke ochtend" is vervangen).
+- Verversen: de app haalt de voorspelling van Open-Meteo zelf op bij het openen, elke 10 minuten zolang hij open staat, en opnieuw bij terugkomen na meer dan 5 minuten. Op de achtergrond doet een dichte web-app niets. ECMWF en GFS worden ongeveer vier keer per dag nieuw berekend, dus vaker ophalen geeft meestal dezelfde modelwaarden. De boeimetingen komen elk kwartier binnen (GitHub Actions) en sturen de Claude-voorspelling voor de komende uren bij.
 - Bovenaan staat een link naar de live webcam van Reddingsbrigade Bloemendaal.
 
 ## Grenzen van de gebruiker (standaardwaarden in `index.html`, aanpasbaar in de app)
