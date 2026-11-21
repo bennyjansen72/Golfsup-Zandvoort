@@ -739,7 +739,7 @@ a { color: var(--accent); }
       var ps = cs.map(function (c) { return c.p; }).filter(Boolean), es = us.map(function (u) { return D.KL[u].e; }).filter(function (x) { return x !== undefined; });
       var pu = us.filter(function (u) { return phase(D, u) === "push"; }), k = kind(cs[0].w.deg);
       var t = [["Golf", rg(v, 1, " m", 0.05), ps.length ? "periode " + rg(ps, 0, " s", 1) : ""],
-        ["Wind", rg(kn, 0, " kn", 1), compass(cs[0].w.deg) + " " + kindW(k)]];
+        ["Wind", compass(cs[0].w.deg) + " " + rg(kn, 0, " kn", 1), kindW(k)]];
       return "<div class='alert-stats'>" + t.map(function (x) { return "<div" + (x[3] ? " class='" + x[3] + "'" : "") + "><b>" + x[0] + "</b><span>" + x[1] + "</span><em>" + x[2] + "</em></div>"; }).join("") + "</div>";
     }
     function rel(day) { var today = local(nowU()).day, tm = local(nowU() + 24).day; return day === today ? "Vandaag, " : day === tm ? "Morgen, " : ""; }
@@ -840,11 +840,11 @@ a { color: var(--accent); }
       if (mh) { tiles.push(["Golf", nf(mh.v / 100) + " m", mt ? "periode " + nf(mt.v) + " s" : ""]); times.push(hm(mh.u + 1)); src.push("golven: boei IJmuiden Munitiestort 2, uurgemiddelde"); }
     }
     if (wn && nowU() - wn.t / 3600 < 3) {
-      tiles.push(["Wind", Math.round(wn.kn) + " kn " + compass(wn.deg), kindW(kind(wn.deg))]);
+      tiles.push(["Wind", compass(wn.deg) + " " + Math.round(wn.kn) + " kn", kindW(kind(wn.deg))]);
       src.push("wind: " + (wn.name === "IJmuiden havenhoofd" ? "pier IJmuiden" : wn.name) + " (" + hm(wn.t / 3600) + ")");
     } else {
       var ws = lastMeas(D, "hkn_ws", 3), wd = lastMeas(D, "hkn_wd", 3);
-      if (ws && wd) { tiles.push(["Wind", Math.round(ws.v) + " kn " + compass(wd.v), kindW(kind(wd.v))]); src.push("wind: Hollandse Kust Noord, uurgemiddelde"); }
+      if (ws && wd) { tiles.push(["Wind", compass(wd.v) + " " + Math.round(ws.v) + " kn", kindW(kind(wd.v))]); src.push("wind: Hollandse Kust Noord, uurgemiddelde"); }
     }
     var cw = D.now;
     if (cw && nowU() - cw.time / 3600 < 3 && cw.temperature_2m !== undefined) {
