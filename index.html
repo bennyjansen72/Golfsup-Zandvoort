@@ -136,6 +136,17 @@ header.top .sub { font-size: 12px; color: rgba(255, 255, 255, 0.88); text-shadow
 .alert-tap { display: inline-block; margin-top: 6px; font-weight: 600; opacity: 0.95; border-bottom: 1px solid rgba(255, 255, 255, 0.5); }
 details { scroll-margin-top: 12px; }
 thead th.flash { color: #FFE27A; background: rgba(14, 107, 140, 0.85); border-radius: 6px; transition: background 0.3s; }
+.nowbar { border-radius: 18px; padding: 14px 16px 12px; color: #F4FBFD; background: linear-gradient(160deg, rgba(14, 107, 140, 0.82) 0%, rgba(11, 42, 60, 0.88) 70%);
+  -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); border: 1px solid rgba(255, 226, 122, 0.45); box-shadow: 0 8px 26px rgba(11, 42, 60, 0.28); }
+.nowbar-head { display: flex; align-items: baseline; gap: 10px; }
+.nowbar-head h2 { color: #FFE27A; font-size: 13px; letter-spacing: 0.14em; text-transform: uppercase; }
+.nowbar-head span { font-size: 13px; opacity: 0.85; font-variant-numeric: tabular-nums; }
+.nowbar-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 10px; }
+.nowbar-grid div { background: rgba(255, 255, 255, 0.10); border: 1px solid rgba(255, 255, 255, 0.14); border-radius: 12px; padding: 8px 9px; min-width: 0; }
+.nowbar-grid b { display: block; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 600; opacity: 0.8; }
+.nowbar-grid span { display: block; font-size: clamp(17px, 5vw, 24px); font-weight: 700; line-height: 1.2; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.nowbar-grid em { display: block; font-style: normal; font-size: 11.5px; opacity: 0.85; line-height: 1.3; }
+.nowbar-src { margin: 8px 0 0; font-size: 11.5px; opacity: 0.8; }
 .cam { display: flex; align-items: center; gap: 12px; text-decoration: none; color: var(--fg); background: var(--glass); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
   border: 1px solid rgba(255, 255, 255, 0.25); border-radius: 16px; padding: 12px 14px; min-height: 56px; box-shadow: 0 6px 22px rgba(8, 30, 44, 0.14); }
 .cam-dot { width: 12px; height: 12px; border-radius: 50%; background: #E5484D; box-shadow: 0 0 0 4px rgba(229, 72, 77, 0.25); flex: none; animation: campulse 1.6s ease-in-out infinite; }
@@ -146,12 +157,6 @@ thead th.flash { color: #FFE27A; background: rgba(14, 107, 140, 0.85); border-ra
 .cam-txt em { display: block; font-style: normal; font-size: 12.5px; color: var(--muted); }
 .cam-go { font-weight: 700; color: var(--surface); background: var(--accent); border-radius: 10px; padding: 8px 12px; flex: none; }
 .alert-foot { margin-top: auto; padding-top: 12px; }
-.alert-now { display: inline-block; max-width: 260px; background: rgba(8, 30, 44, 0.55); border: 1px solid rgba(255, 226, 122, 0.65); border-radius: 10px; padding: 7px 9px; }
-.alert-now b { display: block; font-size: 9.5px; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 600; color: #FFE27A; }
-.alert-now span { display: block; font-size: clamp(16px, 4.6vw, 21px); font-weight: 700; line-height: 1.2; white-space: nowrap; }
-.alert-now em { display: block; font-style: normal; font-size: 11px; opacity: 0.85; line-height: 1.25; }
-.alert-now i.gap { display: block; height: 6px; }
-.alert-now span.sub2 { font-size: clamp(14px, 4vw, 17px); margin-top: 4px; }
 .alert-more { margin: 8px 0 0; font-size: 13.5px; opacity: 0.9; }
 .best { font-size: 16px; margin: 0; padding: 12px 14px; border-radius: 12px; background: var(--good-bg); color: var(--good-fg); font-weight: 600; }
 .best.none { background: var(--mid-bg); color: var(--mid-fg); }
@@ -190,6 +195,12 @@ a { color: var(--accent); }
   <section class="alert none" id="alert" aria-live="polite" role="button" tabindex="0" aria-label="Naar de tabel van de alertdag">
     <div class="alert-tag">SUP ALERT</div>
     <p class="alert-when">Voorspelling laden…</p>
+  </section>
+
+  <section class="nowbar" id="nowbar" aria-labelledby="h-now" hidden>
+    <div class="nowbar-head"><h2 id="h-now">Nu gemeten</h2><span id="now-time"></span></div>
+    <div class="nowbar-grid" id="now-grid"></div>
+    <p class="nowbar-src" id="now-src"></p>
   </section>
 
   <a class="cam" href="https://reddingsbrigade-bloemendaal.nl/beachcam/" target="_blank" rel="noopener">
@@ -618,24 +629,6 @@ a { color: var(--accent); }
     });
     var el = $("alert");
     function rg(a, d, unit, step, sep) { var f = function (x) { return d === 0 ? String(Math.round(x)) : nf(x, d); }, lo = f(Math.min.apply(null, a)), hi = f(Math.max.apply(null, a)); return lo + (hi !== lo ? (sep || "–") + hi : "") + unit; }
-    // Actuele meting: golf en periode Munitiestort 2, wind Hollandse Kust Noord. Altijd linksonder in de banner.
-    function nowTile() {
-      // Meest recente 10-minutenmeting: golven van boei IJmuiden Munitiestort 2, wind van de pier van IJmuiden.
-      var wv = D.rws && D.rws.wave_now, wn = D.rws && D.rws.wind_now, h = "", w = "";
-      if (wv && nowU() - wv.t / 3600 < 3 && wv.hm0) {
-        h += "<span>" + nf(wv.hm0 / 100) + " m" + (wv.tm10 ? " · " + nf(wv.tm10) + " s" : "") + "</span><em>golfhoogte (Hm0) · periode" + (wv.tm02 ? " (gem. " + nf(wv.tm02) + " s)" : "") + "</em>";
-        if (wv.hmax || wv.tmax) h += "<span class='sub2'>" + (wv.hmax ? nf(wv.hmax / 100) + " m" : "") + (wv.hmax && wv.tmax ? " · " : "") + (wv.tmax ? nf(wv.tmax) + " s" : "") + "</span><em>grootste golf · langste golf</em>";
-        h = "<b>Nu gemeten · " + hm(wv.t / 3600) + " · boei IJmuiden</b>" + h;
-      } else {
-        var mh = lastMeas(D, "ms2", 3), mt = lastMeas(D, "ms2_tm10", 3) || lastMeas(D, "ms2_tm02", 3);
-        if (mh) h = "<b>Nu gemeten · " + hm(mh.u + 1) + " · boei IJmuiden</b><span>" + nf(mh.v / 100) + " m" + (mt ? " · " + nf(mt.v) + " s" : "") + "</span><em>golfhoogte · periode (uurgemiddelde)</em>";
-      }
-      if (wn && nowU() - wn.t / 3600 < 3) w = "<span>" + Math.round(wn.kn) + " kn " + compass(wn.deg) + "</span><em>wind · " + (wn.name === "IJmuiden havenhoofd" ? "pier IJmuiden" : wn.name) + " · " + hm(wn.t / 3600) + " · " + kindW(kind(wn.deg)) + "</em>";
-      else { var ws = lastMeas(D, "hkn_ws", 3), wd = lastMeas(D, "hkn_wd", 3); if (ws && wd) w = "<span>" + Math.round(ws.v) + " kn " + compass(wd.v) + "</span><em>wind · Hollandse Kust Noord · " + hm(ws.u + 1) + " · " + kindW(kind(wd.v)) + "</em>"; }
-      if (!h && !w) return "";
-      if (!h) h = "<b>Nu gemeten</b>";
-      return "<div class='alert-now'>" + h + (w ? "<i class='gap'></i>" + w : "") + "</div>";
-    }
     function tiles(day, us) {
       var cs = us.map(function (u) { return ans[day].cells["Klodde|" + u]; }), v = cs.map(function (c) { return c.v; }), kn = cs.map(function (c) { return Math.round(c.w.kn); });
       var ps = cs.map(function (c) { return c.p; }).filter(Boolean), es = us.map(function (u) { return D.KL[u].e; }).filter(function (x) { return x !== undefined; });
@@ -652,13 +645,13 @@ a { color: var(--accent); }
       el.className = "alert";
       el.setAttribute("data-day", r.day); el.setAttribute("data-u", r.us[0]);
       el.innerHTML = "<div class='alert-tag'>SUP ALERT!</div><p class='alert-when'>" + rel(r.day) + dayLong(r.day).replace(/^./, function (c) { return rel(r.day) ? c.toLowerCase() : c; }) + "<small>" + span(r.us) + "</small></p>" + tiles(r.day, r.us) +
-        "<div class='alert-foot'>" + nowTile() + "<p class='alert-more'>" + (more.length ? "Ook goed: " + more.map(function (m) { return dayShort(m.day) + " " + span(m.us); }).join(" · ") + "<br>" : "") + "<span class='alert-tap'>Tik voor de tabel van deze dag ›</span></p></div>";
+        "<div class='alert-foot'><p class='alert-more'>" + (more.length ? "Ook goed: " + more.map(function (m) { return dayShort(m.day) + " " + span(m.us); }).join(" · ") + "<br>" : "") + "<span class='alert-tap'>Tik voor de tabel van deze dag ›</span></p></div>";
     } else if (all.length) {
       all.sort(function (a, b) { return b.c.s - a.c.s; });
       var b0 = all[0];
       el.className = "alert none";
       el.setAttribute("data-day", b0.day); el.setAttribute("data-u", b0.u);
-      el.innerHTML = "<div class='alert-tag'>Geen SUP alert</div><p class='alert-when'>Geen goed uur overdag in de komende dagen<small>Dichtstbij: " + dayShort(b0.day) + " " + pad(local(b0.u).h) + ", score " + b0.c.s + "</small></p>" + tiles(b0.day, [b0.u]) + "<div class='alert-foot'>" + nowTile() + "</div>";
+      el.innerHTML = "<div class='alert-tag'>Geen SUP alert</div><p class='alert-when'>Geen goed uur overdag in de komende dagen<small>Dichtstbij: " + dayShort(b0.day) + " " + pad(local(b0.u).h) + ", score " + b0.c.s + "</small></p>" + tiles(b0.day, [b0.u]);
     } else { el.className = "alert none"; el.removeAttribute("data-day"); el.innerHTML = "<div class='alert-tag'>Geen SUP alert</div><p class='alert-when'>Geen voorspelling voor de komende uren.</p>"; }
   }
   // Laat de tabel beginnen bij het beste uur van de dag, of anders bij 08:00.
@@ -749,7 +742,31 @@ a { color: var(--accent); }
     function f(k) { return c["raw" + k] === null ? "nog geen uren" : "factor " + nf(c[k], 2) + " (" + c["n" + k] + " uren, gemeten verhouding " + nf(c["raw" + k], 2) + ")"; }
     $("cal-note").textContent = "Positief verschil: de meting was hoger dan het model. Claude schaalt de modellen hiermee: bij golven onder 1 m " + f("lo") + ", vanaf 1 m " + f("hi") + ". Met weinig uren trek ik de factor richting 1. De modelwaarden van het verleden zijn korte-termijnvoorspellingen; verder vooruit is de fout groter.";
   }
-  function renderAll() { renderStatus(); render(); renderMeas(); renderWind(); renderCal(); }
+  // Aparte banner met de meest recente meting: golven boei IJmuiden Munitiestort 2, wind pier IJmuiden.
+  function renderNow() {
+    var box = $("nowbar"), wv = D.rws && D.rws.wave_now, wn = D.rws && D.rws.wind_now, tiles = [], times = [], src = [];
+    if (wv && nowU() - wv.t / 3600 < 3 && wv.hm0) {
+      tiles.push(["Golf", nf(wv.hm0 / 100) + " m", (wv.tm10 ? "periode " + nf(wv.tm10) + " s" : "") + (wv.tm02 ? "<br>gem. " + nf(wv.tm02) + " s" : "")]);
+      if (wv.hmax || wv.tmax) tiles.push(["Grootste golf", wv.hmax ? nf(wv.hmax / 100) + " m" : "·", wv.tmax ? "langste golf " + nf(wv.tmax) + " s" : ""]);
+      times.push(hm(wv.t / 3600)); src.push("golven: boei IJmuiden Munitiestort 2 (" + hm(wv.t / 3600) + ")");
+    } else {
+      var mh = lastMeas(D, "ms2", 3), mt = lastMeas(D, "ms2_tm10", 3) || lastMeas(D, "ms2_tm02", 3);
+      if (mh) { tiles.push(["Golf", nf(mh.v / 100) + " m", mt ? "periode " + nf(mt.v) + " s" : ""]); times.push(hm(mh.u + 1)); src.push("golven: boei IJmuiden Munitiestort 2, uurgemiddelde"); }
+    }
+    if (wn && nowU() - wn.t / 3600 < 3) {
+      tiles.push(["Wind", Math.round(wn.kn) + " kn " + compass(wn.deg), kindW(kind(wn.deg))]);
+      src.push("wind: " + (wn.name === "IJmuiden havenhoofd" ? "pier IJmuiden" : wn.name) + " (" + hm(wn.t / 3600) + ")");
+    } else {
+      var ws = lastMeas(D, "hkn_ws", 3), wd = lastMeas(D, "hkn_wd", 3);
+      if (ws && wd) { tiles.push(["Wind", Math.round(ws.v) + " kn " + compass(wd.v), kindW(kind(wd.v))]); src.push("wind: Hollandse Kust Noord, uurgemiddelde"); }
+    }
+    box.hidden = !tiles.length;
+    if (!tiles.length) return;
+    $("now-time").textContent = times.length ? times[0] : "";
+    $("now-grid").innerHTML = tiles.map(function (x) { return "<div><b>" + x[0] + "</b><span>" + x[1] + "</span><em>" + x[2] + "</em></div>"; }).join("");
+    $("now-src").textContent = "Meest recente 10-minutenmeting. " + src.join(" · ").replace(/^./, function (c) { return c.toUpperCase(); }) + ".";
+  }
+  function renderAll() { renderStatus(); render(); renderNow(); renderMeas(); renderWind(); renderCal(); }
 
   // ---------- Bediening ----------
   LIM_IDS.forEach(function (id) { $(id).addEventListener("input", function () { try { var o = {}; LIM_IDS.forEach(function (k) { o[k] = $(k).value; }); localStorage.setItem("golfsup-limits", JSON.stringify(o)); } catch (e) {} render(); if (D) renderWind(); }); });
