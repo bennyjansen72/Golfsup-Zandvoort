@@ -6,6 +6,12 @@ Lees dit eerst. Hierin staat waarom de app is zoals hij is, zodat je verder kunt
 
 Laten zien wanneer de golven bij Zandvoort goed zijn om te golfsuppen, met een SUP ALERT bovenaan voor het beste moment overdag.
 
+- Live: https://bennyjansen72.github.io/Golfsup-Zandvoort/
+- Repo: https://github.com/bennyjansen72/Golfsup-Zandvoort (GitHub Pages vanaf main)
+- Claude-Project: "zandvoort golfsup", met een kopie van dit bestand als `claude/golfsup-app-projectnotities.md`. Houd beide gelijk.
+- De gebruiker wil volledige controle over de app houden en elke ochtend een verse voorspelling hebben. De app ververst zichzelf elke 10 minuten zolang hij open staat.
+- Bovenaan staat een link naar de live webcam van Reddingsbrigade Bloemendaal.
+
 ## Grenzen van de gebruiker (standaardwaarden in `index.html`, aanpasbaar in de app)
 
 - Golfhoogte: goed vanaf 0,8 m (was eerst 0,5 m), mag tot 2 m of hoger.
@@ -41,3 +47,8 @@ In de code heet het model nog `Klodde` (oude naam); op het scherm staat "Claude"
 - Pas pushen naar GitHub als de gebruiker akkoord geeft: de site wordt dan meteen bijgewerkt.
 - De automatische taak zet de metingen elk kwartier op de branch `data` (één commit, force-push); main blijft schoon. De app leest `raw.githubusercontent.com/bennyjansen72/Golfsup-Zandvoort/data/rws.json`, met `data/rws.json` in main als reserve.
 - Haal voor het pushen toch even de laatste versie op (`git pull --rebase`).
+
+## Geschiedenis
+
+- 20 nov 2026: app gebouwd als eigen web-app op GitHub; Windy losgelaten, Open-Meteo en Rijkswaterstaat als bronnen; alertgrens naar 0,8 m.
+- 21 nov 2026: het oorspronkelijke bouwgesprek was per ongeluk verwijderd; de app zelf stond nog volledig op GitHub. Dit bestand gemaakt. Service worker bewaart rws.json niet meer bij elke verversing opnieuw, windtabel-fix, `__pycache__` weg, metingen naar de branch `data` (één commit) in plaats van elk kwartier een commit op main.
