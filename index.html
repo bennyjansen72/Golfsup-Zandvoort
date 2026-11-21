@@ -604,8 +604,8 @@ a { color: var(--accent); }
       var pu = us.filter(function (u) { return phase(D, u) === "push"; }), k = kind(cs[0].w.deg);
       var t = [["Golf", rg(v, 1, " m", 0.05), ps.length ? "periode " + rg(ps, 0, " s", 1) : ""],
         ["Wind", rg(kn, 0, " kn", 1), compass(cs[0].w.deg) + " " + kindW(k)]];
-      // Alert voor vandaag: ook de actuele meting (golf en periode Munitiestort 2, wind Hollandse Kust Noord).
-      if (day === local(nowU()).day) {
+      // Altijd ook de actuele meting (golf en periode Munitiestort 2, wind Hollandse Kust Noord).
+      {
         var mh = lastMeas(D, "ms2", 3), mt = lastMeas(D, "ms2_tm10", 3) || lastMeas(D, "ms2_tm02", 3), ws = lastMeas(D, "hkn_ws", 3), wd = lastMeas(D, "hkn_wd", 3);
         if (mh) t.push(["Nu gemeten · " + hm(mh.u + 1), nf(mh.v / 100) + " m" + (mt ? " · " + Math.round(mt.v) + " s" : ""), (ws && wd ? "wind " + Math.round(ws.v) + " kn " + compass(wd.v) + " " + kindW(kind(wd.v)) : "") + "<br>boei IJmuiden", "now"]);
       }
