@@ -28,13 +28,6 @@ Laten zien wanneer de golven bij Zandvoort goed zijn om te golfsuppen, met een S
 - Afgaand tij paars. De laatste 2 uur voor laagwater bij golven onder 1 m: -1 punt.
 - Getij van Rijkswaterstaat voor IJmuiden; Zandvoort ligt ongeveer 10 minuten eerder.
 
-## Tweede zandbank (rij "2e bank", % kans dat hij breekt)
-
-- Kamdiepte uit JARKUS (Rijkswaterstaat, via Deltares OPeNDAP), raaien 8006500-8006800: 2025 NAP -1,9 tot -2,6 m (gemiddeld -2,4), 300-400 m uit de waterlijn, trog -3,6 tot -4,5 m. Standaard in de app -2,5 m (stormen na de meting), aanpasbaar bij Jouw grenzen (`bar2`).
-- Waterstand: cosinus tussen HW en LW van IJmuiden, 10 minuten eerder (`level`). Golf: Claude-hoogte en -periode, lineaire shoaling van 21 m naar de bank (`shoal`).
-- Kans = normale verdeling op ln(Hbank / h / 0,55), met 15% onzekerheid in de golf en 0,25 m in de bankdiepte (`BAR`, `bar2`). Groen vanaf 70%, geel vanaf 35%. Ook als tegel in de SUP ALERT.
-- Eerste bank ligt op ongeveer -0,8 tot -1,3 m en werkt rond hoogwater (verklaart de push). Bijwerken als er een nieuwe JARKUS-meting is (één keer per jaar).
-
 ## Bronnen
 
 - Open-Meteo: golven ECMWF WAM en GFS Wave, wind ECMWF IFS en GFS, zontijden. Windy en Windfinder zijn bewust geschrapt.
@@ -59,4 +52,4 @@ In de code heet het model nog `Klodde` (oude naam); op het scherm staat "Claude"
 ## Geschiedenis
 
 - 20 nov 2026: app gebouwd als eigen web-app op GitHub; Windy losgelaten, Open-Meteo en Rijkswaterstaat als bronnen; alertgrens naar 0,8 m.
-- 21 nov 2026: het oorspronkelijke bouwgesprek was per ongeluk verwijderd; de app zelf stond nog volledig op GitHub. Dit bestand gemaakt. Service worker bewaart rws.json niet meer bij elke verversing opnieuw, windtabel-fix, `__pycache__` weg, metingen naar de branch `data` (één commit) in plaats van elk kwartier een commit op main. Rij "2e bank" (% kans dat de tweede zandbank breekt) toegevoegd, met instelbare kamdiepte.
+- 21 nov 2026: het oorspronkelijke bouwgesprek was per ongeluk verwijderd; de app zelf stond nog volledig op GitHub. Dit bestand gemaakt. Service worker bewaart rws.json niet meer bij elke verversing opnieuw, windtabel-fix, `__pycache__` weg, metingen naar de branch `data` (één commit) in plaats van elk kwartier een commit op main.
