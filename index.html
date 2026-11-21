@@ -146,10 +146,11 @@ thead th.flash { color: #FFE27A; background: rgba(14, 107, 140, 0.85); border-ra
 .cam-txt em { display: block; font-style: normal; font-size: 12.5px; color: var(--muted); }
 .cam-go { font-weight: 700; color: var(--surface); background: var(--accent); border-radius: 10px; padding: 8px 12px; flex: none; }
 .alert-foot { margin-top: auto; padding-top: 12px; }
-.alert-now { display: inline-block; max-width: 210px; background: rgba(8, 30, 44, 0.55); border: 1px solid rgba(255, 226, 122, 0.65); border-radius: 10px; padding: 7px 9px; }
+.alert-now { display: inline-block; max-width: 240px; background: rgba(8, 30, 44, 0.55); border: 1px solid rgba(255, 226, 122, 0.65); border-radius: 10px; padding: 7px 9px; }
 .alert-now b { display: block; font-size: 9.5px; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 600; color: #FFE27A; }
 .alert-now span { display: block; font-size: clamp(16px, 4.6vw, 21px); font-weight: 700; line-height: 1.2; white-space: nowrap; }
 .alert-now em { display: block; font-style: normal; font-size: 11px; opacity: 0.85; line-height: 1.25; }
+.alert-now i.gap { display: block; height: 6px; }
 .alert-more { margin: 8px 0 0; font-size: 13.5px; opacity: 0.9; }
 .best { font-size: 16px; margin: 0; padding: 12px 14px; border-radius: 12px; background: var(--good-bg); color: var(--good-fg); font-weight: 600; }
 .best.none { background: var(--mid-bg); color: var(--mid-fg); }
@@ -236,7 +237,7 @@ a { color: var(--accent); }
     <h2 id="h-src">Bronnen en werkwijze</h2>
     <ul class="plain">
       <li>Voorspelling: <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a> (gratis voor niet-commercieel gebruik). Golven van ECMWF WAM en NOAA GFS Wave, gemiddeld over de rasterpunten op 52,25° en 52,5° NB, 4,5° OL (Zandvoort ligt ertussen). Wind van ECMWF IFS (0,25°) en GFS. Getij: astronomische getijvoorspelling van Rijkswaterstaat voor IJmuiden. Periode: bij ECMWF de piekperiode, bij GFS de swellperiode.</li>
-      <li>Metingen: <a href="https://waterinfo.rws.nl/" target="_blank" rel="noopener">Rijkswaterstaat</a> Waterwebservices (open data), elk uur opgehaald door een automatische taak in de GitHub-repository.</li>
+      <li>Metingen: <a href="https://waterinfo.rws.nl/" target="_blank" rel="noopener">Rijkswaterstaat</a> Waterwebservices (open data), elk kwartier opgehaald door een automatische taak in de GitHub-repository. Golven van IJmuiden Munitiestort 2, wind van de pier van IJmuiden (havenhoofd zuid, elke 10 minuten gemeten) en Hollandse Kust Noord.</li>
       <li>Claude (mijn eigen voorspelling) voorspelt de golfhoogte bij IJmuiden Munitiestort 2 in drie lagen. 1) Modellen: golfhoogte van ECMWF en GFS, gecorrigeerd met hun eigen wind (0,98 keer de hoogte, plus 0,0012 m per knoop aanlandige wind, min 0,0094 m per knoop aflandige wind; gefit op 60 dagen metingen) en geschaald met de fout van de afgelopen zeven dagen, apart voor lage en hoge golven. 2) Getij: kleine factor op de hoogte (gemeten 0 tot 3,5 procent) en een punt erbij of eraf in de score voor push en laagwater. 3) Boeien: tot 3 uur na de laatste meting komt Claude uit de metingen van Munitiestort 2, K14, J6 en L9 plus de wind, daarna steeds minder tot 0 bij 12 uur. Getest op 60 dagen: 6 tot 19 cm fout tot 9 uur vooruit bij golven onder 1,5 m.</li>
       <li>Swellperiode en -richting voegen in de metingen weinig toe bovenop hoogte en wind, en de golfmodellen rekenen ze al mee. Korte golven (onder 6 s) en swell uit het noorden komen wel zwakker aan. Energie wordt gebruikt om bij gelijke score het beste moment te kiezen.</li>
       <li>De windrichting is waaruit de wind komt. De tabellen beginnen bij het uur van zonsopkomst en stoppen bij het uur van zonsondergang (zontijden van Open-Meteo). Een SUP ALERT komt alleen tussen zonsopkomst en zonsondergang.</li>
@@ -618,9 +619,15 @@ a { color: var(--accent); }
     function rg(a, d, unit, step, sep) { var f = function (x) { return d === 0 ? String(Math.round(x)) : nf(x, d); }, lo = f(Math.min.apply(null, a)), hi = f(Math.max.apply(null, a)); return lo + (hi !== lo ? (sep || "–") + hi : "") + unit; }
     // Actuele meting: golf en periode Munitiestort 2, wind Hollandse Kust Noord. Altijd linksonder in de banner.
     function nowTile() {
-      var mh = lastMeas(D, "ms2", 3), mt = lastMeas(D, "ms2_tm10", 3) || lastMeas(D, "ms2_tm02", 3), ws = lastMeas(D, "hkn_ws", 3), wd = lastMeas(D, "hkn_wd", 3);
-      if (!mh) return "";
-      return "<div class='alert-now'><b>Nu gemeten · " + hm(mh.u + 1) + "</b><span>" + nf(mh.v / 100) + " m" + (mt ? " · " + Math.round(mt.v) + " s" : "") + "</span><em>" + (ws && wd ? "wind " + Math.round(ws.v) + " kn " + compass(wd.v) + " " + kindW(kind(wd.v)) + "<br>" : "") + "boei IJmuiden</em></div>";
+      var mh = lastMeas(D, "ms2", 3), mt = lastMeas(D, "ms2_tm10", 3) || lastMeas(D, "ms2_tm02", 3);
+      var wn = D.rws && D.rws.wind_now, h = "";
+      // Wind: laatste 10-minutenmeting (pier IJmuiden); anders het laatste uurgemiddelde van Hollandse Kust Noord.
+      var wtxt = "";
+      if (wn && nowU() - wn.t / 3600 < 3) wtxt = "<span>" + Math.round(wn.kn) + " kn " + compass(wn.deg) + "</span><em>wind · " + (wn.name === "IJmuiden havenhoofd" ? "pier IJmuiden" : wn.name) + " · " + hm(wn.t / 3600) + " · " + kindW(kind(wn.deg)) + "</em>";
+      else { var ws = lastMeas(D, "hkn_ws", 3), wd = lastMeas(D, "hkn_wd", 3); if (ws && wd) wtxt = "<span>" + Math.round(ws.v) + " kn " + compass(wd.v) + "</span><em>wind · Hollandse Kust Noord · " + hm(ws.u + 1) + " · " + kindW(kind(wd.v)) + "</em>"; }
+      if (!mh && !wtxt) return "";
+      if (mh) h += "<span>" + nf(mh.v / 100) + " m" + (mt ? " · " + Math.round(mt.v) + " s" : "") + "</span><em>golf · boei IJmuiden · " + hm(mh.u + 1) + "</em>";
+      return "<div class='alert-now'><b>Nu gemeten</b>" + h + (h && wtxt ? "<i class='gap'></i>" : "") + wtxt + "</div>";
     }
     function tiles(day, us) {
       var cs = us.map(function (u) { return ans[day].cells["Klodde|" + u]; }), v = cs.map(function (c) { return c.v; }), kn = cs.map(function (c) { return Math.round(c.w.kn); });
@@ -721,7 +728,7 @@ a { color: var(--accent); }
     var us = []; for (var u = D.end - 7; u <= D.end; u++) us.push(u);
     var t = "<thead><tr><th></th>" + us.map(function (u) { var h = local(u).h; return "<th>" + (h < 10 ? "0" : "") + h + "</th>"; }).join("") + "</tr></thead><tbody>";
     function c(kn, deg) { return kn === undefined || deg === undefined ? "<td>·</td>" : "<td class='c " + wcls(kn, deg, L) + "'>" + Math.round(kn) + "<small class='per'>" + compass(deg) + "</small></td>"; }
-    [["Hollandse Kust Noord (gemeten)", "hkn"], ["K14 (gemeten)", "k14"]].forEach(function (s) { t += "<tr><td>" + s[0] + "</td>" + us.map(function (u) { return c((D.meas[s[1] + "_ws"] || {})[u], (D.meas[s[1] + "_wd"] || {})[u]); }).join("") + "</tr>"; });
+    [["Pier IJmuiden (gemeten)", "ijm"], ["Hollandse Kust Noord (gemeten)", "hkn"], ["K14 (gemeten)", "k14"]].forEach(function (s) { t += "<tr><td>" + s[0] + "</td>" + us.map(function (u) { return c((D.meas[s[1] + "_ws"] || {})[u], (D.meas[s[1] + "_wd"] || {})[u]); }).join("") + "</tr>"; });
     ["ECMWF", "GFS"].forEach(function (m) { t += "<tr><td>" + m + " (voorspeld)</td>" + us.map(function (u) { return c(D.M[m].kn[u], D.M[m].deg[u]); }).join("") + "</tr>"; });
     $("wind-table").innerHTML = t + "</tbody>";
     $("wind-sub").textContent = "Uurgemiddelden in knopen; de letters zijn waaruit de wind komt. Zelfde kleuren als in de dagtabellen.";
@@ -741,6 +748,7 @@ a { color: var(--accent); }
   LIM_IDS.forEach(function (id) { $(id).addEventListener("input", function () { try { var o = {}; LIM_IDS.forEach(function (k) { o[k] = $(k).value; }); localStorage.setItem("golfsup-limits", JSON.stringify(o)); } catch (e) {} render(); if (D) renderWind(); }); });
   $("days").addEventListener("toggle", function (e) { var d = e.target.getAttribute && e.target.getAttribute("data-day"); if (d) { S.open[d] = e.target.open; if (e.target.open) scrollToTarget(e.target); } }, true);
   $("refresh").addEventListener("click", load);
+  setInterval(function () { if (document.visibilityState === "visible") load(); }, 10 * 60e3);
   // Tik op de banner: naar de tabel van die dag, open, op het uur van de alert.
   function goAlert() {
     var a = $("alert"), day = a.getAttribute("data-day"), u = a.getAttribute("data-u"); if (!day) return;
@@ -751,7 +759,7 @@ a { color: var(--accent); }
   }
   $("alert").addEventListener("click", goAlert);
   $("alert").addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); goAlert(); } });
-  document.addEventListener("visibilitychange", function () { if (document.visibilityState === "visible" && (!D || Date.now() - D.fetched > 30 * 60e3)) load(); });
+  document.addEventListener("visibilitychange", function () { if (document.visibilityState === "visible" && (!D || Date.now() - D.fetched > 5 * 60e3)) load(); });
   if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js", { updateViaCache: "none" }).then(function (reg) {
     document.addEventListener("visibilitychange", function () { if (document.visibilityState === "visible") reg.update().catch(function () {}); });
     // Nieuwe versie geïnstalleerd: één keer herladen zodat je hem meteen ziet.

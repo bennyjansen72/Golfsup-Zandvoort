@@ -2,7 +2,7 @@ name: Rijkswaterstaat-metingen
 
 on:
   schedule:
-    - cron: "12,42 * * * *"   # twee keer per uur; GitHub slaat geplande runs soms over
+    - cron: "2,17,32,47 * * * *"   # elk kwartier; GitHub slaat geplande runs soms over
   workflow_dispatch: {}      # handmatig starten via het tabblad Actions
 
 permissions:

@@ -44,6 +44,10 @@ SERIES = [
     ("k13a_dir", "k13a.1", "Th3", "graad", "OW"),
     ("hkn_ws", "hollandsekust.noord.alpha", "WINDSHD", "m/s", "LT"),
     ("hkn_wd", "hollandsekust.noord.alpha", "WINDRTG", "graad", "LT"),
+    ("ijm_ws", "ijmuiden.havenhoofd.zuid", "WINDSHD", "m/s", "LT"),
+    ("ijm_wd", "ijmuiden.havenhoofd.zuid", "WINDRTG", "graad", "LT"),
+    ("ijb_ws", "ijmuiden.buitenhaven", "WINDSHD", "m/s", "LT"),
+    ("ijb_wd", "ijmuiden.buitenhaven", "WINDRTG", "graad", "LT"),
     ("k14_ws", "k14", "WINDSHD", "m/s", "LT"),
     ("k14_wd", "k14", "WINDRTG", "graad", "LT"),
 ]
@@ -153,6 +157,7 @@ def main(path):
     print(f"getij: {len(tides)} keer hoog- of laagwater", file=sys.stderr)
 
     ok, fails = 0, 0
+    raw = {}
     for key, loc, g, u, comp in SERIES:
         # Als Rijkswaterstaat traag is: niet eindeloos doorgaan, de rest uit het vorige bestand halen.
         pts = None
@@ -161,6 +166,7 @@ def main(path):
             time.sleep(0.4)
         arr = [None] * HOURS
         if pts:
+            raw[key] = pts
             ok += 1
             buckets = {}
             for t, v in pts:
@@ -190,6 +196,25 @@ def main(path):
                 print(f"{key}: niet opgehaald, oude waarden aangehouden", file=sys.stderr)
         print(f"{key}: {sum(1 for x in arr if x is not None)} uren", file=sys.stderr)
         out["s"][key] = arr
+    # Laatste 10-minutenmeting van de wind (IJmuiden havenhoofd zuid, anders buitenhaven, anders Hollandse Kust Noord).
+    def latest(key, deg=False):
+        pts = raw.get(key)
+        if not pts:
+            return None
+        tmax = max(t for t, v in pts)
+        vs = [v for t, v in pts if t == tmax]
+        if deg:
+            sx = sum(math.cos(math.radians(v)) for v in vs); sy = sum(math.sin(math.radians(v)) for v in vs)
+            val = round((math.degrees(math.atan2(sy, sx)) + 360) % 360)
+        else:
+            val = round(sum(vs) / len(vs) * 1.94384, 1)
+        return int(tmax.timestamp()), val
+    out["wind_now"] = None
+    for name, ws, wd in (("IJmuiden havenhoofd", "ijm_ws", "ijm_wd"), ("IJmuiden buitenhaven", "ijb_ws", "ijb_wd"), ("Hollandse Kust Noord", "hkn_ws", "hkn_wd")):
+        a, b = latest(ws), latest(wd, True)
+        if a and b and now.timestamp() - a[0] < 3 * 3600:
+            out["wind_now"] = {"name": name, "t": a[0], "kn": a[1], "deg": b[1]}
+            break
     if ok == 0 and not tides:
         print("Niets opgehaald; oud bestand blijft staan.", file=sys.stderr)
         sys.exit(0)
