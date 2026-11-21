@@ -833,7 +833,6 @@ a { color: var(--accent); }
       return "<div class='wb-row " + r[3] + "'><b>" + r[0] + "<small>" + r[1] + "</small></b><div class='wb-bar'><i style='width:" + Math.max(2, Math.round(100 * r[2] / top)) + "%'></i></div><span>" + (r[3] === "est" ? "≈ " : "") + m(r[2]) + "</span></div>";
     }).join("");
     var tiles = [];
-    if (tm02) tiles.push(["Aantal golven", "≈ " + Math.round(1200 / tm02), "in 20 minuten (schatting)"]);
     var tp = fp ? 1 / (fp > 2 ? fp / 1000 : fp) : null, per = [];
     if (t13) per.push("hoogste derde " + nf(t13) + " s");
     if (tp) per.push("piek " + nf(tp) + " s");
@@ -843,7 +842,7 @@ a { color: var(--accent); }
     if (th0 !== null) tiles.push(["Richting", compass(th0) + " " + Math.round(th0) + "°", "waar de golven vandaan komen"]);
     if (tw !== null) tiles.push(["Water", nf(tw) + "°", "zeewatertemperatuur"]);
     $("waves-grid").innerHTML = tiles.map(function (x) { return "<div><b>" + x[0] + "</b><span>" + x[1] + "</span><em>" + x[2] + "</em></div>"; }).join("");
-    $("waves-src").textContent = "Boei IJmuiden Munitiestort 2, " + (ten ? "10-minutenmeting" : "uurgemiddelde") + " van " + hm(t) + ". Hoogtes uit de losse golven (tijdsdomein); deining is het deel met lange golven (vanaf ongeveer 10 s). ≈ is een schatting: de gemiddelde golf is op zee ongeveer 0,63 keer de hoogste derde, het aantal golven is 20 minuten gedeeld door de gemiddelde periode. De laagste golf wordt niet gemeten.";
+    $("waves-src").textContent = "Boei IJmuiden Munitiestort 2, " + (ten ? "10-minutenmeting" : "uurgemiddelde") + " van " + hm(t) + ". Hoogtes uit de losse golven (tijdsdomein); deining is het deel met lange golven (vanaf ongeveer 10 s). ≈ is een schatting: de gemiddelde golf is op zee ongeveer 0,63 keer de hoogste derde. De laagste golf wordt niet gemeten.";
   }
   function renderAll() { renderStatus(); render(); renderNow(); renderWaves(); renderMeas(); }
 
