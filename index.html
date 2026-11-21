@@ -40,9 +40,10 @@
 }
 * { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
-html { background: var(--bg); }
+html { background: var(--bg); overscroll-behavior: none; }
+body { overscroll-behavior: none; }
 /* Achtergrondfoto: vast achter de app, bovenaan zichtbaar en naar beneden vervagend in de achtergrondkleur. */
-body::before { content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+body::before { content: ""; position: fixed; top: 0; left: 0; right: 0; height: 100vh; height: 100lvh; z-index: -1; pointer-events: none; transform: translateZ(0);
   background: linear-gradient(var(--photo-tint), var(--photo-tint)),
     linear-gradient(180deg, rgba(8, 30, 44, 0.50) 0%, rgba(8, 30, 44, 0.12) 22%, rgba(8, 30, 44, 0) 45%, var(--veil-end) 100%), url("bg.jpg") 55% 45% / cover no-repeat; }
 body { margin: 0; background: transparent; color: var(--fg); font-family: var(--font); font-size: 15px; line-height: 1.5;
