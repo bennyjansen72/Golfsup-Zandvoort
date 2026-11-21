@@ -39,4 +39,5 @@ In de code heet het model nog `Klodde` (oude naam); op het scherm staat "Claude"
 
 - Na elke wijziging het versienummer in `sw.js` ophogen.
 - Pas pushen naar GitHub als de gebruiker akkoord geeft: de site wordt dan meteen bijgewerkt.
-- De automatische taak commit `data/rws.json` elk kwartier; haal eerst de laatste versie op (`git pull --rebase`) voor je pusht.
+- De automatische taak zet de metingen elk kwartier op de branch `data` (één commit, force-push); main blijft schoon. De app leest `raw.githubusercontent.com/bennyjansen72/Golfsup-Zandvoort/data/rws.json`, met `data/rws.json` in main als reserve.
+- Haal voor het pushen toch even de laatste versie op (`git pull --rebase`).

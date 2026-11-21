@@ -1,5 +1,5 @@
 // Service worker: app-bestanden bewaren voor offline openen; gegevens altijd eerst van het netwerk.
-const CACHE = "golfsup-v29";
+const CACHE = "golfsup-v30";
 const SHELL = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./apple-touch-icon.png", "./favicon-32.png", "./bg.jpg", "./alert2.jpg"];
 
 self.addEventListener("install", (e) => {
@@ -14,8 +14,8 @@ self.addEventListener("fetch", (e) => {
   if (e.request.method !== "GET") return;
   // Eigen bestanden altijd bij de server controleren (geen verouderde kopie uit de browsercache).
   const url = new URL(e.request.url), same = url.origin === self.location.origin;
-  // Eigen bestanden zonder ?t=... bewaren, anders komt er bij elke verversing een nieuwe kopie van rws.json bij.
-  const key = same ? url.origin + url.pathname : e.request;
+  // Eigen bestanden en de metingen zonder ?t=... bewaren, anders komt er bij elke verversing een nieuwe kopie van rws.json bij.
+  const key = (same || url.hostname === "raw.githubusercontent.com") ? url.origin + url.pathname : e.request;
   e.respondWith(
     (same ? fetch(e.request.url, { cache: "no-cache" }) : fetch(e.request))
       .then((r) => {

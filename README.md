@@ -10,7 +10,7 @@ Voorspelling van Open-Meteo (ECMWF en GFS), metingen en getij van Rijkswaterstaa
 - `manifest.webmanifest`, `sw.js`, iconen: maken er een installeerbare app van
 - `bg.jpg`, `alert2.jpg`: achtergrondfoto en foto van de SUP ALERT
 - `rws_fetch.py`: haalt de metingen en het getij van Rijkswaterstaat op
-- `.github/workflows/rws.yml`: draait dat script elk kwartier en zet het resultaat in `data/rws.json`
+- `.github/workflows/rws.yml`: draait dat script elk kwartier en zet het resultaat als `rws.json` op de branch `data`. Die branch heeft altijd één commit, zodat main niet volloopt. `data/rws.json` in main is alleen nog een reservekopie.
 - `CLAUDE.md`: alle keuzes en grenzen op een rij, zodat een nieuw gesprek met Claude meteen verder kan
 
 ## Waarom een automatische taak?

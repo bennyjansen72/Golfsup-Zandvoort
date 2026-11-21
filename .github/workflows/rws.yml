@@ -1,5 +1,10 @@
 name: Rijkswaterstaat-metingen
 
+# Haalt elk kwartier de metingen op en zet ze op de aparte branch "data".
+# Die branch heeft altijd maar één commit (wordt elke keer vervangen), zodat de
+# geschiedenis van main niet groeit en de site niet elk kwartier opnieuw gebouwd wordt.
+# De app leest de metingen van raw.githubusercontent.com/.../data/rws.json.
+
 on:
   schedule:
     - cron: "2,17,32,47 * * * *"   # elk kwartier; GitHub slaat geplande runs soms over
@@ -18,13 +23,24 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
-      - name: Metingen ophalen
-        run: python3 rws_fetch.py data/rws.json
-      - name: Opslaan als er iets veranderd is
+      - name: Vorige metingen ophalen
         run: |
+          if git fetch --depth=1 origin data 2>/dev/null; then
+            git show origin/data:rws.json > /tmp/rws.json
+          elif [ -s data/rws.json ]; then
+            cp data/rws.json /tmp/rws.json   # eerste keer: oude kopie uit main
+          fi
+      - name: Metingen ophalen
+        run: python3 rws_fetch.py /tmp/rws.json
+      - name: Opslaan op de branch data
+        env:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          [ -s /tmp/rws.json ] || { echo "Geen metingen"; exit 0; }
+          mkdir /tmp/out && cp /tmp/rws.json /tmp/out/rws.json && cd /tmp/out
+          git init -q -b data
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/rws.json
-          if git diff --cached --quiet; then echo "Geen wijzigingen"; exit 0; fi
-          git commit -m "Metingen Rijkswaterstaat bijgewerkt"
-          git push
+          git add rws.json
+          git commit -q -m "Metingen Rijkswaterstaat"
+          git push -q -f "https://x-access-token:${TOKEN}@github.com/${GITHUB_REPOSITORY}.git" data
