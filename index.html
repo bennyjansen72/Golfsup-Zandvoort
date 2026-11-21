@@ -221,6 +221,7 @@ a { color: var(--accent); }
       <label for="minper">Periode vanaf (s)<input id="minper" type="number" inputmode="decimal" min="0" max="20" step="0.5" value="5.5"></label>
       <label for="maxoff">Aflandig tot (kn)<input id="maxoff" type="number" inputmode="numeric" min="0" max="40" step="1" value="16"></label>
       <label for="maxoth">Zij- of aanlandig tot (kn)<input id="maxoth" type="number" inputmode="numeric" min="0" max="40" step="1" value="6"></label>
+      <label for="bar2">Kam 2e bank (m onder NAP)<input id="bar2" type="number" inputmode="decimal" min="0.5" max="6" step="0.1" value="2.5"></label>
     </div>
     <p class="note">Aflandig is wind uit 45° tot 155° (NO tot ZZO), aanlandig uit 245° tot 335°, de rest is zijwaarts. Je grenzen worden op dit apparaat bewaard. Aflandige wind blaast je van de kust af en het water is koud: leash en wetsuit.</p>
   </section>
@@ -265,6 +266,7 @@ a { color: var(--accent); }
       <li>Claude-vakjes met een stippelrand komen (deels) uit de boeimetingen van de laatste uren.</li>
       <li>Windkleuren: blauw binnen je grens, oranje tot 5 kn erboven, rood verder erboven. De letters zijn waaruit de wind komt, de pijl waar hij naartoe waait.</li>
       <li>Getij: push (blauw) is de twee uur voor hoogwater en telt 1 punt extra. Afgaand tij is paars; de laatste twee uur voor laagwater tellen bij golven onder 1 m 1 punt minder.</li>
+      <li>2e bank: kans in procenten dat de tweede zandbank breekt (ongeveer 300 tot 400 m uit de waterlijn). Berekend uit de golf en periode van Claude, de waterstand (getij) en de diepte van de bankkam, die je bij Jouw grenzen kunt aanpassen. Standaard NAP −2,5 m, uit de jaarlijkse kustmetingen (JARKUS) van Rijkswaterstaat van 2025, iets dieper gezet voor de stormen sindsdien. De bank breekt duidelijk als de golf op de bank ongeveer 0,55 keer de waterdiepte is; de kans houdt rekening met onzekerheid in de voorspelling en de bankdiepte. Groen vanaf 70%, geel vanaf 35%. Tik of wijs een vakje aan voor de waterstand en de golf op de bank. Wind en golfrichting tellen niet mee, opzet door storm ook niet.</li>
       <li>Scroll de tabel zijwaarts voor alle uren.</li>
     </ul>
   </section>
@@ -323,11 +325,37 @@ a { color: var(--accent); }
   function dayLong(day) { var u = Date.parse(day + "T12:00:00Z") / 36e5, l = local(u); return DAYL[l.wd] + " " + l.dm + " " + MON[l.mo]; }
 
   // ---------- Grenzen (bewaard op dit apparaat) ----------
-  var LIM_IDS = ["minwave", "minper", "maxoff", "maxoth"];
+  var LIM_IDS = ["minwave", "minper", "maxoff", "maxoth", "bar2"];
   try { var saved = JSON.parse(localStorage.getItem("golfsup-limits") || "null"); if (saved) LIM_IDS.forEach(function (id) { if (saved[id] !== undefined) $(id).value = saved[id]; }); } catch (e) {}
   function limits() {
     function num(id, d) { var v = parseFloat(String($(id).value).replace(",", ".")); return isFinite(v) ? v : d; }
-    return { wave: num("minwave", 0.8), per: num("minper", 5.5), off: num("maxoff", 16), oth: num("maxoth", 6) };
+    return { wave: num("minwave", 0.8), per: num("minper", 5.5), off: num("maxoff", 16), oth: num("maxoth", 6), bar2: num("bar2", 2.5) };
+  }
+
+  // ---------- Tweede zandbank ----------
+  // Kamdiepte uit de JARKUS-kustmetingen van Rijkswaterstaat (raaien 6500-6800, Zandvoort): 2025 ongeveer NAP -2,4 m,
+  // na de stormen eerder -2,5 m. De golf van Munitiestort 2 (ongeveer 21 m diep) wordt met lineaire shoaling naar de bank gerekend.
+  // Een bank breekt duidelijk als de golfhoogte op de bank ongeveer 0,55 keer de waterdiepte is (0,5 = de sets, 0,7 = alles).
+  // De kans houdt rekening met onzekerheid in de golfvoorspelling (15%) en in de bankdiepte (0,25 m).
+  var BAR = { g: 0.55, h0: 21, sH: 0.15, sD: 0.25, tz: 1 / 6 };
+  function wavenum(h, T) { var w = 2 * Math.PI / T, k = w * w / 9.81; for (var i = 0; i < 60; i++) k = w * w / (9.81 * Math.tanh(k * h)); return k; }
+  function cgr(h, T) { var k = wavenum(h, T); return 0.5 * (1 + 2 * k * h / Math.sinh(2 * k * h)) * (2 * Math.PI / T) / k; }
+  function shoal(h, T) { return Math.sqrt(cgr(BAR.h0, T) / cgr(h, T)); }
+  // Waterstand Zandvoort (m t.o.v. NAP): cosinus tussen hoog- en laagwater van IJmuiden, Zandvoort ongeveer 10 minuten eerder.
+  function level(d, u) {
+    var t = u + BAR.tz, a = null, b = null;
+    for (var i = 0; i < d.tides.length; i++) { if (d.tides[i].u <= t) a = d.tides[i]; else { b = d.tides[i]; break; } }
+    if (!a || !b) return null;
+    return (a.v + b.v) / 2 + (a.v - b.v) / 2 * Math.cos(Math.PI * (t - a.u) / (b.u - a.u));
+  }
+  function ncdf(x) { var t = 1 / (1 + 0.2316419 * Math.abs(x)), y = 1 - 0.3989423 * Math.exp(-x * x / 2) * t * (0.3193815 + t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274)))); return x >= 0 ? y : 1 - y; }
+  function bar2(d, u, L) {
+    var k = d.KL[u], z = level(d, u);
+    if (!k || z === null || !(k.h > 0)) return null;
+    var h = L.bar2 + z; if (h < 0.3) h = 0.3;
+    var T = Math.max(3, k.p || 7), hb = k.h * shoal(h, T), r = hb / h;
+    var s = Math.sqrt(BAR.sH * BAR.sH + Math.pow(BAR.sD / h, 2));
+    return { pct: Math.round(100 * ncdf(Math.log(r / BAR.g) / s)), z: z, h: h, hb: hb, r: r };
   }
   function score(deg, kn, h, L, p) {
     // Golfhoogte als basisscore: 0,7 m = 7, 0,8 m = 8, 0,9 m = 9, vanaf 1 m = 10. Wind en periode kunnen hem verlagen.
@@ -570,6 +598,14 @@ a { color: var(--accent); }
       h += ph ? td(ph === "low" ? "ebb" : ph, lab, u) : td("na", "·", u);
     });
     h += "</tr>";
+    h += "<tr><th class='rn' scope='row'>2e bank<small>% breekt</small></th>";
+    us.forEach(function (u) {
+      var b = bar2(D, u, L);
+      if (!b) { h += td("na", "·", u); return; }
+      var tip = "2e bank " + pad(local(u).h) + ": " + b.pct + "% kans dat hij breekt. Waterstand " + (b.z >= 0 ? "+" : "") + nf(b.z, 2) + " m NAP, " + nf(b.h) + " m water op de kam, golf op de bank ongeveer " + nf(b.hb) + " m" + (b.r > 0.85 ? " (breekt waarschijnlijk dicht)" : "");
+      h += td(b.pct >= 70 ? "good" : b.pct >= 35 ? "mid" : "low", b.pct + "<small class='per'>%</small>", u, tip);
+    });
+    h += "</tr>";
     MODELS.forEach(function (m) {
       h += "<tr><th class='rn' scope='row'>" + mname(m) + "<small>score</small></th>";
       us.forEach(function (u) {
@@ -640,6 +676,8 @@ a { color: var(--accent); }
       var pu = us.filter(function (u) { return phase(D, u) === "push"; }), k = kind(cs[0].w.deg);
       var t = [["Golf", rg(v, 1, " m", 0.05), ps.length ? "periode " + rg(ps, 0, " s", 1) : ""],
         ["Wind", rg(kn, 0, " kn", 1), compass(cs[0].w.deg) + " " + kindW(k)]];
+      var bp = us.map(function (u) { var b = bar2(D, u, limits()); return b ? b.pct : null; }).filter(function (x) { return x !== null; });
+      if (bp.length) t.push(["2e bank", rg(bp, 0, "%", 1), "kans dat hij breekt"]);
       return "<div class='alert-stats'>" + t.map(function (x) { return "<div" + (x[3] ? " class='" + x[3] + "'" : "") + "><b>" + x[0] + "</b><span>" + x[1] + "</span><em>" + x[2] + "</em></div>"; }).join("") + "</div>";
     }
     function rel(day) { var today = local(nowU()).day, tm = local(nowU() + 24).day; return day === today ? "Vandaag, " : day === tm ? "Morgen, " : ""; }
