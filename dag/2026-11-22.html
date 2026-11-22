@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="nl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Alertdag Zandvoort, 22 november 2026: golven, wind, temperatuur, getij en stroming van zonsopkomst tot zonsondergang.">
+<meta property="og:title" content="Alertdag Zandvoort · 22 november 2026">
+<meta property="og:description" content="Golf 1,0–1,1 m, hoogste 1,81 m, wind 5–7 kn aflandig. In het water van 08:14 tot 12:00.">
+<meta property="og:image" content="https://bennyjansen72.github.io/Golfsup-Zandvoort/bg.jpg">
+<link rel="icon" href="../favicon-32.png">
+<title>Alertdag Zandvoort · 22 november 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<style>
+:root{--bg:#0b1622;--surface:#101e2c;--line:#1f3245;--grid:#1a2b3c;--t1:#f0efec;--t2:#b9c3cc;--t3:#7f8e9b;
+--blue:#3987e5;--blue-soft:#3987e533;--aqua:#199e70;--orange:#d95926;--yellow:#c98500;--violet:#9085e9;--red:#e66767;--sess:#f3c77a}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(1200px 500px at 20% -10%,#1b3550 0%,transparent 60%),var(--bg);color:var(--t1);font:14px/1.45 Inter,system-ui,sans-serif}
+.wrap{max-width:1100px;margin:0 auto;padding:28px 20px 40px}
+.eyebrow{display:inline-flex;gap:8px;align-items:center;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--sess);font-weight:600}
+.dot{width:8px;height:8px;border-radius:50%;background:#0ca30c;box-shadow:0 0 0 3px #0ca30c33}
+h1{font:600 clamp(28px,4.5vw,44px)/1.1 Fraunces,Georgia,serif;margin:8px 0 6px;letter-spacing:-.01em}
+.sub{color:var(--t2);max-width:720px;margin:0 0 22px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:22px}
+.tile{background:linear-gradient(180deg,#132538,#0f1d2b);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.tile .k{font-size:12px;color:var(--t3)}.tile .v{font:600 24px/1.2 Fraunces,serif;margin-top:2px}.tile .n{font-size:12px;color:var(--t2)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:10px 6px 6px;position:relative}
+svg text{fill:var(--t2);font-family:Inter,sans-serif}
+.lab{font-size:12px;font-weight:600;fill:var(--t1)}.unit{font-size:11px;fill:var(--t3)}
+.ax text{font-size:11px;fill:var(--t3)}.ax path,.ax line{stroke:var(--grid)}
+.tip{position:absolute;pointer-events:none;background:#0b1622ee;border:1px solid #2b4560;border-radius:12px;padding:10px 12px;font-size:12px;min-width:200px;opacity:0;transition:opacity .12s;backdrop-filter:blur(4px)}
+.tip b{font-size:13px}.tip .r{display:flex;justify-content:space-between;gap:14px}.tip .r span:first-child{color:var(--t3)}
+.sw{display:inline-block;width:10px;height:3px;border-radius:2px;margin-right:6px;vertical-align:middle}
+details{margin-top:18px;color:var(--t2)}summary{cursor:pointer;color:var(--t1);font-weight:500}
+table{border-collapse:collapse;width:100%;margin-top:10px;font-size:12px;font-variant-numeric:tabular-nums}
+th,td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:right}th:first-child,td:first-child{text-align:left}
+tr.in td{background:#f3c77a12}
+.foot{color:var(--t3);font-size:12px;margin-top:18px}
+</style></head><body><div class="wrap">
+<div class="eyebrow"><span class="dot"></span>SUP ALERT · klopte</div>
+<h1>Zondag 22 november, Zandvoort</h1>
+<p class="sub">Van zonsopkomst tot zonsondergang: golven, wind, temperatuur, getij en stroming. De gouden band is jullie sessie, van 08:14 tot 12:00. Beweeg over de grafiek voor de waarden.</p>
+<div class="tiles" id="tiles"></div>
+<div class="card" id="card"><svg id="chart"></svg><div class="tip" id="tip"></div></div>
+<details><summary>Tabel per uur</summary><table id="tbl"></table></details>
+<p class="foot"><a href="../" style="color:#86b6ef">← Naar de golfsup-app</a></p><p class="foot">Golven: Rijkswaterstaat, boei IJmuiden Munitiestort 2 (uurwaarden). Wind: gemeten op het havenhoofd IJmuiden. Lucht- en gevoelstemperatuur: Open-Meteo model voor Zandvoort; watertemperatuur en stroming: Open-Meteo Marine (SMOC-model, stroom langs de kust, + = noordwaarts). Getij: astronomisch getij IJmuiden van Rijkswaterstaat, 10 min eerder voor Zandvoort, tussen hoog- en laagwater vloeiend ingevuld.</p>
+</div>
+<script>
+const D={"rws": [{"t": 420, "h13": 1.06, "hm0": 1.05, "hmax": 1.64, "h110": 1.29, "sw": 0.17, "tm02": 5.0, "t13": 6.9, "tp": 6.2, "ws": 7.2, "wd": 79}, {"t": 480, "h13": 1.0, "hm0": 1.0, "hmax": 1.63, "h110": 1.24, "sw": 0.2, "tm02": 4.9, "t13": 6.9, "tp": 6.7, "ws": 5.0, "wd": 100}, {"t": 540, "h13": 1.01, "hm0": 1.02, "hmax": 1.81, "h110": 1.24, "sw": 0.18, "tm02": 4.8, "t13": 7.0, "tp": 6.7, "ws": 6.4, "wd": 88}, {"t": 600, "h13": 1.07, "hm0": 1.1, "hmax": 1.68, "h110": 1.31, "sw": 0.21, "tm02": 5.0, "t13": 7.3, "tp": 7.4, "ws": 6.0, "wd": 85}, {"t": 660, "h13": 1.04, "hm0": 1.07, "hmax": 1.62, "h110": 1.27, "sw": 0.27, "tm02": 5.1, "t13": 7.4, "tp": 6.9, "ws": 6.6, "wd": 79}, {"t": 720, "h13": 1.01, "hm0": 1.04, "hmax": 1.69, "h110": 1.26, "sw": 0.25, "tm02": 5.4, "t13": 7.7, "tp": 7.2, "ws": 7.4, "wd": 80}, {"t": 780, "h13": 0.97, "hm0": 1.0, "hmax": 1.57, "h110": 1.19, "sw": 0.25, "tm02": 5.4, "t13": 7.6, "tp": 7.2, "ws": 9.1, "wd": 73}, {"t": 840, "h13": 0.97, "hm0": 1.0, "hmax": 1.66, "h110": 1.2, "sw": 0.28, "tm02": 5.4, "t13": 7.8, "tp": 7.2, "ws": 9.5, "wd": 75}, {"t": 900, "h13": 0.9, "hm0": 0.93, "hmax": 1.48, "h110": 1.11, "sw": 0.27, "tm02": 5.1, "t13": 7.5, "tp": 7.6, "ws": 12.5, "wd": 63}, {"t": 960, "h13": 0.95, "hm0": 1.0, "hmax": 1.63, "h110": 1.19, "sw": 0.3, "tm02": 4.7, "t13": 7.2, "tp": 8.2, "ws": 13.0, "wd": 59}], "wx": [{"t": 420, "ta": 1.8, "tf": -1.4}, {"t": 480, "ta": 1.3, "tf": -1.5}, {"t": 540, "ta": 2.3, "tf": -0.5}, {"t": 600, "ta": 2.8, "tf": 0.1}, {"t": 660, "ta": 5.1, "tf": 2.5}, {"t": 720, "ta": 6.8, "tf": 4.5}, {"t": 780, "ta": 8.3, "tf": 5.6}, {"t": 840, "ta": 8.4, "tf": 5.3}, {"t": 900, "ta": 8.3, "tf": 5.4}, {"t": 960, "ta": 7.4, "tf": 4.2}, {"t": 1020, "ta": 5.9, "tf": 2.6}], "cur": [{"t": 420, "v": -0.68, "dir": 214, "spd": 0.7}, {"t": 480, "v": -0.53, "dir": 211, "spd": 0.54}, {"t": 540, "v": -0.53, "dir": 211, "spd": 0.54}, {"t": 600, "v": -0.21, "dir": 207, "spd": 0.22}, {"t": 660, "v": 0.54, "dir": 22, "spd": 0.54}, {"t": 720, "v": 1.03, "dir": 22, "spd": 1.03}, {"t": 780, "v": 0.92, "dir": 18, "spd": 0.92}, {"t": 840, "v": 0.69, "dir": 8, "spd": 0.7}, {"t": 900, "v": 0.48, "dir": 11, "spd": 0.49}, {"t": 960, "v": 0.15, "dir": 333, "spd": 0.22}, {"t": 1020, "v": -0.61, "dir": 219, "spd": 0.65}], "tide": [{"t": 420, "h": -13}, {"t": 425, "h": -15}, {"t": 430, "h": -17}, {"t": 435, "h": -19}, {"t": 440, "h": -21}, {"t": 445, "h": -23}, {"t": 450, "h": -25}, {"t": 455, "h": -27}, {"t": 460, "h": -28}, {"t": 465, "h": -30}, {"t": 470, "h": -32}, {"t": 475, "h": -33}, {"t": 480, "h": -35}, {"t": 485, "h": -36}, {"t": 490, "h": -38}, {"t": 495, "h": -39}, {"t": 500, "h": -40}, {"t": 505, "h": -41}, {"t": 510, "h": -42}, {"t": 515, "h": -43}, {"t": 520, "h": -44}, {"t": 525, "h": -45}, {"t": 530, "h": -46}, {"t": 535, "h": -47}, {"t": 540, "h": -47}, {"t": 545, "h": -48}, {"t": 550, "h": -49}, {"t": 555, "h": -49}, {"t": 560, "h": -49}, {"t": 565, "h": -50}, {"t": 570, "h": -50}, {"t": 575, "h": -50}, {"t": 580, "h": -50}, {"t": 585, "h": -50}, {"t": 590, "h": -49}, {"t": 595, "h": -49}, {"t": 600, "h": -48}, {"t": 605, "h": -46}, {"t": 610, "h": -45}, {"t": 615, "h": -43}, {"t": 620, "h": -40}, {"t": 625, "h": -38}, {"t": 630, "h": -35}, {"t": 635, "h": -32}, {"t": 640, "h": -29}, {"t": 645, "h": -25}, {"t": 650, "h": -22}, {"t": 655, "h": -18}, {"t": 660, "h": -14}, {"t": 665, "h": -10}, {"t": 670, "h": -6}, {"t": 675, "h": -1}, {"t": 680, "h": 3}, {"t": 685, "h": 8}, {"t": 690, "h": 13}, {"t": 695, "h": 17}, {"t": 700, "h": 22}, {"t": 705, "h": 27}, {"t": 710, "h": 31}, {"t": 715, "h": 36}, {"t": 720, "h": 41}, {"t": 725, "h": 45}, {"t": 730, "h": 50}, {"t": 735, "h": 54}, {"t": 740, "h": 58}, {"t": 745, "h": 62}, {"t": 750, "h": 66}, {"t": 755, "h": 69}, {"t": 760, "h": 73}, {"t": 765, "h": 76}, {"t": 770, "h": 79}, {"t": 775, "h": 82}, {"t": 780, "h": 84}, {"t": 785, "h": 87}, {"t": 790, "h": 89}, {"t": 795, "h": 90}, {"t": 800, "h": 92}, {"t": 805, "h": 93}, {"t": 810, "h": 93}, {"t": 815, "h": 94}, {"t": 820, "h": 94}, {"t": 825, "h": 94}, {"t": 830, "h": 94}, {"t": 835, "h": 94}, {"t": 840, "h": 93}, {"t": 845, "h": 93}, {"t": 850, "h": 93}, {"t": 855, "h": 92}, {"t": 860, "h": 91}, {"t": 865, "h": 91}, {"t": 870, "h": 90}, {"t": 875, "h": 89}, {"t": 880, "h": 88}, {"t": 885, "h": 87}, {"t": 890, "h": 86}, {"t": 895, "h": 85}, {"t": 900, "h": 84}, {"t": 905, "h": 82}, {"t": 910, "h": 81}, {"t": 915, "h": 79}, {"t": 920, "h": 78}, {"t": 925, "h": 76}, {"t": 930, "h": 75}, {"t": 935, "h": 73}, {"t": 940, "h": 71}, {"t": 945, "h": 69}, {"t": 950, "h": 67}, {"t": 955, "h": 65}, {"t": 960, "h": 63}, {"t": 965, "h": 61}, {"t": 970, "h": 59}, {"t": 975, "h": 57}, {"t": 980, "h": 55}, {"t": 985, "h": 53}, {"t": 990, "h": 50}, {"t": 995, "h": 48}, {"t": 1000, "h": 46}, {"t": 1005, "h": 43}, {"t": 1010, "h": 41}, {"t": 1015, "h": 39}, {"t": 1020, "h": 36}], "ext": [{"t": 80, "typ": "H", "h": 110}, {"t": 580, "typ": "L", "h": -50}, {"t": 820, "typ": "H", "h": 94}, {"t": 1300, "typ": "L", "h": -62}], "sunrise": 494, "sunset": 1000, "sess": [494, 720], "sst": 10.2};
+const fmt=m=>String(Math.floor(m/60)).padStart(2,'0')+':'+String(Math.round(m%60)).padStart(2,'0');
+const nl=(v,d=1)=>v==null?'–':v.toFixed(d).replace('.',',');
+const [S0,S1]=D.sess, T0=D.sunrise, T1=D.sunset;
+const inS=r=>r.t>=S0-30&&r.t<=S1;
+// tiles
+const sr=D.rws.filter(r=>r.t>=480&&r.t<=720);
+const avg=a=>a.reduce((x,y)=>x+y,0)/a.length;
+const mx=sr.reduce((a,b)=>b.hmax>a.hmax?b:a);
+const LW=D.ext.find(e=>e.typ==='L'&&e.t>400&&e.t<700), HW=D.ext.find(e=>e.typ==='H'&&e.t>700&&e.t<900);
+const tiles=[
+ ['Golf (H1/3)',nl(avg(sr.map(r=>r.h13)),2)+' m','gemiddeld tijdens sessie'],
+ ['Hoogste golf',nl(mx.hmax,2)+' m','rond '+fmt(mx.t)],
+ ['Periode',nl(avg(sr.map(r=>r.t13)))+' s','T1/3, piek '+nl(avg(sr.map(r=>r.tp)))+' s'],
+ ['Wind',Math.round(Math.min(...sr.map(r=>r.ws)))+'–'+Math.round(Math.max(...sr.map(r=>r.ws)))+' kn','oost, aflandig'],
+ ['Lucht · water',nl(D.wx.find(r=>r.t==480).ta)+'→'+nl(D.wx.find(r=>r.t==720).ta)+' °C','water '+nl(D.sst)+' °C'],
+ ['Getij','LW '+fmt(LW.t),'push '+fmt(HW.t-120)+'–'+fmt(HW.t)]];
+document.getElementById('tiles').innerHTML=tiles.map(t=>`<div class="tile"><div class="k">${t[0]}</div><div class="v">${t[1]}</div><div class="n">${t[2]}</div></div>`).join('');
+
+// layout
+const W=1060,ml=96,mr=22,TOP=62;
+const panels=[{id:'golf',h:170,title:'Golven',unit:'m'},{id:'per',h:90,title:'Periode',unit:'s'},{id:'wind',h:110,title:'Wind',unit:'kn'},
+ {id:'temp',h:100,title:'Temperatuur',unit:'°C'},{id:'tij',h:110,title:'Getij',unit:'cm NAP'},{id:'cur',h:100,title:'Stroming',unit:'kn'}];
+const gap=34;let y=TOP;panels.forEach(p=>{p.y=y;y+=p.h+gap});const H=y-gap+34;
+const svg=d3.select('#chart').attr('viewBox',`0 0 ${W} ${H}`).style('width','100%').style('display','block');
+const x=d3.scaleLinear().domain([T0,T1]).range([ml,W-mr]);
+const defs=svg.append('defs');
+const sky=defs.append('linearGradient').attr('id','sky');
+[['0','#f08a4b'],['.12','#f3c77a'],['.5','#7fb6e8'],['.88','#f3c77a'],['1','#e0674a']].forEach(([o,c])=>sky.append('stop').attr('offset',o).attr('stop-color',c));
+const cp=defs.append('clipPath').attr('id','cl');cp.append('rect').attr('x',ml).attr('y',0).attr('width',W-ml-mr).attr('height',H);
+// sky strip
+svg.append('rect').attr('x',ml).attr('y',26).attr('width',W-ml-mr).attr('height',6).attr('rx',3).attr('fill','url(#sky)').attr('opacity',.9);
+const sun=(t,l,a)=>{const g=svg.append('g').attr('transform',`translate(${x(t)},29)`);g.append('circle').attr('r',7).attr('fill','#f3c77a').attr('stroke','#101e2c').attr('stroke-width',2);
+ g.append('text').attr('x',0).attr('y',-12).attr('text-anchor',a).attr('class','unit').text(l)};
+sun(T0,'☀ op 08:14','start');sun(T1,'onder 16:40 ☾','end');
+// session band
+svg.append('rect').attr('x',x(S0)).attr('y',40).attr('width',x(S1)-x(S0)).attr('height',H-40-26).attr('rx',8).attr('fill','#f3c77a').attr('opacity',.075);
+svg.append('line').attr('x1',x(S1)).attr('x2',x(S1)).attr('y1',30).attr('y2',H-26).attr('stroke','#f3c77a').attr('stroke-opacity',.45).attr('stroke-dasharray','3 4');
+svg.append('text').attr('x',x(S0)+10).attr('y',54).attr('fill','#f3c77a').style('fill','#f3c77a').attr('font-size',12).attr('font-weight',600).text('In het water · 08:14 – 12:00');
+// push band
+const pushG=[HW.t-120,HW.t];
+
+const sc={};
+panels.forEach(p=>{
+ const g=svg.append('g');p.g=g;
+ g.append('text').attr('x',ml-12).attr('y',p.y+4).attr('text-anchor','end').attr('class','lab').text(p.title);
+ g.append('text').attr('x',ml-12).attr('y',p.y+18).attr('text-anchor','end').attr('class','unit').text(p.unit);
+});
+function yaxis(p,s,ticks,f){p.g.append('g').attr('class','ax').attr('transform',`translate(${ml},0)`).call(d3.axisLeft(s).ticks(ticks).tickSize(-(W-ml-mr)).tickFormat(f||(v=>String(v).replace('.',','))))
+ .call(a=>a.select('.domain').remove()).call(a=>a.selectAll('line').attr('stroke','var(--grid)')).call(a=>a.selectAll('text').attr('x',-6).attr('dy',3).style('display','none'));
+ p.g.append('g').attr('class','ax').attr('transform',`translate(${W-mr},0)`).call(d3.axisRight(s).ticks(ticks).tickSize(0).tickFormat(f||(v=>String(v).replace('.',',')))).call(a=>a.select('.domain').remove()).call(a=>a.selectAll('text').attr('x',-4).attr('text-anchor','end').attr('dy',-4)).call(a=>a.selectAll('.tick').filter(v=>s(v)<p.y+8).select('text').remove());}
+const P=Object.fromEntries(panels.map(p=>[p.id,p]));
+const C=svg.append('g').attr('clip-path','url(#cl)');
+const curve=d3.curveMonotoneX;
+const legend=(p,items)=>{let xx=W-mr;items.slice().reverse().forEach(([c,l,dash])=>{const t=p.g.append('text').attr('y',p.y-14).attr('text-anchor','end').attr('class','unit').text(l);
+ const w=l.length*6.1;t.attr('x',xx);p.g.append('line').attr('x1',xx-w-20).attr('x2',xx-w-6).attr('y1',p.y-18).attr('y2',p.y-18).attr('stroke',c).attr('stroke-width',dash?2:3).attr('stroke-linecap','round').attr('stroke-dasharray',dash||null);xx-=w+30;});};
+const thr=(p,s,v,l)=>{C.append('line').attr('x1',ml).attr('x2',W-mr).attr('y1',s(v)).attr('y2',s(v)).attr('stroke','#0ca30c').attr('stroke-width',1.5).attr('stroke-dasharray','2 5').attr('stroke-linecap','round');
+ C.append('text').attr('x',ml+6).attr('y',s(v)-5).attr('font-size',11).style('fill','#5fc75f').text(l);};
+
+// GOLVEN
+{const p=P.golf,s=d3.scaleLinear().domain([0,2]).range([p.y+p.h,p.y]);sc.golf=s;yaxis(p,s,4,v=>v.toFixed(1).replace('.',','));
+ const gr=defs.append('linearGradient').attr('id','gw').attr('x1',0).attr('x2',0).attr('y1',0).attr('y2',1);gr.append('stop').attr('offset',0).attr('stop-color','#3987e5').attr('stop-opacity',.55);gr.append('stop').attr('offset',1).attr('stop-color','#3987e5').attr('stop-opacity',.04);
+ C.append('path').datum(D.rws).attr('fill','url(#gw)').attr('d',d3.area().curve(curve).x(d=>x(d.t)).y0(s(0)).y1(d=>s(d.h13)));
+ C.append('path').datum(D.rws).attr('fill','#3987e5').attr('opacity',.16).attr('d',d3.area().curve(curve).x(d=>x(d.t)).y0(d=>s(d.h13)).y1(d=>s(d.h110)));
+ C.append('path').datum(D.rws).attr('fill','#199e70').attr('opacity',.5).attr('d',d3.area().curve(curve).x(d=>x(d.t)).y0(s(0)).y1(d=>s(d.sw)));
+ C.append('path').datum(D.rws).attr('fill','none').attr('stroke','#199e70').attr('stroke-width',2).attr('d',d3.line().curve(curve).x(d=>x(d.t)).y(d=>s(d.sw)));
+ C.append('path').datum(D.rws).attr('fill','none').attr('stroke','#3987e5').attr('stroke-width',2.5).attr('d',d3.line().curve(curve).x(d=>x(d.t)).y(d=>s(d.h13)));
+ C.append('path').datum(D.rws).attr('fill','none').attr('stroke','#9ec5f4').attr('stroke-width',1.5).attr('stroke-dasharray','1 4').attr('stroke-linecap','round').attr('d',d3.line().curve(curve).x(d=>x(d.t)).y(d=>s(d.hmax)));
+ C.selectAll('.hm').data(D.rws).join('circle').attr('cx',d=>x(d.t)).attr('cy',d=>s(d.hmax)).attr('r',3.5).attr('fill','#9ec5f4').attr('stroke','#101e2c').attr('stroke-width',2);
+ thr(p,s,0.8,'alertgrens 0,8 m');
+ C.append('text').attr('x',x(mx.t)).attr('y',s(mx.hmax)-10).attr('text-anchor','middle').attr('font-size',11).style('fill','#cde2fb').text('Hmax '+nl(mx.hmax,2)+' m');
+ legend(p,[['#3987e5','H1/3'],['#3987e588','H1/10 (band)'],['#9ec5f4','Hmax','1 4'],['#199e70','deining']]);}
+// PERIODE
+{const p=P.per,s=d3.scaleLinear().domain([4,9]).range([p.y+p.h,p.y]);sc.per=s;yaxis(p,s,3);
+ thr(p,s,5.5,'grens 5,5 s');
+ [['t13','#3987e5',null],['tp','#9085e9',null],['tm02','#7f8e9b','4 4']].forEach(([k,c,da])=>C.append('path').datum(D.rws).attr('fill','none').attr('stroke',c).attr('stroke-width',2).attr('stroke-dasharray',da).attr('d',d3.line().curve(curve).x(d=>x(d.t)).y(d=>s(d[k])))); 
+ legend(p,[['#3987e5','T1/3'],['#9085e9','piek'],['#7f8e9b','Tm02','4 4']]);}
+// WIND
+{const p=P.wind,s=d3.scaleLinear().domain([0,18]).range([p.y+p.h,p.y]);sc.wind=s;yaxis(p,s,3);
+ const gr=defs.append('linearGradient').attr('id','gwd').attr('x1',0).attr('x2',0).attr('y1',0).attr('y2',1);gr.append('stop').attr('offset',0).attr('stop-color','#d95926').attr('stop-opacity',.45);gr.append('stop').attr('offset',1).attr('stop-color','#d95926').attr('stop-opacity',.03);
+ C.append('path').datum(D.rws).attr('fill','url(#gwd)').attr('d',d3.area().curve(curve).x(d=>x(d.t)).y0(s(0)).y1(d=>s(d.ws)));
+ C.append('path').datum(D.rws).attr('fill','none').attr('stroke','#d95926').attr('stroke-width',2.5).attr('d',d3.line().curve(curve).x(d=>x(d.t)).y(d=>s(d.ws)));
+ thr(p,s,16,'grens aflandig 16 kn');
+ D.rws.filter(d=>d.t>=T0-20).forEach(d=>{const g=C.append('g').attr('transform',`translate(${x(d.t)},${s(d.ws)-16}) rotate(${d.wd+180})`);
+  g.append('path').attr('d','M0,-8 L4.5,5 L0,2.5 L-4.5,5 Z').attr('fill','#f0efec').attr('opacity',.9);});
+ C.append('text').attr('x',x(870)).attr('y',p.y+p.h-8).attr('font-size',11).style('fill','#b9c3cc').text('hele dag oost: aflandig ✓');
+ legend(p,[['#d95926','wind (gemeten, pijl = waarheen)']]);}
+// TEMP
+{const p=P.temp,s=d3.scaleLinear().domain([-3,12]).range([p.y+p.h,p.y]);sc.temp=s;yaxis(p,s,3);
+ C.append('line').attr('x1',ml).attr('x2',W-mr).attr('y1',s(D.sst)).attr('y2',s(D.sst)).attr('stroke','#199e70').attr('stroke-width',2.5).attr('stroke-linecap','round');
+ C.append('line').attr('x1',ml).attr('x2',W-mr).attr('y1',s(0)).attr('y2',s(0)).attr('stroke','#9ec5f4').attr('stroke-opacity',.35);
+ C.append('path').datum(D.wx).attr('fill','none').attr('stroke','#c98500').attr('stroke-width',2.5).attr('d',d3.line().curve(curve).x(d=>x(d.t)).y(d=>s(d.ta)));
+ C.append('path').datum(D.wx).attr('fill','none').attr('stroke','#c98500').attr('stroke-width',2).attr('stroke-dasharray','4 4').attr('d',d3.line().curve(curve).x(d=>x(d.t)).y(d=>s(d.tf)));
+ legend(p,[['#c98500','lucht'],['#c98500','gevoel','4 4'],['#199e70','water']]);}
+// TIJ
+{const p=P.tij,s=d3.scaleLinear().domain([-80,120]).range([p.y+p.h,p.y]);sc.tij=s;yaxis(p,s,3,v=>v);
+ C.append('rect').attr('x',x(pushG[0])).attr('width',x(pushG[1])-x(pushG[0])).attr('y',p.y).attr('height',p.h).attr('fill','#3987e5').attr('opacity',.18).attr('rx',6);
+ C.append('text').attr('x',x(pushG[0])+6).attr('y',p.y+13).attr('font-size',11).style('fill','#86b6ef').text('push');
+ const gr=defs.append('linearGradient').attr('id','gt').attr('x1',0).attr('x2',0).attr('y1',0).attr('y2',1);gr.append('stop').attr('offset',0).attr('stop-color','#9085e9').attr('stop-opacity',.5);gr.append('stop').attr('offset',1).attr('stop-color','#9085e9').attr('stop-opacity',.03);
+ C.append('path').datum(D.tide).attr('fill','url(#gt)').attr('d',d3.area().curve(curve).x(d=>x(d.t)).y0(p.y+p.h).y1(d=>s(d.h)));
+ C.append('path').datum(D.tide).attr('fill','none').attr('stroke','#9085e9').attr('stroke-width',2.5).attr('d',d3.line().curve(curve).x(d=>x(d.t)).y(d=>s(d.h)));
+ D.ext.filter(e=>e.t>T0&&e.t<T1).forEach(e=>{C.append('circle').attr('cx',x(e.t)).attr('cy',s(e.h)).attr('r',4.5).attr('fill','#9085e9').attr('stroke','#101e2c').attr('stroke-width',2);
+  C.append('text').attr('x',x(e.t)).attr('y',s(e.h)+(e.typ=='H'?-10:18)).attr('text-anchor','middle').attr('font-size',11).style('fill','#f0efec').text((e.typ=='H'?'HW ':'LW ')+fmt(e.t)+' · '+e.h+' cm');});}
+// STROMING
+{const p=P.cur,s=d3.scaleLinear().domain([-1,1.2]).range([p.y+p.h,p.y]);sc.cur=s;yaxis(p,s,3,v=>v.toFixed(1).replace('.',','));
+ C.append('line').attr('x1',ml).attr('x2',W-mr).attr('y1',s(0)).attr('y2',s(0)).attr('stroke','#52514e');
+ const bw=(x(60)-x(0))*0.42;
+ C.selectAll('.cb').data(D.cur).join('rect').attr('x',d=>x(d.t)-bw/2).attr('width',bw).attr('y',d=>Math.min(s(0),s(d.v))+(d.v>=0?0:1)).attr('height',d=>Math.max(1,Math.abs(s(d.v)-s(0))-1)).attr('rx',4)
+  .attr('fill',d=>d.v>=0?'#3987e5':'#e66767').attr('opacity',.85);
+ C.append('text').attr('x',ml+6).attr('y',p.y+12).attr('font-size',11).style('fill','#86b6ef').text('↑ noordwaarts (vloed)');
+ C.append('text').attr('x',ml+6).attr('y',p.y+p.h-4).attr('font-size',11).style('fill','#e66767').text('↓ zuidwaarts (eb)');}
+// x axis
+const xt=d3.range(540,1000,60);
+svg.append('g').attr('class','ax').attr('transform',`translate(0,${H-24})`).call(d3.axisBottom(x).tickValues(xt).tickFormat(fmt).tickSize(0)).call(a=>a.select('.domain').remove()).call(a=>a.selectAll('text').attr('dy',10));
+
+// hover
+const lerp=(arr,t,k)=>{for(let i=0;i<arr.length-1;i++){const a=arr[i],b=arr[i+1];if(t>=a.t&&t<=b.t){const f=(t-a.t)/(b.t-a.t);return a[k]==null||b[k]==null?null:a[k]+(b[k]-a[k])*f}}return null};
+const hv=svg.append('g').style('display','none');
+hv.append('line').attr('y1',30).attr('y2',H-26).attr('stroke','#f0efec').attr('stroke-opacity',.5);
+const dots=[['golf','h13','#3987e5'],['per','t13','#3987e5'],['wind','ws','#d95926'],['temp','ta','#c98500'],['tij','h','#9085e9']].map(([pid,k,c])=>({pid,k,c,el:hv.append('circle').attr('r',4.5).attr('fill',c).attr('stroke','#101e2c').attr('stroke-width',2)}));
+const tip=document.getElementById('tip'),card=document.getElementById('card');
+const dirName=dg=>['N','NO','O','ZO','Z','ZW','W','NW'][Math.round(((dg%360)+360)%360/45)%8];
+svg.append('rect').attr('x',ml).attr('y',30).attr('width',W-ml-mr).attr('height',H-56).attr('fill','transparent')
+ .on('pointermove',ev=>{const [px]=d3.pointer(ev);let t=Math.round(x.invert(px)/5)*5;t=Math.max(T0,Math.min(T1,t));
+  hv.style('display',null).attr('transform',`translate(${x(t)},0)`);
+  const v={h13:lerp(D.rws,t,'h13'),h110:lerp(D.rws,t,'h110'),hmax:lerp(D.rws,t,'hmax'),sw:lerp(D.rws,t,'sw'),t13:lerp(D.rws,t,'t13'),tp:lerp(D.rws,t,'tp'),ws:lerp(D.rws,t,'ws'),ta:lerp(D.wx,t,'ta'),tf:lerp(D.wx,t,'tf'),h:lerp(D.tide,t,'h'),cv:lerp(D.cur,t,'v')};
+  const near=D.rws.reduce((a,b)=>Math.abs(b.t-t)<Math.abs(a.t-t)?b:a);
+  dots.forEach(d=>{const val=d.k=='h'?v.h:v[d.k];if(val==null){d.el.style('display','none');return}d.el.style('display',null).attr('cx',0).attr('cy',sc[d.pid](val))});
+  const sess=t>=S0&&t<=S1, push=t>=pushG[0]&&t<=pushG[1];
+  const rising=lerp(D.tide,t+5,'h')>v.h;
+  tip.innerHTML=`<b>${fmt(t)}</b>${sess?' <span style="color:#f3c77a">· in het water</span>':''}<div style="height:6px"></div>`+[
+   ['#3987e5','Golf H1/3',v.h13==null?'–':nl(v.h13,2)+' m'],['#9ec5f4','Hmax',v.hmax==null?'–':nl(v.hmax,2)+' m'],['#199e70','Deining',v.sw==null?'–':nl(v.sw,2)+' m'],
+   ['#3987e5','Periode T1/3 · piek',v.t13==null?'–':nl(v.t13)+' · '+nl(v.tp)+' s'],['#d95926','Wind',v.ws==null?'–':Math.round(v.ws)+' kn '+dirName(near.wd)],
+   ['#c98500','Lucht · gevoel',nl(v.ta)+' · '+nl(v.tf)+' °C'],['#199e70','Water',nl(D.sst)+' °C'],
+   ['#9085e9','Getij',Math.round(v.h)+' cm, '+(rising?'opkomend':'afgaand')+(push?' (push)':'')],['#e66767','Stroming',v.cv==null?'–':nl(Math.abs(v.cv),2)+' kn '+(v.cv>=0?'noord':'zuid')]]
+   .map(r=>`<div class="r"><span><i class="sw" style="background:${r[0]}"></i>${r[1]}</span><span>${r[2]}</span></div>`).join('');
+  tip.style.opacity=1;const cr=card.getBoundingClientRect(),sx=cr.width/W;let lx=x(t)*sx+16;if(lx+230>cr.width)lx=x(t)*sx-246;
+  tip.style.left=lx+'px';tip.style.top=Math.max(8,(ev.clientY-cr.top)-90)+'px';})
+ .on('pointerleave',()=>{hv.style('display','none');tip.style.opacity=0});
+
+// table
+const rows=D.rws.filter(r=>r.t>=480);
+document.getElementById('tbl').innerHTML='<tr><th>Uur</th><th>H1/3</th><th>Hmax</th><th>Deining</th><th>T1/3</th><th>Piek</th><th>Wind</th><th>Lucht</th><th>Getij</th><th>Stroom</th></tr>'+rows.map(r=>{
+ const w=D.wx.find(a=>a.t==r.t),c=D.cur.find(a=>a.t==r.t),h=D.tide.find(a=>a.t==r.t);
+ return `<tr class="${r.t>=S0-14&&r.t<=S1?'in':''}"><td>${fmt(r.t)}</td><td>${nl(r.h13,2)} m</td><td>${nl(r.hmax,2)} m</td><td>${nl(r.sw,2)} m</td><td>${nl(r.t13)} s</td><td>${nl(r.tp)} s</td><td>${Math.round(r.ws)} kn ${dirName(r.wd)}</td><td>${nl(w.ta)} °C</td><td>${h.h} cm</td><td>${nl(Math.abs(c.v),2)} kn ${c.v>=0?'N':'Z'}</td></tr>`}).join('');
+</script></body></html>
