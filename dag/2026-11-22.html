@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="nl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="Alertdag Zandvoort, 22 november 2026: golven, wind, temperatuur, getij en stroming van zonsopkomst tot zonsondergang.">
-<meta property="og:title" content="Alertdag Zandvoort · 22 november 2026">
+<meta property="og:title" content="Alert · 22 november 2026 · Zandvoort">
 <meta property="og:description" content="Golf 1,0–1,1 m, hoogste 1,81 m, wind 5–7 kn aflandig. In het water van 08:14 tot 12:00.">
 <meta property="og:image" content="https://bennyjansen72.github.io/Golfsup-Zandvoort/bg.jpg">
 <link rel="icon" href="../favicon-32.png">
-<title>Alertdag Zandvoort · 22 november 2026</title>
+<title>Alert · 22 november 2026 · Zandvoort</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
 <style>
@@ -31,13 +31,27 @@ details{margin-top:18px;color:var(--t2)}summary{cursor:pointer;color:var(--t1);f
 table{border-collapse:collapse;width:100%;margin-top:10px;font-size:12px;font-variant-numeric:tabular-nums}
 th,td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:right}th:first-child,td:first-child{text-align:left}
 tr.in td{background:#f3c77a12}
+.notes{margin-top:22px;background:linear-gradient(180deg,#132538,#0f1d2b);border:1px solid var(--line);border-radius:18px;padding:18px 20px}
+.notes h2{font:600 20px/1.2 Fraunces,serif;margin:0 0 12px}
+.notes ol{margin:0;padding:0;list-style:none;counter-reset:n;display:grid;gap:10px}
+.notes li{counter-increment:n;display:flex;gap:12px;align-items:baseline;color:var(--t1)}
+.notes li::before{content:counter(n);flex:0 0 24px;height:24px;border-radius:50%;background:#f3c77a22;color:#f3c77a;font-weight:600;font-size:12px;display:inline-flex;align-items:center;justify-content:center;transform:translateY(-1px)}
+.score{display:inline-block;margin-left:6px;padding:1px 9px;border-radius:999px;background:#0ca30c26;color:#7fd97f;font-weight:600;font-variant-numeric:tabular-nums}
 .foot{color:var(--t3);font-size:12px;margin-top:18px}
 </style></head><body><div class="wrap">
-<div class="eyebrow"><span class="dot"></span>SUP ALERT · klopte</div>
-<h1>Zondag 22 november, Zandvoort</h1>
+<div class="eyebrow"><span class="dot"></span>SUP ALERT · klopte · Zandvoort</div>
+<h1>Alert · zondag 22 november 2026</h1>
 <p class="sub">Van zonsopkomst tot zonsondergang: golven, wind, temperatuur, getij en stroming. De gouden band is jullie sessie, van 08:14 tot 12:00. Beweeg over de grafiek voor de waarden.</p>
 <div class="tiles" id="tiles"></div>
 <div class="card" id="card"><svg id="chart"></svg><div class="tip" id="tip"></div></div>
+<section class="notes"><h2>Opmerkingen</h2><ol>
+<li>Beste moment rond laagwater.</li>
+<li>Crispy, cleane ochtend.</li>
+<li>Golven niet super krachtig, maar wel een heel mooie swellrichting.</li>
+<li>De bank brak alleen bij laagwater.</li>
+<li>Algemeen cijfer voor de totale ambiance <span class="score">8</span></li>
+<li>Cijfer voor de kwaliteit van de golven <span class="score">7,5</span></li>
+</ol></section>
 <details><summary>Tabel per uur</summary><table id="tbl"></table></details>
 <p class="foot"><a href="../" style="color:#86b6ef">← Naar de golfsup-app</a></p><p class="foot">Golven: Rijkswaterstaat, boei IJmuiden Munitiestort 2 (uurwaarden). Wind: gemeten op het havenhoofd IJmuiden. Lucht- en gevoelstemperatuur: Open-Meteo model voor Zandvoort; watertemperatuur en stroming: Open-Meteo Marine (SMOC-model, stroom langs de kust, + = noordwaarts). Getij: astronomisch getij IJmuiden van Rijkswaterstaat, 10 min eerder voor Zandvoort, tussen hoog- en laagwater vloeiend ingevuld.</p>
 </div>
