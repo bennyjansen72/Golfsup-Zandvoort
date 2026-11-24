@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="nl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Alertdagen golfsuppen Zandvoort: golven, wind, temperatuur, getij en stroming van zonsopkomst tot zonsondergang.">
+<meta property="og:title" content="Alertdagen Zandvoort">
+<meta property="og:description" content="Golven, wind, temperatuur, getij en stroming op elke alertdag bij Zandvoort.">
+<meta property="og:image" content="https://bennyjansen72.github.io/Golfsup-Zandvoort/bg.jpg">
+<link rel="icon" href="../favicon-32.png">
+<title>Alertdagen Zandvoort</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<style>
+:root{--bg:#0b1622;--surface:#101e2c;--line:#1f3245;--grid:#1a2b3c;--t1:#f0efec;--t2:#b9c3cc;--t3:#7f8e9b;--sess:#f3c77a}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(1200px 500px at 20% -10%,#1b3550 0%,transparent 60%),var(--bg);color:var(--t1);font:14px/1.45 Inter,system-ui,sans-serif;min-height:100vh}
+a{color:#86b6ef}
+.wrap{max-width:1100px;margin:0 auto;padding:28px 20px 40px}
+.eyebrow{display:inline-flex;gap:8px;align-items:center;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--sess);font-weight:600}
+.dot{width:8px;height:8px;border-radius:50%;background:#0ca30c;box-shadow:0 0 0 3px #0ca30c33}
+h1{font:600 clamp(28px,4.5vw,44px)/1.1 Fraunces,Georgia,serif;margin:8px 0 6px;letter-spacing:-.01em}
+.sub{color:var(--t2);max-width:760px;margin:0 0 22px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:22px}
+.tile{background:linear-gradient(180deg,#132538,#0f1d2b);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.tile .k{font-size:12px;color:var(--t3)}.tile .v{font:600 24px/1.2 Fraunces,serif;margin-top:2px}.tile .n{font-size:12px;color:var(--t2)}
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}.scroll svg{min-width:760px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:10px 6px 6px;position:relative}
+svg text{fill:var(--t2);font-family:Inter,sans-serif}
+.lab{font-size:12px;font-weight:600;fill:var(--t1)}.unit{font-size:11px;fill:var(--t3)}
+.ax text{font-size:11px;fill:var(--t3)}.ax path,.ax line{stroke:var(--grid)}
+.tip{position:absolute;pointer-events:none;background:#0b1622ee;border:1px solid #2b4560;border-radius:12px;padding:10px 12px;font-size:12px;min-width:210px;opacity:0;transition:opacity .12s;backdrop-filter:blur(4px)}
+.tip b{font-size:13px}.tip .r{display:flex;justify-content:space-between;gap:14px}.tip .r span:first-child{color:var(--t3)}
+.sw{display:inline-block;width:10px;height:3px;border-radius:2px;margin-right:6px;vertical-align:middle}
+details{margin-top:18px;color:var(--t2)}summary{cursor:pointer;color:var(--t1);font-weight:500}
+table{border-collapse:collapse;width:100%;margin-top:10px;font-size:12px;font-variant-numeric:tabular-nums}
+th,td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:right}th:first-child,td:first-child{text-align:left}
+tr.in td{background:#f3c77a12}tr.al td:first-child{box-shadow:inset 3px 0 0 #0ca30c}
+.notes{margin-top:22px;background:linear-gradient(180deg,#132538,#0f1d2b);border:1px solid var(--line);border-radius:18px;padding:18px 20px}
+.notes h2{font:600 20px/1.2 Fraunces,serif;margin:0 0 12px}
+.notes ol{margin:0;padding:0;list-style:none;counter-reset:n;display:grid;gap:10px}
+.notes li{counter-increment:n;display:flex;gap:12px;align-items:baseline;color:var(--t1)}
+.notes li::before{content:counter(n);flex:0 0 24px;height:24px;border-radius:50%;background:#f3c77a22;color:#f3c77a;font-weight:600;font-size:12px;display:inline-flex;align-items:center;justify-content:center;transform:translateY(-1px)}
+.score{display:inline-block;margin-left:6px;padding:1px 9px;border-radius:999px;background:#0ca30c26;color:#7fd97f;font-weight:600;font-variant-numeric:tabular-nums}
+.foot{color:var(--t3);font-size:12px;margin-top:18px}
+.list{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.day{display:block;text-decoration:none;color:var(--t1);background:linear-gradient(180deg,#132538,#0f1d2b);border:1px solid var(--line);border-radius:16px;padding:14px 16px;transition:border-color .15s,transform .15s}
+.day:hover{border-color:#3987e5;transform:translateY(-2px)}
+.day .dt{font:600 20px/1.2 Fraunces,serif}.day .hr{font-size:12px;color:var(--t3);margin:2px 0 10px}
+.day .row{display:flex;gap:16px;font-variant-numeric:tabular-nums}.day .row div span{display:block;font-size:11px;color:var(--t3)}
+.badge{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:999px;margin-top:10px;margin-right:6px}
+.b-sup{background:#f3c77a22;color:#f3c77a}.b-zien{background:#3987e522;color:#86b6ef}
+.msg{color:var(--t2);padding:30px 0}
+</style></head><body><div class="wrap" id="app"><p class="msg">Laden…</p></div>
+<script>
+const RAW='https://raw.githubusercontent.com/bennyjansen72/Golfsup-Zandvoort/data/dag/';
+const app=document.getElementById('app');
+const qd=new URLSearchParams(location.search).get('d');
+const fmt=m=>String(Math.floor(m/60)).padStart(2,'0')+':'+String(Math.round(m%60)).padStart(2,'0');
+const nl=(v,d=1)=>v==null||isNaN(v)?'–':v.toFixed(d).replace('.',',');
+const hm=s=>{const [h,m]=s.split(':').map(Number);return h*60+m};
+const DAGEN=['zondag','maandag','dinsdag','woensdag','donderdag','vrijdag','zaterdag'],MND=['januari','februari','maart','april','mei','juni','juli','augustus','september','oktober','november','december'];
+const dLong=ds=>{const [y,m,d]=ds.split('-').map(Number);const dt=new Date(Date.UTC(y,m-1,d));return DAGEN[dt.getUTCDay()]+' '+d+' '+MND[m-1]+' '+y};
+const dirName=dg=>['N','NO','O','ZO','Z','ZW','W','NW'][Math.round(((dg%360)+360)%360/45)%8];
+const kind=dg=>dg>=45&&dg<=155?'aflandig':dg>=245&&dg<=335?'aanlandig':'zijwaarts';
+const getJ=(u,o)=>fetch(u,o||{}).then(r=>{if(!r.ok)throw new Error(r.status);return r.json()});
+const noteP=getJ('./notities.json',{cache:'no-store'}).catch(()=>({}));
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+if(!qd) showList(); else showDay(qd);
+
+// ---------- Overzicht ----------
+async function showList(){
+  const notes=await noteP;
+  let idx;
+  try{idx=await getJ(RAW+'index.json?t='+Date.now())}catch(e){idx={days:[]}}
+  // dagen met een startbestand die nog niet in het archief staan
+  const have=new Set(idx.days.map(d=>d.date));
+  for(const ds of ['2026-11-22']) if(!have.has(ds)){try{const r=await getJ('./seed/'+ds+'.json');idx.days.push(summ(r))}catch(e){}}
+  idx.days.sort((a,b)=>a.date<b.date?1:-1);
+  app.innerHTML=`<div class="eyebrow"><span class="dot"></span>SUP ALERT · gemeten</div><h1>Alertdagen Zandvoort</h1>
+  <p class="sub">Elke dag waarop de metingen een alert gaven: minstens twee uur tussen zonsopkomst en zonsondergang met golven vanaf 0,8 m (H1/3, boei IJmuiden Munitiestort 2) en een score van 7 of hoger, met de grenzen van de app. De lijst vult zich vanzelf aan. Tik op een dag voor de grafiek.</p>
+  <div class="list">${idx.days.map(d=>{const n=notes[d.date];return `<a class="day" href="?d=${d.date}">
+   <div class="dt">${dLong(d.date).replace(/ \d{4}$/,'')}</div><div class="hr">alert ${fmt(d.from)}–${fmt(d.to)}</div>
+   <div class="row"><div><span>H1/3 max</span>${nl(d.h13,2)} m</div><div><span>Hmax</span>${nl(d.hmax,2)} m</div><div><span>Wind</span>${d.wind?Math.round(d.wind[0])+'–'+Math.round(d.wind[1])+' kn '+dirName(d.wd):'–'}</div></div>
+   ${n?`<span class="badge ${n.type=='gezien'?'b-zien':'b-sup'}">${n.type=='gezien'?'live gezien':'gesupt'}</span>`+(n.opmerkingen||[]).filter(o=>o&&o.cijfer!=null).map(o=>`<span class="badge" style="background:#0ca30c26;color:#7fd97f">${nl(o.cijfer,o.cijfer%1?1:0)}</span>`).join(''):''}
+  </a>`}).join('')||'<p class="msg">Nog geen alertdagen in het archief.</p>'}</div>
+  <p class="foot"><a href="../">← Naar de golfsup-app</a></p>`;
+}
+function summ(r){const al=r.hours.filter(x=>r.alert.includes(x.t));const ws=al.map(x=>x.ws);return{date:r.date,from:Math.min(...r.alert),to:Math.max(...r.alert)+60,h13:Math.max(...al.map(x=>x.h13??x.hm0)),hmax:Math.max(...al.map(x=>x.hmax)),wind:[Math.min(...ws),Math.max(...ws)],wd:al[al.length>>1].wd}}
+
+// ---------- Eén dag ----------
+async function showDay(ds){
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(ds)){app.innerHTML='<p class="msg">Onbekende datum. <a href="./">Naar het overzicht</a></p>';return}
+  let rec;
+  try{rec=await getJ(RAW+ds+'.json?t='+Date.now())}catch(e){try{rec=await getJ('./seed/'+ds+'.json')}catch(e2){}}
+  if(!rec){app.innerHTML=`<p class="msg">Voor ${dLong(ds)} is geen alertdag bewaard. <a href="./">Naar het overzicht</a></p>`;return}
+  const notes=await noteP, note=notes[ds]||null;
+  const q=`&start_date=${ds}&end_date=${ds}&timezone=Europe%2FAmsterdam`;
+  const wq='latitude=52.37&longitude=4.53&hourly=temperature_2m,apparent_temperature&daily=sunrise,sunset'+q;
+  const [wx,mar]=await Promise.all([
+    getJ('https://api.open-meteo.com/v1/forecast?'+wq).catch(()=>getJ('https://historical-forecast-api.open-meteo.com/v1/forecast?'+wq)).catch(()=>null),
+    getJ('https://marine-api.open-meteo.com/v1/marine?latitude=52.37&longitude=4.50&hourly=ocean_current_velocity,ocean_current_direction,sea_surface_temperature'+q).catch(()=>null)]);
+  const tmin=s=>hm(s.slice(11,16));
+  const D={rws:rec.hours,alert:rec.alert,sunrise:rec.sunrise,sunset:rec.sunset,wx:null,cur:null,sst:null,tide:[],ext:[]};
+  if(wx&&wx.hourly&&wx.hourly.temperature_2m.some(v=>v!=null)){
+    D.wx=wx.hourly.time.map((t,i)=>({t:tmin(t),ta:wx.hourly.temperature_2m[i],tf:wx.hourly.apparent_temperature[i]})).filter(r=>r.ta!=null);
+    if(wx.daily&&wx.daily.sunrise[0]){D.sunrise=tmin(wx.daily.sunrise[0]);D.sunset=tmin(wx.daily.sunset[0])}}
+  if(mar&&mar.hourly&&mar.hourly.ocean_current_velocity.some(v=>v!=null)){
+    const h=mar.hourly;D.cur=h.time.map((t,i)=>{const v=h.ocean_current_velocity[i],dg=h.ocean_current_direction[i];return v==null?null:{t:tmin(t),v:v/1.852*Math.cos((dg-20)*Math.PI/180),dir:dg}}).filter(Boolean);
+    const ss=h.sea_surface_temperature.filter(v=>v!=null);if(ss.length)D.sst=ss.reduce((a,b)=>a+b,0)/ss.length}
+  // getij: Zandvoort 10 minuten voor IJmuiden; lokale minuten t.o.v. middernacht van deze dag
+  const parts=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Amsterdam',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hourCycle:'h23'});
+  const day0=Date.UTC(...ds.split('-').map((v,i)=>i==1?v-1:+v));
+  const locMin=ts=>{const p=Object.fromEntries(parts.formatToParts(new Date(ts*1000)).map(x=>[x.type,x.value]));return (Date.UTC(+p.year,p.month-1,+p.day)-day0)/6e4+(+p.hour)*60+(+p.minute)};
+  const ext=(rec.tides||[]).map(t=>({t:locMin(t[0]-600),typ:t[1],h:t[2]}));
+  D.ext=ext.filter(e=>e.t>=0&&e.t<1440);
+  for(let mm=Math.floor(D.sunrise/5)*5-10;mm<=D.sunset+10;mm+=5){for(let i=0;i<ext.length-1;i++){const a=ext[i],b=ext[i+1];if(a.t<=mm&&mm<=b.t){const f=(mm-a.t)/(b.t-a.t);D.tide.push({t:mm,h:Math.round(a.h+(b.h-a.h)*(1-Math.cos(Math.PI*f))/2)});break}}}
+  if(note&&note.sessie)D.sess=note.sessie.map(hm);
+  render(ds,D,note);
+}
+
+function render(ds,D,note){
+  const T0=D.sunrise,T1=D.sunset,S=D.sess;
+  document.title='Alert · '+dLong(ds).replace(/^\S+ /,'')+' · Zandvoort';
+  const inFocus=S?(r=>r.t>=S[0]-30&&r.t<=S[1]):(r=>D.alert.includes(r.t));
+  const sr=D.rws.filter(inFocus).filter(r=>r.h13!=null||r.hm0!=null);
+  const H=r=>r.h13??r.hm0;
+  const avg=a=>{a=a.filter(v=>v!=null);return a.length?a.reduce((x,y)=>x+y,0)/a.length:null};
+  const mx=sr.filter(r=>r.hmax!=null).reduce((a,b)=>!a||b.hmax>a.hmax?b:a,null);
+  const day=D.ext.filter(e=>e.t>=T0-60&&e.t<=T1+60);
+  const LW=day.find(e=>e.typ=='L'),HW=day.find(e=>e.typ=='H');
+  const wsr=sr.map(r=>r.ws).filter(v=>v!=null), wdm=sr.length?sr[sr.length>>1].wd:null;
+  const at=(arr,t,k)=>{const r=arr&&arr.find(a=>a.t==t);return r?r[k]:null};
+  const focusTxt=S?'tijdens sessie':'tijdens alert-uren';
+  const tiles=[
+   ['Golf (H1/3)',nl(avg(sr.map(H)),2)+' m','gemiddeld '+focusTxt],
+   ['Hoogste golf',mx?nl(mx.hmax,2)+' m':'–',mx?'rond '+fmt(mx.t):''],
+   ['Periode',nl(avg(sr.map(r=>r.t13)))+' s','T1/3, piek '+nl(avg(sr.map(r=>r.tp)))+' s'],
+   ['Wind',wsr.length?Math.round(Math.min(...wsr))+'–'+Math.round(Math.max(...wsr))+' kn':'–',wdm!=null?dirName(wdm)+', '+kind(wdm):'']];
+  if(D.wx){const a=S?S[0]:sr.length?sr[0].t:T0,b=S?S[1]:sr.length?sr[sr.length-1].t:T1;const ta=at(D.wx,Math.round(a/60)*60,'ta'),tb=at(D.wx,Math.round(b/60)*60,'ta');
+    tiles.push(['Lucht · water',nl(ta)+'→'+nl(tb)+' °C',D.sst!=null?'water '+nl(D.sst)+' °C':''])}
+  if(LW||HW)tiles.push(['Getij',LW?'LW '+fmt(LW.t):'HW '+fmt(HW.t),HW?'push '+fmt(HW.t-120)+'–'+fmt(HW.t):'']);
+  const tag=note?(note.type=='gezien'?' · live gezien':' · gesupt'):'';
+  const sub=S?`Van zonsopkomst tot zonsondergang: golven, wind, temperatuur, getij en stroming. De gouden band is de sessie, van ${fmt(S[0])} tot ${fmt(S[1])}; de groene strook bovenaan toont de alert-uren volgens de metingen. Beweeg over de grafiek voor de waarden.`
+   :`Van zonsopkomst tot zonsondergang: golven, wind, temperatuur, getij en stroming. De groene strook bovenaan toont de alert-uren volgens de metingen. Beweeg over de grafiek voor de waarden.`;
+  const ops=(note&&note.opmerkingen)||[];
+  app.innerHTML=`<div class="eyebrow"><span class="dot"></span>SUP ALERT · gemeten${tag} · Zandvoort</div>
+  <h1>Alert · ${dLong(ds)}</h1><p class="sub">${sub}</p>
+  <div class="tiles">${tiles.map(t=>`<div class="tile"><div class="k">${t[0]}</div><div class="v">${t[1]}</div><div class="n">${t[2]}</div></div>`).join('')}</div>
+  <div class="card" id="card"><div class="scroll"><svg id="chart"></svg></div><div class="tip" id="tip"></div></div>
+  ${ops.length?`<section class="notes"><h2>Opmerkingen</h2><ol>${ops.map(o=>typeof o=='string'?`<li>${esc(o)}</li>`:`<li>${esc(o.tekst)}${o.cijfer!=null?` <span class="score">${nl(o.cijfer,o.cijfer%1?1:0)}</span>`:''}</li>`).join('')}</ol></section>`:''}
+  <details><summary>Tabel per uur</summary><table id="tbl"></table></details>
+  <p class="foot"><a href="./">← Alle alertdagen</a> · <a href="../">Naar de golfsup-app</a></p>
+  <p class="foot">Golven: Rijkswaterstaat, boei IJmuiden Munitiestort 2 (uurwaarden). Wind: gemeten op het havenhoofd IJmuiden. Lucht- en gevoelstemperatuur: Open-Meteo model voor Zandvoort; watertemperatuur en stroming: Open-Meteo Marine (SMOC-model, stroom langs de kust, + = noordwaarts). Getij: astronomisch getij IJmuiden van Rijkswaterstaat, 10 min eerder voor Zandvoort, tussen hoog- en laagwater vloeiend ingevuld. Alert-uren: golf vanaf 0,8 m en score 7 of hoger volgens de grenzen van de app.</p>`;
+  chart(D,T0,T1,S,LW,HW,mx);
+}
+
+function chart(D,T0,T1,S,LW,HW,mx){
+  const W=1060,ml=96,mr=22,TOP=62,gap=34;
+  const panels=[{id:'golf',h:170,title:'Golven',unit:'m'},{id:'per',h:90,title:'Periode',unit:'s'},{id:'wind',h:110,title:'Wind',unit:'kn'}];
+  if(D.wx)panels.push({id:'temp',h:100,title:'Temperatuur',unit:'°C'});
+  if(D.tide.length)panels.push({id:'tij',h:110,title:'Getij',unit:'cm NAP'});
+  if(D.cur)panels.push({id:'cur',h:100,title:'Stroming',unit:'kn'});
+  let y=TOP;panels.forEach(p=>{p.y=y;y+=p.h+gap});const H=y-gap+34;
+  const svg=d3.select('#chart').attr('viewBox',`0 0 ${W} ${H}`).style('width','100%').style('display','block');
+  const x=d3.scaleLinear().domain([T0,T1]).range([ml,W-mr]);
+  const defs=svg.append('defs');
+  const sky=defs.append('linearGradient').attr('id','sky');
+  [['0','#f08a4b'],['.12','#f3c77a'],['.5','#7fb6e8'],['.88','#f3c77a'],['1','#e0674a']].forEach(([o,c])=>sky.append('stop').attr('offset',o).attr('stop-color',c));
+  defs.append('clipPath').attr('id','cl').append('rect').attr('x',ml).attr('y',0).attr('width',W-ml-mr).attr('height',H);
+  svg.append('rect').attr('x',ml).attr('y',26).attr('width',W-ml-mr).attr('height',6).attr('rx',3).attr('fill','url(#sky)').attr('opacity',.9);
+  const sun=(t,l,a)=>{const g=svg.append('g').attr('transform',`translate(${x(t)},29)`);g.append('circle').attr('r',7).attr('fill','#f3c77a').attr('stroke','#101e2c').attr('stroke-width',2);
+   g.append('text').attr('x',0).attr('y',-12).attr('text-anchor',a).attr('class','unit').text(l)};
+  sun(T0,'☀ op '+fmt(T0),'start');sun(T1,'onder '+fmt(T1)+' ☾','end');
+  const C0=svg.append('g').attr('clip-path','url(#cl)');
+  // alert-uren als groene strook
+  D.alert.forEach(t=>C0.append('rect').attr('x',x(t-30)+1).attr('width',x(t+30)-x(t-30)-2).attr('y',36).attr('height',4).attr('rx',2).attr('fill','#0ca30c'));
+  if(S){
+    svg.append('rect').attr('x',x(S[0])).attr('y',44).attr('width',x(S[1])-x(S[0])).attr('height',H-44-26).attr('rx',8).attr('fill','#f3c77a').attr('opacity',.075);
+    svg.append('line').attr('x1',x(S[1])).attr('x2',x(S[1])).attr('y1',44).attr('y2',H-26).attr('stroke','#f3c77a').attr('stroke-opacity',.45).attr('stroke-dasharray','3 4');
+    svg.append('text').attr('x',x(S[0])+10).attr('y',58).style('fill','#f3c77a').attr('font-size',12).attr('font-weight',600).text('In het water · '+fmt(S[0])+' – '+fmt(S[1]));
+  } else svg.append('text').attr('x',Math.max(ml,x(Math.min(...D.alert)-30))+4).attr('y',54).style('fill','#5fc75f').attr('font-size',12).attr('font-weight',600).text('alert-uren');
+  const sc={};
+  panels.forEach(p=>{const g=svg.append('g');p.g=g;
+   g.append('text').attr('x',ml-12).attr('y',p.y+4).attr('text-anchor','end').attr('class','lab').text(p.title);
+   g.append('text').attr('x',ml-12).attr('y',p.y+18).attr('text-anchor','end').attr('class','unit').text(p.unit);});
+  const nf=v=>String(v).replace('.',',');
+  function yaxis(p,s,ticks,f){f=f||nf;
+   p.g.append('g').attr('class','ax').attr('transform',`translate(${ml},0)`).call(d3.axisLeft(s).ticks(ticks).tickSize(-(W-ml-mr)).tickFormat(f)).call(a=>a.select('.domain').remove()).call(a=>a.selectAll('line').attr('stroke','var(--grid)')).call(a=>a.selectAll('text').style('display','none'));
+   p.g.append('g').attr('class','ax').attr('transform',`translate(${W-mr},0)`).call(d3.axisRight(s).ticks(ticks).tickSize(0).tickFormat(f)).call(a=>a.select('.domain').remove()).call(a=>a.selectAll('text').attr('x',-4).attr('text-anchor','end').attr('dy',-4)).call(a=>a.selectAll('.tick').filter(v=>s(v)<p.y+8).select('text').remove());}
+  const P=Object.fromEntries(panels.map(p=>[p.id,p]));
+  const C=svg.append('g').attr('clip-path','url(#cl)');
+  const curve=d3.curveMonotoneX;
+  const def=k=>d=>d[k]!=null;
+  const line=(data,k,s)=>d3.line().defined(def(k)).curve(curve).x(d=>x(d.t)).y(d=>s(d[k]))(data);
+  const legend=(p,items)=>{let xx=W-mr;items.slice().reverse().forEach(([c,l,dash])=>{p.g.append('text').attr('y',p.y-14).attr('text-anchor','end').attr('class','unit').attr('x',xx).text(l);
+   const w=l.length*6.1;p.g.append('line').attr('x1',xx-w-20).attr('x2',xx-w-6).attr('y1',p.y-18).attr('y2',p.y-18).attr('stroke',c).attr('stroke-width',dash?2:3).attr('stroke-linecap','round').attr('stroke-dasharray',dash||null);xx-=w+30;});};
+  const thr=(s,v,l)=>{C.append('line').attr('x1',ml).attr('x2',W-mr).attr('y1',s(v)).attr('y2',s(v)).attr('stroke','#0ca30c').attr('stroke-width',1.5).attr('stroke-dasharray','2 5').attr('stroke-linecap','round');
+   C.append('text').attr('x',ml+6).attr('y',s(v)-5).attr('font-size',11).style('fill','#5fc75f').text(l);};
+  const grad=(id,c,o)=>{const g=defs.append('linearGradient').attr('id',id).attr('x1',0).attr('x2',0).attr('y1',0).attr('y2',1);g.append('stop').attr('offset',0).attr('stop-color',c).attr('stop-opacity',o);g.append('stop').attr('offset',1).attr('stop-color',c).attr('stop-opacity',.03);};
+  const R=D.rws.map(r=>({...r,hh:r.h13??r.hm0}));
+  // GOLVEN
+  {const p=P.golf,top=Math.max(2,Math.ceil((d3.max(R,r=>r.hmax)||2)*2)/2),s=d3.scaleLinear().domain([0,top]).range([p.y+p.h,p.y]);sc.golf=s;yaxis(p,s,4,v=>v.toFixed(1).replace('.',','));
+   grad('gw','#3987e5',.55);
+   C.append('path').datum(R).attr('fill','url(#gw)').attr('d',d3.area().defined(def('hh')).curve(curve).x(d=>x(d.t)).y0(s(0)).y1(d=>s(d.hh)));
+   C.append('path').datum(R).attr('fill','#3987e5').attr('opacity',.16).attr('d',d3.area().defined(d=>d.hh!=null&&d.h110!=null).curve(curve).x(d=>x(d.t)).y0(d=>s(d.hh)).y1(d=>s(d.h110)));
+   C.append('path').datum(R).attr('fill','#199e70').attr('opacity',.5).attr('d',d3.area().defined(def('sw')).curve(curve).x(d=>x(d.t)).y0(s(0)).y1(d=>s(d.sw)));
+   C.append('path').datum(R).attr('fill','none').attr('stroke','#199e70').attr('stroke-width',2).attr('d',line(R,'sw',s));
+   C.append('path').datum(R).attr('fill','none').attr('stroke','#3987e5').attr('stroke-width',2.5).attr('d',line(R,'hh',s));
+   C.append('path').attr('fill','none').attr('stroke','#9ec5f4').attr('stroke-width',1.5).attr('stroke-dasharray','1 4').attr('stroke-linecap','round').attr('d',line(R,'hmax',s));
+   C.selectAll('.hm').data(R.filter(def('hmax'))).join('circle').attr('cx',d=>x(d.t)).attr('cy',d=>s(d.hmax)).attr('r',3.5).attr('fill','#9ec5f4').attr('stroke','#101e2c').attr('stroke-width',2);
+   thr(s,0.8,'alertgrens 0,8 m');
+   if(mx)C.append('text').attr('x',Math.min(W-mr-50,Math.max(ml+50,x(mx.t)))).attr('y',s(mx.hmax)-10).attr('text-anchor','middle').attr('font-size',11).style('fill','#cde2fb').text('Hmax '+nl(mx.hmax,2)+' m');
+   legend(p,[['#3987e5','H1/3'],['#3987e588','H1/10 (band)'],['#9ec5f4','Hmax','1 4'],['#199e70','deining']]);}
+  // PERIODE
+  {const p=P.per,s=d3.scaleLinear().domain([Math.min(4,Math.floor(d3.min(R,r=>r.tm02)||4)),Math.max(9,Math.ceil(d3.max(R,r=>Math.max(r.tp||0,r.t13||0))||9))]).range([p.y+p.h,p.y]);sc.per=s;yaxis(p,s,3);
+   thr(s,5.5,'grens 5,5 s');
+   [['t13','#3987e5',null],['tp','#9085e9',null],['tm02','#7f8e9b','4 4']].forEach(([k,c,da])=>C.append('path').attr('fill','none').attr('stroke',c).attr('stroke-width',2).attr('stroke-dasharray',da).attr('d',line(R,k,s)));
+   legend(p,[['#3987e5','T1/3'],['#9085e9','piek'],['#7f8e9b','Tm02','4 4']]);}
+  // WIND
+  {const p=P.wind,s=d3.scaleLinear().domain([0,Math.max(18,Math.ceil((d3.max(R,r=>r.ws)||0)+4))]).range([p.y+p.h,p.y]);sc.wind=s;yaxis(p,s,3);
+   grad('gwd','#d95926',.45);
+   C.append('path').datum(R).attr('fill','url(#gwd)').attr('d',d3.area().defined(def('ws')).curve(curve).x(d=>x(d.t)).y0(s(0)).y1(d=>s(d.ws)));
+   C.append('path').attr('fill','none').attr('stroke','#d95926').attr('stroke-width',2.5).attr('d',line(R,'ws',s));
+   const kinds=new Set(R.filter(d=>d.t>=T0-30&&d.t<=T1&&d.wd!=null).map(d=>kind(d.wd)));
+   if(kinds.has('aflandig'))thr(s,16,'grens aflandig 16 kn');
+   if(kinds.has('aanlandig')||kinds.has('zijwaarts'))thr(s,6,'grens zij/aanlandig 6 kn');
+   R.filter(d=>d.t>=T0-20&&d.ws!=null&&d.wd!=null).forEach(d=>{C.append('g').attr('transform',`translate(${x(d.t)},${s(d.ws)-16}) rotate(${d.wd+180})`).append('path').attr('d','M0,-8 L4.5,5 L0,2.5 L-4.5,5 Z').attr('fill','#f0efec').attr('opacity',.9);});
+   legend(p,[['#d95926','wind (gemeten, pijl = waarheen)']]);}
+  // TEMP
+  if(D.wx){const p=P.temp,lo=Math.min(-3,Math.floor(d3.min(D.wx,r=>r.tf)-1)),hi=Math.max(12,Math.ceil(Math.max(d3.max(D.wx,r=>r.ta),D.sst||0)+2)),s=d3.scaleLinear().domain([lo,hi]).range([p.y+p.h,p.y]);sc.temp=s;yaxis(p,s,3);
+   if(D.sst!=null)C.append('line').attr('x1',ml).attr('x2',W-mr).attr('y1',s(D.sst)).attr('y2',s(D.sst)).attr('stroke','#199e70').attr('stroke-width',2.5).attr('stroke-linecap','round');
+   C.append('line').attr('x1',ml).attr('x2',W-mr).attr('y1',s(0)).attr('y2',s(0)).attr('stroke','#9ec5f4').attr('stroke-opacity',.35);
+   C.append('path').attr('fill','none').attr('stroke','#c98500').attr('stroke-width',2.5).attr('d',line(D.wx,'ta',s));
+   C.append('path').attr('fill','none').attr('stroke','#c98500').attr('stroke-width',2).attr('stroke-dasharray','4 4').attr('d',line(D.wx,'tf',s));
+   legend(p,[['#c98500','lucht'],['#c98500','gevoel','4 4']].concat(D.sst!=null?[['#199e70','water']]:[]));}
+  // TIJ
+  if(D.tide.length){const p=P.tij,s=d3.scaleLinear().domain([-100,140]).range([p.y+p.h,p.y]);sc.tij=s;yaxis(p,s,3,v=>v);
+   D.ext.filter(e=>e.typ=='H'&&e.t>T0&&e.t-120<T1).forEach(h=>{C.append('rect').attr('x',x(h.t-120)).attr('width',x(h.t)-x(h.t-120)).attr('y',p.y).attr('height',p.h).attr('fill','#3987e5').attr('opacity',.18).attr('rx',6);
+    C.append('text').attr('x',Math.max(x(h.t-120),ml)+6).attr('y',p.y+13).attr('font-size',11).style('fill','#86b6ef').text('push');});
+   grad('gt','#9085e9',.5);
+   C.append('path').datum(D.tide).attr('fill','url(#gt)').attr('d',d3.area().curve(curve).x(d=>x(d.t)).y0(p.y+p.h).y1(d=>s(d.h)));
+   C.append('path').attr('fill','none').attr('stroke','#9085e9').attr('stroke-width',2.5).attr('d',line(D.tide,'h',s));
+   D.ext.filter(e=>e.t>T0&&e.t<T1).forEach(e=>{C.append('circle').attr('cx',x(e.t)).attr('cy',s(e.h)).attr('r',4.5).attr('fill','#9085e9').attr('stroke','#101e2c').attr('stroke-width',2);
+    C.append('text').attr('x',x(e.t)).attr('y',s(e.h)+(e.typ=='H'?-10:18)).attr('text-anchor','middle').attr('font-size',11).style('fill','#f0efec').text((e.typ=='H'?'HW ':'LW ')+fmt(e.t)+' · '+e.h+' cm');});}
+  // STROMING
+  if(D.cur){const p=P.cur,m=Math.max(1,Math.ceil(d3.max(D.cur,r=>Math.abs(r.v))*2)/2),s=d3.scaleLinear().domain([-m,m*1.2]).range([p.y+p.h,p.y]);sc.cur=s;yaxis(p,s,3,v=>v.toFixed(1).replace('.',','));
+   C.append('line').attr('x1',ml).attr('x2',W-mr).attr('y1',s(0)).attr('y2',s(0)).attr('stroke','#52514e');
+   const bw=(x(60)-x(0))*0.42;
+   C.selectAll('.cb').data(D.cur).join('rect').attr('x',d=>x(d.t)-bw/2).attr('width',bw).attr('y',d=>Math.min(s(0),s(d.v))+(d.v>=0?0:1)).attr('height',d=>Math.max(1,Math.abs(s(d.v)-s(0))-1)).attr('rx',4).attr('fill',d=>d.v>=0?'#3987e5':'#e66767').attr('opacity',.85);
+   C.append('text').attr('x',ml+6).attr('y',p.y+12).attr('font-size',11).style('fill','#86b6ef').text('↑ noordwaarts (vloed)');
+   C.append('text').attr('x',ml+6).attr('y',p.y+p.h-4).attr('font-size',11).style('fill','#e66767').text('↓ zuidwaarts (eb)');}
+  svg.append('g').attr('class','ax').attr('transform',`translate(0,${H-24})`).call(d3.axisBottom(x).tickValues(d3.range(Math.ceil(T0/60)*60,T1,60)).tickFormat(fmt).tickSize(0)).call(a=>a.select('.domain').remove()).call(a=>a.selectAll('text').attr('dy',10));
+  // hover
+  const lerp=(arr,t,k)=>{if(!arr)return null;for(let i=0;i<arr.length-1;i++){const a=arr[i],b=arr[i+1];if(t>=a.t&&t<=b.t){if(a[k]==null||b[k]==null)return null;return a[k]+(b[k]-a[k])*(t-a.t)/(b.t-a.t)}}return null};
+  const hv=svg.append('g').style('display','none');
+  hv.append('line').attr('y1',36).attr('y2',H-26).attr('stroke','#f0efec').attr('stroke-opacity',.5);
+  const dots=[['golf','hh','#3987e5',R],['per','t13','#3987e5',R],['wind','ws','#d95926',R],['temp','ta','#c98500',D.wx],['tij','h','#9085e9',D.tide]].filter(d=>sc[d[0]]&&d[3]).map(([pid,k,c,arr])=>({pid,k,arr,el:hv.append('circle').attr('r',4.5).attr('fill',c).attr('stroke','#101e2c').attr('stroke-width',2)}));
+  const tip=document.getElementById('tip'),card=document.getElementById('card');
+  svg.append('rect').attr('x',ml).attr('y',36).attr('width',W-ml-mr).attr('height',H-62).attr('fill','transparent')
+   .on('pointermove',ev=>{const [px]=d3.pointer(ev);let t=Math.round(x.invert(px)/5)*5;t=Math.max(T0,Math.min(T1,t));
+    hv.style('display',null).attr('transform',`translate(${x(t)},0)`);
+    dots.forEach(d=>{const v=lerp(d.arr,t,d.k);if(v==null){d.el.style('display','none');return}d.el.style('display',null).attr('cy',sc[d.pid](v))});
+    const near=R.reduce((a,b)=>Math.abs(b.t-t)<Math.abs(a.t-t)?b:a);
+    const v=k=>lerp(R,t,k), th=lerp(D.tide,t,'h'), cv=lerp(D.cur,t,'v');
+    const push=D.ext.some(h=>h.typ=='H'&&t>=h.t-120&&t<=h.t), al=D.alert.some(a=>t>=a-30&&t<a+30);
+    const rows=[['#3987e5','Golf H1/3',v('hh')==null?'–':nl(v('hh'),2)+' m'],['#9ec5f4','Hmax',v('hmax')==null?'–':nl(v('hmax'),2)+' m'],['#199e70','Deining',v('sw')==null?'–':nl(v('sw'),2)+' m'],
+     ['#3987e5','Periode T1/3 · piek',nl(v('t13'))+' · '+nl(v('tp'))+' s'],['#d95926','Wind',v('ws')==null?'–':Math.round(v('ws'))+' kn '+(near.wd!=null?dirName(near.wd):'')]];
+    if(D.wx)rows.push(['#c98500','Lucht · gevoel',nl(lerp(D.wx,t,'ta'))+' · '+nl(lerp(D.wx,t,'tf'))+' °C']);
+    if(D.sst!=null)rows.push(['#199e70','Water',nl(D.sst)+' °C']);
+    if(th!=null)rows.push(['#9085e9','Getij',Math.round(th)+' cm, '+(lerp(D.tide,t+5,'h')>th?'opkomend':'afgaand')+(push?' (push)':'')]);
+    if(cv!=null)rows.push(['#e66767','Stroming',nl(Math.abs(cv),2)+' kn '+(cv>=0?'noord':'zuid')]);
+    tip.innerHTML=`<b>${fmt(t)}</b>${S&&t>=S[0]&&t<=S[1]?' <span style="color:#f3c77a">· in het water</span>':''}${al?' <span style="color:#5fc75f">· alert</span>':''}<div style="height:6px"></div>`+rows.map(r=>`<div class="r"><span><i class="sw" style="background:${r[0]}"></i>${r[1]}</span><span>${r[2]}</span></div>`).join('');
+    tip.style.opacity=1;const cr=card.getBoundingClientRect(),vr=svg.node().getBoundingClientRect(),px0=vr.left-cr.left+x(t)*vr.width/W;let lx=px0+16;if(lx+240>cr.width)lx=px0-256;
+    tip.style.left=Math.max(4,lx)+'px';tip.style.top=Math.max(8,(ev.clientY-cr.top)-90)+'px';})
+   .on('pointerleave',()=>{hv.style('display','none');tip.style.opacity=0});
+  // tabel
+  const rows=R.filter(r=>r.t>=Math.floor(T0/60)*60&&r.t<=T1);
+  document.getElementById('tbl').innerHTML='<tr><th>Uur</th><th>H1/3</th><th>Hmax</th><th>Deining</th><th>T1/3</th><th>Piek</th><th>Wind</th>'+(D.wx?'<th>Lucht</th>':'')+(D.tide.length?'<th>Getij</th>':'')+(D.cur?'<th>Stroom</th>':'')+'</tr>'+rows.map(r=>{
+   const w=D.wx&&D.wx.find(a=>a.t==r.t),c=D.cur&&D.cur.find(a=>a.t==r.t),h=D.tide.find(a=>a.t==r.t);
+   return `<tr class="${S&&r.t>=S[0]-30&&r.t<=S[1]?'in ':''}${D.alert.includes(r.t)?'al':''}"><td>${fmt(r.t)}</td><td>${nl(r.hh,2)} m</td><td>${nl(r.hmax,2)} m</td><td>${nl(r.sw,2)} m</td><td>${nl(r.t13)} s</td><td>${nl(r.tp)} s</td><td>${r.ws==null?'–':Math.round(r.ws)+' kn '+dirName(r.wd)}</td>`+
+    (D.wx?`<td>${w?nl(w.ta)+' °C':'–'}</td>`:'')+(D.tide.length?`<td>${h?h.h+' cm':'–'}</td>`:'')+(D.cur?`<td>${c?nl(Math.abs(c.v),2)+' kn '+(c.v>=0?'N':'Z'):'–'}</td>`:'')+'</tr>'}).join('');
+}
+</script></body></html>

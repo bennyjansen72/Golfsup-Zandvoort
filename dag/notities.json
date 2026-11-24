@@ -1,0 +1,16 @@
+{
+  "_uitleg": "Notities per alertdag, alleen als iemand gesupt heeft of het live gezien heeft. type: gesupt of gezien. sessie: begin en eind (HH:MM). opmerkingen: tekst, of {\"tekst\": ..., \"cijfer\": ...} voor een cijfer.",
+  "2026-11-22": {
+    "type": "gesupt",
+    "sessie": ["08:14", "12:00"],
+    "opmerkingen": [
+      "Beste moment rond laagwater.",
+      "Crispy, cleane ochtend.",
+      "Golven niet super krachtig, maar wel een heel mooie swellrichting.",
+      "De bank brak alleen bij laagwater.",
+      {"tekst": "Algemeen cijfer voor de totale ambiance", "cijfer": 8},
+      {"tekst": "Cijfer voor de kwaliteit van de golven", "cijfer": 7.5},
+      "Pak van 6,5 mm was veel te warm, en handschoenen waren eigenlijk niet nodig, behalve in het begin."
+    ]
+  }
+}

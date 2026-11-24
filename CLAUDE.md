@@ -47,6 +47,15 @@ In de code heet het model nog `Klodde` (oude naam); op het scherm staat "Claude"
 2. Kleine getijfactor (`TF`).
 3. Tot 3 uur na de laatste meting uit de boeien (`NOWC`), daarna aflopend tot 0 bij 12 uur.
 
+## Alertdagen (map `dag/`)
+
+- Overzicht: https://bennyjansen72.github.io/Golfsup-Zandvoort/dag/ ; één dag: `dag/?d=JJJJ-MM-DD`. Zelfde grafiek als het eerste dagoverzicht (golven, periode, wind, temperatuur, getij, stroming), met de alert-uren als groene strook en een tabel per uur.
+- Automatisch: `dag_archive.py` draait in de GitHub-taak na `rws_fetch.py` (met `continue-on-error`, zodat het de metingen nooit tegenhoudt). Een alertdag = minstens 2 uur tussen zonsopkomst en zonsondergang met golf (H1/3 Munitiestort 2, anders Hm0) vanaf 0,8 m en score 7 of hoger, met dezelfde `score()` en standaardgrenzen als de app; wind van havenhoofd IJmuiden. Per dag `dag/JJJJ-MM-DD.json` en `dag/index.json` op de branch `data` (wordt bij elke run meegenomen). Uren en getij blijven bewaard als ze uit het meetvenster van 8 dagen vallen.
+- Getij zit maar ongeveer 1 dag terug in rws.json; dagen van vóór 22 nov (19, 20 nov) hebben daarom geen getij. `dag/seed/` in main bevat startbestanden (22 nov met getij).
+- Temperatuur, zontijden, watertemperatuur en stroming haalt de pagina zelf bij Open-Meteo voor die datum (forecast, anders historical-forecast; marine). Ontbreekt iets, dan valt dat paneel weg.
+- Notities (alleen als iemand echt gesupt heeft of het live gezien heeft) staan in `dag/notities.json`: per datum `type` (gesupt/gezien), `sessie` [begin, eind] en `opmerkingen` (tekst of {tekst, cijfer}). De gebruiker geeft ze door; Claude zet ze erin.
+- `dag/2026-11-22.html` stuurt door naar `dag/?d=2026-11-22` (de eerste gedeelde link).
+
 ## Werkafspraken
 
 - Na elke wijziging het versienummer in `sw.js` ophogen.
@@ -59,3 +68,4 @@ In de code heet het model nog `Klodde` (oude naam); op het scherm staat "Claude"
 - 20 nov 2026: app gebouwd als eigen web-app op GitHub; Windy losgelaten, Open-Meteo en Rijkswaterstaat als bronnen; alertgrens naar 0,8 m.
 - 21 nov 2026: het oorspronkelijke bouwgesprek was per ongeluk verwijderd; de app zelf stond nog volledig op GitHub. Dit bestand gemaakt. Service worker bewaart rws.json niet meer bij elke verversing opnieuw, windtabel-fix, `__pycache__` weg, metingen naar de branch `data` (één commit) in plaats van elk kwartier een commit op main. Webcams Zandvoort en Wijk aan Zee toegevoegd; temperatuur en weericonen toegevoegd. Piekperiode en richting van K14, L9 en Eierlandse Gat erbij; aantal golven weg uit de opbouw van de golven. Rij Stroming (getijdestroom) toegevoegd.
 - 22 nov 2026: map `dag/` voor deelbare dagoverzichten van alertdagen (losse interactieve pagina met golven, periode, wind, temperatuur, getij en stroming, sessie gemarkeerd). Eerste: `dag/2026-11-22.html`.
+- 24 nov 2026: dagoverzichten automatisch voor elke alertdag (zie "Alertdagen").

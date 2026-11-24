@@ -27,20 +27,27 @@ jobs:
         run: |
           if git fetch --depth=1 origin data 2>/dev/null; then
             git show FETCH_HEAD:rws.json > /tmp/rws.json
+            mkdir -p /tmp/dag && (git archive FETCH_HEAD dag 2>/dev/null | tar -x -C /tmp) || true   # archief alertdagen
           elif [ -s data/rws.json ]; then
             cp data/rws.json /tmp/rws.json   # eerste keer: oude kopie uit main
           fi
       - name: Metingen ophalen
         run: python3 rws_fetch.py /tmp/rws.json
+      - name: Alertdagen bijwerken
+        continue-on-error: true   # een fout hier mag de metingen niet tegenhouden
+        run: mkdir -p /tmp/dag && python3 dag_archive.py /tmp/rws.json /tmp/dag
       - name: Opslaan op de branch data
         env:
           TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           [ -s /tmp/rws.json ] || { echo "Geen metingen"; exit 0; }
-          mkdir /tmp/out && cp /tmp/rws.json /tmp/out/rws.json && cd /tmp/out
+          mkdir /tmp/out && cp /tmp/rws.json /tmp/out/rws.json
+          [ -d /tmp/dag ] && cp -r /tmp/dag /tmp/out/dag || true
+          cd /tmp/out
           git init -q -b data
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add rws.json
+          [ -d dag ] && git add dag || true
           git commit -q -m "Metingen Rijkswaterstaat"
           git push -q -f "https://x-access-token:${TOKEN}@github.com/${GITHUB_REPOSITORY}.git" data
