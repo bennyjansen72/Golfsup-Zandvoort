@@ -6,7 +6,7 @@
   var OM_WAVE = "https://marine-api.open-meteo.com/v1/marine?latitude=52.25,52.5&longitude=4.5,4.5&cell_selection=sea&timeformat=unixtime&timezone=Europe%2FAmsterdam&past_days=7&forecast_days=6";
   var URLS = {
     ec: OM_WAVE + "&models=ecmwf_wam&hourly=wave_height,wave_peak_period,wave_direction",
-    gf: OM_WAVE + "&models=ncep_gfswave025&hourly=wave_height,swell_wave_period,swell_wave_direction",
+    gf: OM_WAVE + "&models=ncep_gfswave025&hourly=wave_height,wave_period,wave_direction,wind_wave_height,wind_wave_period,wind_wave_direction,swell_wave_height,swell_wave_period,swell_wave_direction",
     wind: "https://api.open-meteo.com/v1/forecast?latitude=52.38&longitude=4.48&cell_selection=sea&timeformat=unixtime&timezone=Europe%2FAmsterdam&past_days=1&forecast_days=6&wind_speed_unit=kn&hourly=wind_speed_10m,wind_direction_10m,wind_gusts_10m,temperature_2m,weather_code,is_day&models=ecmwf_ifs025,gfs_seamless&daily=sunrise,sunset",
     // Weer nu bij Zandvoort (Open-Meteo, beste model voor NL; dit is een modelwaarde, geen meting).
     // Getijdestroming (en stroming door wind en golven) bij Zandvoort: Météo-France SMOC via Open-Meteo, richting = waarheen.
@@ -16,7 +16,8 @@
     rws: "https://raw.githubusercontent.com/bennyjansen72/Golfsup-Zandvoort/data/rws.json",
     rwsOld: "data/rws.json"
   };
-  var KC = { a: 0.979, on: 0.0012, off: -0.0094, dir: 280 };
+  // Kust bij Zandvoort loopt ongeveer 20°-200°; de normaal naar zee wijst naar 290° (WNW).
+  var SHORE = 290;
   var TF = { push: 1.00, pushhi: 1.02, rise: 1.0, ebb: 0.965, ebbhi: 1.00, low: 0.985, lowhi: 1.00 };
   // Boeivoorspelling MS2 over L uur: [1, MS2, K14, J6, L9 (m), aanlandig, aflandig, |langs| (kn, voorspeld uur), aanlandig, aflandig (kn, nu)].
   var NOWC = {"1":[-0.019,0.9318,0.0088,0.0898,-0.0624,0.0111,0.0078,0.0048,-0.0087,-0.0092],"2":[-0.0383,0.8272,0.0112,0.1641,-0.0777,0.0181,0.0109,0.0104,-0.0123,-0.0129],"3":[-0.0528,0.7206,-0.0012,0.232,-0.0703,0.0244,0.0132,0.0153,-0.015,-0.0154],"4":[-0.0606,0.6564,-0.0593,0.304,-0.0612,0.0296,0.0146,0.0193,-0.0168,-0.0164],"5":[-0.0628,0.6322,-0.1606,0.3808,-0.0506,0.0341,0.0156,0.0225,-0.0183,-0.0166],"6":[-0.06,0.6196,-0.2538,0.4382,-0.0368,0.038,0.0164,0.025,-0.0194,-0.0165],"7":[-0.0532,0.6064,-0.3126,0.458,-0.0177,0.041,0.0172,0.0271,-0.0195,-0.0159],"8":[-0.0449,0.5988,-0.3678,0.4695,0.0024,0.0441,0.0184,0.0289,-0.0197,-0.0157],"9":[-0.0333,0.5782,-0.3646,0.4495,0.0095,0.0464,0.0192,0.0305,-0.019,-0.0151]};
@@ -78,7 +79,10 @@
   function build(R) {
     var d = { M: {}, rws: R.rws, tides: [] };
     d.M.ECMWF = { h: R.ec ? omSeries(R.ec, "wave_height") : {}, p: R.ec ? omSeries(R.ec, "wave_peak_period") : {}, dir: R.ec ? omSeries(R.ec, "wave_direction", true) : {} };
-    d.M.GFS = { h: R.gf ? omSeries(R.gf, "wave_height") : {}, p: R.gf ? omSeries(R.gf, "swell_wave_period") : {}, dir: R.gf ? omSeries(R.gf, "swell_wave_direction", true) : {} };
+    // GFS Wave: totaal (gemiddelde periode) plus de twee delen apart: windgolven (ww) en deining (sw).
+    d.M.GFS = { h: R.gf ? omSeries(R.gf, "wave_height") : {}, p: R.gf ? omSeries(R.gf, "wave_period") : {}, dir: R.gf ? omSeries(R.gf, "wave_direction", true) : {},
+      ww: { h: R.gf ? omSeries(R.gf, "wind_wave_height") : {}, p: R.gf ? omSeries(R.gf, "wind_wave_period") : {}, dir: R.gf ? omSeries(R.gf, "wind_wave_direction", true) : {} },
+      sw: { h: R.gf ? omSeries(R.gf, "swell_wave_height") : {}, p: R.gf ? omSeries(R.gf, "swell_wave_period") : {}, dir: R.gf ? omSeries(R.gf, "swell_wave_direction", true) : {} } };
     // Zon: opkomst en ondergang per dag (uurindex met fractie).
     d.sun = {};
     var dl = R.wind && R.wind.daily;
@@ -115,10 +119,34 @@
     return (nx.u - u <= 2) ? "low" : "ebb";
   }
 
-  function corr(h, kn, deg, cal) {
-    var c = kn * Math.cos((deg - KC.dir) * Math.PI / 180);
-    return Math.max(0, cal * KC.a * h + (c > 0 ? KC.on * c : KC.off * -c));
+  // ---------- Golven die het strand bereiken ----------
+  // Een golfveld heeft een gemiddelde richting met spreiding. Met de gangbare cos²-spreiding (windgolven) is het deel
+  // van de energie dat richting kust loopt F(a) = 1 - |a|/π + sin(2|a|)/(2π), met a de hoek tussen de richting waar de
+  // golven vandaan komen en de normaal van de kust (290°). Golven recht uit zee: F = 1; evenwijdig aan de kust: 0,5;
+  // recht van het land af (aflandige windgolven): 0. De hoogte schaalt met de wortel van de energie.
+  function angDiff(a, b) { var x = ((a - b) % 360 + 540) % 360 - 180; return Math.abs(x); }
+  function shoreFrac(dir) {
+    if (dir === undefined || dir === null) return 1;
+    var a = angDiff(dir, SHORE) * Math.PI / 180;
+    return Math.max(0, Math.min(1, 1 - a / Math.PI + Math.sin(2 * a) / (2 * Math.PI)));
   }
+  function seaSide(dir) { return dir !== undefined && dir !== null && angDiff(dir, SHORE) < 90; }
+  // Hoogte en periode van wat richting strand loopt, per model. Periode energiegewogen over de delen.
+  function shore(d, m, u) {
+    var M = d.M[m]; if (!M || M.h[u] === undefined) return null;
+    var parts = [];
+    if (m === "GFS" && M.ww && M.sw && (M.ww.h[u] !== undefined || M.sw.h[u] !== undefined)) {
+      [["wind", M.ww], ["deining", M.sw]].forEach(function (x) {
+        var h = x[1].h[u]; if (!h) return;
+        parts.push({ k: x[0], h: h, p: x[1].p[u], dir: x[1].dir[u], F: shoreFrac(x[1].dir[u]) });
+      });
+    }
+    if (!parts.length) parts.push({ k: "totaal", h: M.h[u], p: M.p[u], dir: M.dir[u], F: shoreFrac(M.dir[u]) });
+    var E = 0, ET = 0, Ep = 0;
+    parts.forEach(function (x) { var e = x.h * x.h * x.F; E += e; if (x.p) { ET += e * x.p; Ep += e; } });
+    return { h: Math.sqrt(E), p: Ep > 0 ? ET / Ep : undefined, raw: M.h[u], parts: parts };
+  }
+
 
   function comps(kn, deg) { var r = (deg - 280) * Math.PI / 180, c = kn * Math.cos(r); return { on: Math.max(0, c), off: Math.max(0, -c), al: Math.abs(kn * Math.sin(r)) }; }
 
@@ -132,6 +160,8 @@
     Object.keys(ms).map(Number).forEach(function (u) {
       if (u > now) return;
       var a = ms[u] / 100, e = d.M.ECMWF.h[u], g = d.M.GFS.h[u];
+      // Alleen uren met golven uit zee: bij aflandige golven meet de boei golven die het strand niet bereiken.
+      if (!seaSide(d.M.ECMWF.dir[u])) return;
       if (e !== undefined) { er.ECMWF[0] += Math.abs(a - e); er.ECMWF[1] += a - e; er.ECMWF[2]++; }
       if (g !== undefined) { er.GFS[0] += Math.abs(a - g); er.GFS[1] += a - g; er.GFS[2]++; }
       if (e === undefined || g === undefined) return;
@@ -168,19 +198,29 @@
     var us = Object.keys(d.M.ECMWF.h).concat(Object.keys(d.M.GFS.h)).map(Number);
     us.forEach(function (u) {
       if (d.KL[u]) return;
-      var raw = [], ps = [], w0 = null, pr = [];
+      var raw = [], sh = [], w0 = null;
       ["ECMWF", "GFS"].forEach(function (m) {
-        var M = d.M[m], v = M.h[u], kn = M.kn[u], deg = M.deg[u];
-        if (v === undefined || kn === undefined) return;
-        raw.push(v); pr.push([v, kn, deg]); if (M.p[u]) ps.push(M.p[u]); if (!w0) w0 = { kn: kn, deg: deg, g: M.g[u] };
+        var M = d.M[m], z = shore(d, m, u), kn = M.kn[u], deg = M.deg[u];
+        if (!z || kn === undefined) return;
+        raw.push(z.raw); sh.push(z); if (!w0) w0 = { kn: kn, deg: deg, g: M.g[u] };
       });
       if (!raw.length) return;
+      // Kalibratie op Munitiestort 2 (uren met golven uit zee), per hoogteklasse van de ruwe modellen.
       var rm = raw.reduce(function (a, b) { return a + b; }, 0) / raw.length, cal = rm < 1 ? d.cal.lo : d.cal.hi;
-      var base = pr.map(function (x) { return corr(x[0], x[1], x[2], cal); }).reduce(function (a, b) { return a + b; }, 0) / pr.length;
+      var base = cal * sh.reduce(function (a, z) { return a + z.h; }, 0) / sh.length;
+      var E = 0, ET = 0;
+      sh.forEach(function (z) { if (z.p) { E += z.h * z.h; ET += z.h * z.h * z.p; } });
+      var pv = E > 0 ? ET / E : undefined;
       var ph = phase(d, u), hi = base >= 1;
       var f = ph === "push" ? (hi ? TF.pushhi : TF.push) : ph === "ebb" ? (hi ? TF.ebbhi : TF.ebb) : ph === "low" ? (hi ? TF.lowhi : TF.low) : TF.rise;
-      var mod = base * f, nc = nowcast(d, u), hv = nc ? nc.w * nc.h + (1 - nc.w) * mod : mod;
-      var pv = ps.length ? ps.reduce(function (a, b) { return a + b; }, 0) / ps.length : undefined;
+      var mod = base * f, nc = nowcast(d, u);
+      // De boei meet ook golven die van de kust af lopen: alleen het deel richting strand telt (zelfde F als het model).
+      var Fe = shoreFrac(d.M.ECMWF.dir[u]);
+      if (nc) nc.h = nc.h * Math.sqrt(Fe);
+      var hv = nc ? nc.w * nc.h + (1 - nc.w) * mod : mod;
+      // Deining van GFS apart, alleen als die vanuit zee komt.
+      var G = d.M.GFS, sw = null;
+      if (G.sw && G.sw.h[u] && seaSide(G.sw.dir[u])) sw = { h: G.sw.h[u] * Math.sqrt(shoreFrac(G.sw.dir[u])), p: G.sw.p[u], dir: G.sw.dir[u] };
       // Weer van Claude: gemiddelde temperatuur van ECMWF en GFS; als ze verschillen het nattere/slechtere weer.
       var ts = [], wc, dy;
       ["ECMWF", "GFS"].forEach(function (m) {
@@ -189,9 +229,10 @@
         if (dy === undefined && M.day[u] !== undefined) dy = M.day[u];
       });
       var tv = ts.length ? ts.reduce(function (a, b) { return a + b; }, 0) / ts.length : undefined;
-      d.KL[u] = { h: hv, mod: mod, nc: nc, p: pv, e: energy(hv, pv), w: w0, ph: ph, f: f, t: tv, wc: wc, day: dy };
+      d.KL[u] = { h: hv, mod: mod, nc: nc, p: pv, e: energy(hv, pv), w: w0, ph: ph, f: f, t: tv, wc: wc, day: dy, sea: seaSide(d.M.ECMWF.dir[u]), Fe: Fe, sw: sw, raw: rm };
     });
   }
+
 
   function nowU() { return Date.now() / 36e5; }
   var MODELS = ["ECMWF", "GFS", "Klodde"];
@@ -210,9 +251,9 @@
   }
   function cell(d, m, u) {
     if (m === "Klodde") { var k = d.KL[u]; return k ? { v: k.h, p: k.p, w: k.w, t: k.t, wc: k.wc, day: k.day } : null; }
-    var M = d.M[m];
-    if (M.h[u] === undefined || M.kn[u] === undefined) return null;
-    return { v: M.h[u], p: M.p[u], w: { kn: M.kn[u], deg: M.deg[u], g: M.g[u] }, t: M.t && M.t[u], wc: M.wc && M.wc[u], day: M.day && M.day[u] };
+    var M = d.M[m], z = shore(d, m, u);
+    if (!z || M.kn[u] === undefined) return null;
+    return { v: z.h, raw: z.raw, p: z.p, w: { kn: M.kn[u], deg: M.deg[u], g: M.g[u] }, t: M.t && M.t[u], wc: M.wc && M.wc[u], day: M.day && M.day[u] };
   }
   // Score van één model op één uur, met de getijregels (push +1, laatste 2 uur voor LW bij golf < 1 m -1).
   function hourCell(d, m, u, L) {
@@ -270,13 +311,16 @@
   }
   // Nieuwe voorspelling vastleggen en oude voorspellingen afrekenen tegen de meting bij Munitiestort 2.
   function verifyStep(d, V, issued) {
-    V = V || {}; V.pend = V.pend || {}; V.sum = V.sum || {}; V.mod = V.mod || {};
+    // Versie 2 (26 nov): alleen golven richting strand; oudere statistiek is niet vergelijkbaar en begint opnieuw.
+    if (!V || V.ver !== 2) V = { ver: 2 };
+    V.pend = V.pend || {}; V.sum = V.sum || {}; V.mod = V.mod || {};
     var iu = Math.floor(issued);
     if (!V.last || V.last < iu) {
       V.last = iu;
       LEADS.forEach(function (Lx) {
-        var u = iu + Lx, k = d.KL[u]; if (!k) return;
-        (V.pend[u] = V.pend[u] || []).push([Lx, +(k.h).toFixed(3), d.M.ECMWF.h[u] !== undefined ? +d.M.ECMWF.h[u].toFixed(3) : null, d.M.GFS.h[u] !== undefined ? +d.M.GFS.h[u].toFixed(3) : null]);
+        var u = iu + Lx, k = d.KL[u]; if (!k || !k.sea) return;   // alleen uren met golven uit zee zijn met de boei te vergelijken
+        var ce = cell(d, "ECMWF", u), cg = cell(d, "GFS", u);
+        (V.pend[u] = V.pend[u] || []).push([Lx, +(k.h).toFixed(3), ce ? +ce.v.toFixed(3) : null, cg ? +cg.v.toFixed(3) : null]);
       });
     }
     var ms = d.meas.ms2 || {};
@@ -309,14 +353,17 @@
     var from = Math.floor(nowU()) - 36, M = {};
     ["ECMWF", "GFS"].forEach(function (m) {
       var x = d.M[m];
-      M[m] = { h: only(x.h, from, 2), p: only(x.p, from, 1), dir: only(x.dir, from, 0), kn: only(x.kn, from, 1), g: only(x.g, from, 1), deg: only(x.deg, from, 0), t: only(x.t, from, 1), wc: only(x.wc, from), day: only(x.day, from) };
+      M[m] = { h: only(x.h, from, 2), p: only(x.p, from, 1), dir: only(x.dir, from, 0),
+        ww: x.ww ? { h: only(x.ww.h, from, 2), p: only(x.ww.p, from, 1), dir: only(x.ww.dir, from, 0) } : undefined,
+        sw: x.sw ? { h: only(x.sw.h, from, 2), p: only(x.sw.p, from, 1), dir: only(x.sw.dir, from, 0) } : undefined, kn: only(x.kn, from, 1), g: only(x.g, from, 1), deg: only(x.deg, from, 0), t: only(x.t, from, 1), wc: only(x.wc, from), day: only(x.day, from) };
     });
     var KL = {};
     Object.keys(d.KL).forEach(function (k) {
       if (Number(k) < from) return;
       var K = d.KL[k];
       KL[k] = { h: +K.h.toFixed(3), p: K.p === undefined ? undefined : +K.p.toFixed(1), e: K.e === undefined ? undefined : +K.e.toFixed(2), w: K.w ? { kn: +K.w.kn.toFixed(1), deg: Math.round(K.w.deg), g: K.w.g === undefined ? undefined : +K.w.g.toFixed(1) } : null,
-        t: K.t === undefined ? undefined : +K.t.toFixed(1), wc: K.wc, day: K.day, nc: K.nc ? { h: +K.nc.h.toFixed(3), w: +K.nc.w.toFixed(2), L: K.nc.L } : null, lb: K.lb === undefined ? undefined : +K.lb.toFixed(3) };
+        t: K.t === undefined ? undefined : +K.t.toFixed(1), wc: K.wc, day: K.day, nc: K.nc ? { h: +K.nc.h.toFixed(3), w: +K.nc.w.toFixed(2), L: K.nc.L } : null, lb: K.lb === undefined ? undefined : +K.lb.toFixed(3),
+        sea: K.sea, Fe: +K.Fe.toFixed(2), raw: +K.raw.toFixed(2), sw: K.sw ? { h: +K.sw.h.toFixed(2), p: K.sw.p === undefined ? undefined : +K.sw.p.toFixed(1), dir: Math.round(K.sw.dir) } : null };
     });
     var stats = null;
     if (V && V.sum) { stats = {}; LEADS.forEach(function (Lx) { var s = leadStat(V, Lx); if (s && V.sum[Lx] && V.sum[Lx].n >= 20) {
@@ -332,7 +379,7 @@
   }
 
   var E = { TZ: TZ, URLS: URLS, NAMES: NAMES, MODELS: MODELS, LIM0: LIM0, LEADS: LEADS, kind: kind, compass: compass, local: local, nowU: nowU, score: score, omSeries: omSeries, omVals: omVals, wxRank: wxRank,
-    build: build, measFrom: measFrom, phase: phase, lastMeas: lastMeas, energy: energy, cell: cell, hourCell: hourCell, darkU: darkU, alertRuns: alertRuns,
+    build: build, measFrom: measFrom, shore: shore, shoreFrac: shoreFrac, seaSide: seaSide, phase: phase, lastMeas: lastMeas, energy: energy, cell: cell, hourCell: hourCell, darkU: darkU, alertRuns: alertRuns,
     leadStat: leadStat, applyLeadBias: applyLeadBias, verifyStep: verifyStep, pack: pack, unpack: unpack };
   if (typeof module !== "undefined" && module.exports) module.exports = E; else root.GolfEngine = E;
 })(typeof self !== "undefined" ? self : this);

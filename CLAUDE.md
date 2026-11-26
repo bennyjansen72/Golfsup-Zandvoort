@@ -46,10 +46,15 @@ Laten zien wanneer de golven bij Zandvoort goed zijn om te golfsuppen, met een S
 
 ## Claude (de eigen voorspelling)
 
-In de code heet het model nog `Klodde` (oude naam); op het scherm staat "Claude" via `mname()`. Drie lagen:
-1. ECMWF en GFS gecorrigeerd voor wind (`KC`) en geschaald met de fout van de afgelopen 7 dagen bij Munitiestort 2 (`calibrate`).
-2. Kleine getijfactor (`TF`).
-3. Tot 3 uur na de laatste meting uit de boeien (`NOWC`), daarna aflopend tot 0 bij 12 uur.
+In de code heet het model nog `Klodde` (oude naam); op het scherm staat "Claude" via `mname()`. Wens gebruiker (26 nov): "alleen voorspellingen met reële waarnemingen, geen fantasie, wetenschappelijk onderbouwd". Opbouw sinds 26 nov:
+1. Alleen golven die naar het strand lopen (`shore`, `shoreFrac`): per golfdeel de energiefractie richting kust bij cos²-richtingsspreiding, F(a) = 1 - |a|/π + sin(2|a|)/(2π), a = hoek tussen herkomstrichting en kustnormaal 290°; hoogte × √F. ECMWF WAM: totaal met `wave_direction`. GFS Wave: windgolven en deining apart (`wind_wave_*`, `swell_wave_*`), opgeteld als energie. Aanleiding: bij harde oostenwind (24–26 nov) mat Munitiestort 2 tot 1,9 m terwijl die golven van de kust af lopen.
+2. Kalibratie (`calibrate`): Munitiestort 2 gedeeld door het gemiddelde van de ruwe modellen, afgelopen 7 dagen, alleen uren waarin ECMWF de golven vanuit zee laat komen (`seaSide`, binnen 90° van 290°). Over 18–26 nov: zeekant 1,5×, aflandig 2,0×; vroeger werd alles gemengd (1,54). De windcorrectie `KC` is geschrapt (vaste coëfficiënten zonder meetbasis; de richting doet dit nu fysisch).
+3. Periode: energiegewogen over de delen die naar het strand lopen (ECMWF piekperiode; GFS per deel). Vroeger het gemiddelde van ECMWF-piekperiode en GFS-deiningsperiode (appels en peren). Over 18–26 nov liep ECMWF-piekperiode het best mee met de gemeten Tm-1,0 (r = 0,91).
+4. Kleine getijfactor (`TF`).
+5. Tot 3 uur na de laatste meting uit de boeien (`NOWC`), daarna aflopend tot 0 bij 12 uur; de boeiwaarde ook × √F (ECMWF-richting).
+- In de uurregel: "deining X m · Y s richting" (GFS-deining vanuit zee, vanaf 8 s) en "zee loopt van kust af" (F < 0,5 terwijl er op zee golven staan). In de tooltip de ruwe golfhoogte op zee.
+- `verif.json` versie 2: alleen uren met golven uit zee worden afgerekend (de boei meet ook golven die het strand niet bereiken); oudere statistiek is gewist.
+- `tools/vergelijk.js` + workflow "Vergelijk oude en nieuwe rekenkern" (handmatig): eenmalige vergelijking met `tools/engine_old.js` (de kern van vóór 26 nov).
 
 ## Leren van eerdere voorspellingen (26 nov)
 
@@ -86,4 +91,4 @@ In de code heet het model nog `Klodde` (oude naam); op het scherm staat "Claude"
 - 21 nov 2026: het oorspronkelijke bouwgesprek was per ongeluk verwijderd; de app zelf stond nog volledig op GitHub. Dit bestand gemaakt. Service worker bewaart rws.json niet meer bij elke verversing opnieuw, windtabel-fix, `__pycache__` weg, metingen naar de branch `data` (één commit) in plaats van elk kwartier een commit op main. Webcams Zandvoort en Wijk aan Zee toegevoegd; temperatuur en weericonen toegevoegd. Piekperiode en richting van K14, L9 en Eierlandse Gat erbij; aantal golven weg uit de opbouw van de golven. Rij Stroming (getijdestroom) toegevoegd.
 - 22 nov 2026: map `dag/` voor deelbare dagoverzichten van alertdagen (losse interactieve pagina met golven, periode, wind, temperatuur, getij en stroming, sessie gemarkeerd). Eerste: `dag/2026-11-22.html`.
 - 24 nov 2026: dagoverzichten automatisch voor elke alertdag (zie "Alertdagen").
-- 26 nov 2026: "Grootste golf" uit Nu gemeten; nieuwe kleurrijke dagweergave per uur. Rekenkern naar `engine.js`; GitHub-taak rekent de voorspelling uit (`forecast.json`), houdt bij hoe goed Claude voorspelt en leert daarvan, en stuurt pushmeldingen via ntfy. WebP-foto's en eigen lettertype. Daarna meldingen teruggebracht tot 18:00 de avond ervoor en een uur voor zonsopkomst.
+- 26 nov 2026: "Grootste golf" uit Nu gemeten; nieuwe kleurrijke dagweergave per uur. Rekenkern naar `engine.js`; GitHub-taak rekent de voorspelling uit (`forecast.json`), houdt bij hoe goed Claude voorspelt en leert daarvan, en stuurt pushmeldingen via ntfy. WebP-foto's en eigen lettertype. Daarna meldingen teruggebracht tot 18:00 de avond ervoor en een uur voor zonsopkomst. 's Avonds rekenkern realistischer: alleen golven richting strand, kalibratie alleen op golven uit zee, energiegewogen periode, deining apart.

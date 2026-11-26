@@ -246,6 +246,9 @@ details.day[open] .dsum-top .chev { transform: rotate(180deg); }
 .hr-wv span { display: block; font-size: 11.5px; color: var(--muted); white-space: nowrap; margin-bottom: 3px; }
 .hr-wv span b { font-size: 15.5px; color: var(--fg); font-weight: 700; margin-right: 3px; }
 .hr-wv span b.ok { color: #12884F; }
+.hr-wv em { display: block; font-style: normal; font-size: 10.5px; font-weight: 600; line-height: 1.25; margin: -1px 0 3px; }
+.hr-wv em.swb { color: #0E7FA8; } .hr-wv em.offb { color: var(--muted); font-weight: 400; }
+@media (prefers-color-scheme: dark) { .hr-wv em.swb { color: #7FD8F5; } }
 .hr-bar { height: 7px; border-radius: 4px; background: var(--line); overflow: hidden; position: relative; }
 .hr-bar i { display: block; height: 100%; border-radius: 4px; }
 .hr-bar u { position: absolute; top: -2px; bottom: -2px; width: 2px; background: var(--fg); opacity: 0.45; }
@@ -350,6 +353,7 @@ details.more .scroll { padding: 0 8px 8px 0; }
     <h2 id="h-read">Zo lees je de tabellen</h2>
     <ul class="plain">
       <li>Per dag eerst een kleurenbalk met alle uren, open de dag voor de uren van Claude: score, golf met periode (het streepje is je alertgrens), wind (af = aflandig, zij = zijwaarts, aan = aanlandig) en weer. De gekleurde rand links is het getij. "Alle modellen vergelijken" opent de tabel met ECMWF, GFS en Claude naast elkaar.</li>
+      <li>Claude telt alleen golven die naar het strand lopen. Golven die van de kust af lopen (bij aflandige wind, of als de modellen ze uit het oosten laten komen) bereiken Zandvoort niet; dan staat er "zee loopt van kust af". Hoe groot dat deel is volgt uit de golfrichting van ECMWF en GFS met de gangbare cos²-richtingsspreiding. "Deining … s" is de deining van GFS die vanuit zee komt, met periode en richting.</li>
       <li>"±… cm" onder de kleurenbalk: hoeveel Claude er op die afstand in de tijd gemiddeld naast zat bij Munitiestort 2 (groen tot 12 cm, geel tot 22 cm, oranje daarboven). Dit verschijnt zodra er genoeg voorspellingen zijn afgerekend, na ongeveer een week. Claude corrigeert zichzelf daar ook een beetje mee.</li>
       <li>Per uur een score van 0 tot 10 voor ECMWF, GFS en Claude (de eigen voorspelling van de app). Achter de modelnaam staat "score". De golfhoogte is de basis: 0,7 m geeft een 7, 0,8 m een 8, 0,9 m een 9 en vanaf 1 m een 10. Te veel wind (boven je grenzen) of een te korte periode verlaagt de score. Groen is 7 of hoger: goed. Geel is 4 tot 6, grijs lager.</li>
       <li>De SUP ALERT bovenaan komt alleen bij een Claude-score van 7 of hoger én een golf vanaf je alertgrens (standaard 0,8 m), overdag.</li>
@@ -686,11 +690,14 @@ details.more .scroll { padding: 0 8px 8px 0; }
       var clsr = ["hr", ph || "", c.s >= 7 ? "good" : "", isPast(u) ? "past" : "", darkU(u) ? "dark" : "", u === nu ? "nowh" : ""].join(" ");
       var pct = Math.max(3, Math.min(100, c.v / 2 * 100)), lim = Math.min(100, L.wave / 2 * 100);
       var wk = wcls(c.w.kn, c.w.deg, L);
-      var tip = "Claude " + pad(l.h) + ": score " + c.s + ", golf " + nf(c.v) + " m" + (c.p ? " (" + Math.round(c.p) + " s)" : "") + (k && k.e !== undefined ? ", energie " + nf(k.e) + " kW/m" : "") + ", wind " + Math.round(c.w.kn) + " kn uit " + compass(c.w.deg) + " (" + kindW(kind(c.w.deg)) + ")" + (phl ? ", getij " + phl : "") + (k && k.nc && k.nc.w > 0 ? ", " + Math.round(k.nc.w * 100) + "% uit de boeien" : "");
+      var tip = "Claude " + pad(l.h) + ": score " + c.s + ", golf " + nf(c.v) + " m" + (c.p ? " (" + Math.round(c.p) + " s)" : "") + (k && k.e !== undefined ? ", energie " + nf(k.e) + " kW/m" : "") + ", wind " + Math.round(c.w.kn) + " kn uit " + compass(c.w.deg) + " (" + kindW(kind(c.w.deg)) + ")" + (phl ? ", getij " + phl : "") + (k && k.nc && k.nc.w > 0 ? ", " + Math.round(k.nc.w * 100) + "% uit de boeien" : "") +
+        (k && k.raw !== undefined ? ". Op zee (gemiddelde modellen): " + nf(k.raw) + " m" + (k.Fe !== undefined && k.Fe < 0.5 ? ", maar die golven lopen grotendeels van de kust af" : "") : "");
+      var swTxt = k && k.sw && k.sw.h >= 0.05 && k.sw.p >= 8 ? "<em class='swb'>deining " + nf(k.sw.h) + " m · " + Math.round(k.sw.p) + " s " + compass(k.sw.dir) + "</em>" : "";
+      var offTxt = k && k.Fe !== undefined && k.Fe < 0.5 && k.raw >= 0.3 ? "<em class='offb'>zee loopt van kust af</em>" : "";
       h += "<div class='" + clsr.replace(/\s+/g, " ").trim() + "' data-u='" + u + "' title='" + esc(tip) + "'>" +
         "<div class='hr-t'><b>" + (l.h < 10 ? "0" : "") + l.h + "<small>:00</small></b>" + (phl ? "<em>" + phl + "</em>" : "") + (ev.length ? "<span class='ev'>" + ev.join("<br>") + "</span>" : "") + "</div>" +
         "<div class='hr-sc" + (c.s >= 8 ? " w" : "") + "' style='background:" + scCol(c.s) + "'>" + c.s + "</div>" +
-        "<div class='hr-wv'><span><b" + (c.v >= L.wave ? " class='ok'" : "") + ">" + nf(c.v) + " m</b>" + (c.p ? Math.round(c.p) + " s" : "") + "</span>" +
+        "<div class='hr-wv'><span><b" + (c.v >= L.wave ? " class='ok'" : "") + ">" + nf(c.v) + " m</b>" + (c.p ? Math.round(c.p) + " s" : "") + "</span>" + swTxt + offTxt +
           "<div class='hr-bar'><i style='width:" + pct.toFixed(0) + "%;background:" + scCol(c.s) + "'></i><u style='left:" + lim.toFixed(0) + "%'></u></div></div>" +
         "<div class='hr-wd " + wk + "'><b><i style='transform:rotate(" + Math.round(c.w.deg) + "deg)'>↓</i>" + Math.round(c.w.kn) + "</b><small>" + compass(c.w.deg) + " · " + { af: "af", aan: "aan", zij: "zij" }[kind(c.w.deg)] + "</small></div>" +
         "<div class='hr-wx'>" + (c.wc !== undefined ? wxIcon(c.wc, c.day) : "") + (c.t !== undefined ? tmp(c.t) : "") + "</div>" +
