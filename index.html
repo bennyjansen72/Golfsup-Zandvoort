@@ -371,8 +371,8 @@ details.more .scroll { padding: 0 8px 8px 0; }
   var E = window.GolfEngine;
   var TZ = E.TZ, URLS = E.URLS, NAMES = E.NAMES, kind = E.kind, compass = E.compass, local = E.local, nowU = E.nowU, score = E.score, wxRank = E.wxRank;
   var build = E.build, phase = E.phase, lastMeas = E.lastMeas, energy = E.energy;
-  // Klaargezette voorspelling van de GitHub-taak (elk kwartier); ouder dan 75 minuten: de app rekent zelf.
-  var FC_URL = "https://raw.githubusercontent.com/bennyjansen72/Golfsup-Zandvoort/data/forecast.json", FC_MAX_AGE = 75 * 60e3;
+  // Klaargezette voorspelling van de GitHub-taak (elk kwartier); ouder dan 150 minuten: de app rekent zelf (GitHub draait de taak in de praktijk ongeveer elk uur).
+  var FC_URL = "https://raw.githubusercontent.com/bennyjansen72/Golfsup-Zandvoort/data/forecast.json", FC_MAX_AGE = 150 * 60e3;
   var MODELS = ["ECMWF", "GFS", "Klodde"];
   function mname(m) { return m === "Klodde" ? "Claude" : m; }
   var DAYN = ["zo", "ma", "di", "wo", "do", "vr", "za"], DAYL = ["Zondag", "Maandag", "Dinsdag", "Woensdag", "Donderdag", "Vrijdag", "Zaterdag"];
