@@ -197,6 +197,63 @@ svg.chart { width: 100%; height: auto; display: block; }
 ul.plain { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px; }
 a { color: var(--accent); }
 .loading { color: var(--muted); }
+/* ---------- Dagweergave per uur (telefoonvriendelijk) ---------- */
+:root { --sc-lo: #9AAAB3; --sc-lo2: #7E9DB4; --sc-m4: #F2CC4E; --sc-m5: #F0B93C; --sc-m6: #EBA22E; --sc-g7: #46C97E; --sc-g8: #26B26A; --sc-g9: #149A5A; --sc-g10: #0A7F4A; }
+.sc-legend { display: flex; gap: 6px; flex-wrap: wrap; font-size: 11.5px; font-weight: 600; }
+.sc-legend span { border-radius: 999px; padding: 3px 9px; color: #0B2A3C; }
+details.day { overflow: hidden; }
+details.day > summary { display: block; padding: 12px 14px 12px; list-style: none; }
+details.day > summary::-webkit-details-marker { display: none; }
+.dsum-top { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 6px 10px; }
+.dsum-top .dname { font-size: 17px; font-weight: 700; }
+.dsum-top .chev { flex: none; font-size: 14px; color: var(--muted); transition: transform 0.2s; }
+details.day[open] .dsum-top .chev { transform: rotate(180deg); }
+.dsum-top .dname { flex: 1 0 auto; white-space: nowrap; }
+.bestchip { font-size: 12.5px; font-weight: 700; border-radius: 999px; padding: 4px 10px; white-space: nowrap; color: #0B2A3C; }
+.mini { display: flex; gap: 2px; margin-top: 9px; height: 12px; }
+.mini i { flex: 1; border-radius: 3px; }
+.mini i.past { opacity: 0.3; }
+.mini-ax { display: flex; justify-content: space-between; font-size: 10.5px; color: var(--muted); margin-top: 3px; font-variant-numeric: tabular-nums; }
+.hours { display: flex; flex-direction: column; gap: 5px; padding: 0 10px 10px; }
+.hr { display: grid; grid-template-columns: 46px 42px minmax(0, 1fr) 62px 38px; align-items: center; gap: 7px; padding: 6px 8px 6px 6px; border-radius: 12px;
+  background: var(--surface); border-left: 5px solid transparent; font-variant-numeric: tabular-nums; scroll-margin-top: 70px; transition: box-shadow 0.3s; }
+.hr.push { border-left-color: #1FA3D1; }
+.hr.ebb, .hr.low { border-left-color: #9B6BD3; }
+.hr.rise { border-left-color: var(--line); }
+.hr.good { background: linear-gradient(90deg, rgba(38, 178, 106, 0.20), rgba(38, 178, 106, 0.06)), var(--surface); }
+.hr.past { opacity: 0.42; }
+.hr.dark { opacity: 0.7; }
+.hr.nowh { box-shadow: 0 0 0 2px var(--accent); }
+.hr.flash { box-shadow: 0 0 0 3px #FFB800; }
+.hr-t { line-height: 1.05; }
+.hr-t b { font-size: 18px; font-weight: 700; }
+.hr-t b small { font-size: 11px; font-weight: 600; color: var(--muted); }
+.hr-t em { display: block; font-style: normal; font-size: 10px; font-weight: 600; margin-top: 2px; white-space: nowrap; }
+.hr.push .hr-t em { color: #0E7FA8; } .hr.ebb .hr-t em, .hr.low .hr-t em { color: #7A4DB0; } .hr.rise .hr-t em { color: var(--muted); }
+.hr-t .ev { display: block; font-size: 10px; font-weight: 700; margin-top: 2px; white-space: nowrap; }
+.hr-sc { width: 42px; height: 42px; border-radius: 11px; display: grid; place-items: center; font-size: 21px; font-weight: 800; color: #0B2A3C; }
+.hr-sc.w { color: #FFFFFF; }
+.hr-wv { min-width: 0; }
+.hr-wv span { display: block; font-size: 11.5px; color: var(--muted); white-space: nowrap; margin-bottom: 3px; }
+.hr-wv span b { font-size: 15.5px; color: var(--fg); font-weight: 700; margin-right: 3px; }
+.hr-wv span b.ok { color: #12884F; }
+.hr-bar { height: 7px; border-radius: 4px; background: var(--line); overflow: hidden; position: relative; }
+.hr-bar i { display: block; height: 100%; border-radius: 4px; }
+.hr-bar u { position: absolute; top: -2px; bottom: -2px; width: 2px; background: var(--fg); opacity: 0.45; }
+.hr-wd { border-radius: 9px; padding: 4px 6px; text-align: center; line-height: 1.1; white-space: nowrap; }
+.hr-wd b { font-size: 16px; font-weight: 700; }
+.hr-wd b i { font-style: normal; display: inline-block; font-size: 14px; margin-right: 2px; }
+.hr-wd small { display: block; font-size: 10px; font-weight: 600; opacity: 0.85; }
+.hr-wd.wok { background: var(--wok-bg); color: var(--wok-fg); } .hr-wd.wmid { background: var(--wmid-bg); color: var(--wmid-fg); } .hr-wd.whi { background: var(--whi-bg); color: var(--whi-fg); }
+.hr-wx { text-align: center; font-size: 13px; font-weight: 600; line-height: 1.15; }
+.hr-wx .wxi { display: block; font-size: 17px; }
+.hr-head { display: grid; grid-template-columns: 46px 42px minmax(0, 1fr) 62px 38px; gap: 7px; padding: 0 8px 0 11px; font-size: 10px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.hr-head span:nth-child(4), .hr-head span:nth-child(5), .hr-head span:nth-child(2) { text-align: center; }
+details.more { margin: 0 10px 12px; background: transparent; }
+details.more > summary { font-size: 13.5px; color: var(--accent); }
+details.more .scroll { padding: 0 8px 8px 0; }
+@media (prefers-color-scheme: dark) { .hr-wv span b.ok { color: #6BE3A2; } .hr.ebb .hr-t em, .hr.low .hr-t em { color: #CDB0F2; } .hr.push .hr-t em { color: #7FD8F5; } }
+@media (max-width: 380px) { .hr, .hr-head { grid-template-columns: 42px 36px minmax(0, 1fr) 58px 34px; gap: 5px; } .hr-sc { width: 36px; height: 36px; font-size: 18px; } .hr-wv span b { font-size: 14.5px; } }
 @media (max-width: 560px) { .summary p { grid-template-columns: 1fr; gap: 0; } h1 { font-size: 24px; } }
 </style>
 </head>
@@ -213,7 +270,7 @@ a { color: var(--accent); }
 
   <div id="err" class="banner" hidden></div>
 
-  <section class="alert none" id="alert" aria-live="polite" role="button" tabindex="0" aria-label="Naar de tabel van de alertdag">
+  <section class="alert none" id="alert" aria-live="polite" role="button" tabindex="0" aria-label="Naar het uuroverzicht van de alertdag">
     <div class="alert-tag">SUP ALERT</div>
     <p class="alert-when">Voorspelling laden…</p>
   </section>
@@ -250,7 +307,7 @@ a { color: var(--accent); }
   </a>
 
   <section class="card" aria-labelledby="h-days">
-    <div class="days-head"><h2 id="h-days">Per dag</h2></div>
+    <div class="days-head"><h2 id="h-days">Per dag</h2><div class="sc-legend" id="sc-legend"></div></div>
     <div id="days" style="display:flex;flex-direction:column;gap:10px"></div>
   </section>
 
@@ -277,13 +334,14 @@ a { color: var(--accent); }
   <section class="card" aria-labelledby="h-read">
     <h2 id="h-read">Zo lees je de tabellen</h2>
     <ul class="plain">
+      <li>Per dag eerst een kleurenbalk met alle uren, open de dag voor de uren van Claude: score, golf met periode (het streepje is je alertgrens), wind (af = aflandig, zij = zijwaarts, aan = aanlandig) en weer. De gekleurde rand links is het getij. "Alle modellen vergelijken" opent de tabel met ECMWF, GFS en Claude naast elkaar.</li>
       <li>Per uur een score van 0 tot 10 voor ECMWF, GFS en Claude (de eigen voorspelling van de app). Achter de modelnaam staat "score". De golfhoogte is de basis: 0,7 m geeft een 7, 0,8 m een 8, 0,9 m een 9 en vanaf 1 m een 10. Te veel wind (boven je grenzen) of een te korte periode verlaagt de score. Groen is 7 of hoger: goed. Geel is 4 tot 6, grijs lager.</li>
       <li>De SUP ALERT bovenaan komt alleen bij een Claude-score van 7 of hoger én een golf vanaf je alertgrens (standaard 0,8 m), overdag.</li>
       <li>Daaronder de golfhoogte in meters met de periode in seconden, de golfenergie van Claude (kW per meter golffront) en de wind per model.</li>
       <li>Claude-vakjes met een stippelrand komen (deels) uit de boeimetingen van de laatste uren.</li>
       <li>Windkleuren: blauw binnen je grens, oranje tot 5 kn erboven, rood verder erboven. De letters zijn waaruit de wind komt, de pijl waar hij naartoe waait.</li>
       <li>Getij: push (blauw) is de twee uur voor hoogwater en telt 1 punt extra. Afgaand tij is paars; de laatste twee uur voor laagwater tellen bij golven onder 1 m 1 punt minder.</li>
-      <li>Scroll de tabel zijwaarts voor alle uren.</li>
+      <li>Scroll de modeltabel zijwaarts voor alle uren.</li>
     </ul>
   </section>
 </main>
@@ -750,7 +808,7 @@ a { color: var(--accent); }
       el.className = "alert";
       el.setAttribute("data-day", r.day); el.setAttribute("data-u", r.us[0]);
       el.innerHTML = "<div class='alert-tag'>SUP ALERT!</div><p class='alert-when'>" + rel(r.day) + dayLong(r.day).replace(/^./, function (c) { return rel(r.day) ? c.toLowerCase() : c; }) + "<small>" + span(r.us) + "</small></p>" + tiles(r.day, r.us) +
-        "<div class='alert-foot'><p class='alert-more'>" + (more.length ? "Ook goed: " + more.map(function (m) { return dayShort(m.day) + " " + span(m.us); }).join(" · ") + "<br>" : "") + "<span class='alert-tap'>Tik voor de tabel van deze dag ›</span></p></div>";
+        "<div class='alert-foot'><p class='alert-more'>" + (more.length ? "Ook goed: " + more.map(function (m) { return dayShort(m.day) + " " + span(m.us); }).join(" · ") + "<br>" : "") + "<span class='alert-tap'>Tik voor het uuroverzicht van deze dag ›</span></p></div>";
     } else if (all.length) {
       all.sort(function (a, b) { return b.c.s - a.c.s; });
       var b0 = all[0];
@@ -758,6 +816,42 @@ a { color: var(--accent); }
       el.setAttribute("data-day", b0.day); el.setAttribute("data-u", b0.u);
       el.innerHTML = "<div class='alert-tag'>Geen SUP alert</div><p class='alert-when'>Geen goed uur overdag in de komende dagen<small>Dichtstbij: " + dayShort(b0.day) + " " + pad(local(b0.u).h) + ", score " + b0.c.s + "</small></p>" + tiles(b0.day, [b0.u]);
     } else { el.className = "alert none"; el.removeAttribute("data-day"); el.innerHTML = "<div class='alert-tag'>Geen SUP alert</div><p class='alert-when'>Geen voorspelling voor de komende uren.</p>"; }
+  }
+
+  // ---------- Dagweergave per uur ----------
+  var SCC = ["--sc-lo", "--sc-lo", "--sc-lo2", "--sc-lo2", "--sc-m4", "--sc-m5", "--sc-m6", "--sc-g7", "--sc-g8", "--sc-g9", "--sc-g10"];
+  function scCol(s) { return "var(" + SCC[Math.max(0, Math.min(10, s))] + ")"; }
+  function hoursHtml(day, an) {
+    var L = limits(), sn = D.sun && D.sun[day], tev = D.tides.filter(function (e) { return local(e.u).day === day; }), nu = Math.floor(nowU()), h = "";
+    h += "<div class='hr-head' aria-hidden='true'><span>Uur</span><span>Score</span><span>Golf</span><span>Wind</span><span>Weer</span></div>";
+    an.us.forEach(function (u) {
+      var c = an.cells["Klodde|" + u], k = D.KL[u], l = local(u), ph = phase(D, u);
+      if (!c) return;
+      var phl = { push: "push", rise: "stijgt", ebb: "afgaand", low: "laag" }[ph] || "";
+      var ev = [];
+      if (sn && Math.floor(sn.rise) === u) ev.push("☀↑ " + hm(sn.rise));
+      if (sn && Math.floor(sn.set) === u) ev.push("☀↓ " + hm(sn.set));
+      tev.forEach(function (e) { if (Math.floor(e.u) === u) ev.push("<span class='" + (e.k === "H" ? "hw" : "lw") + "'>" + (e.k === "H" ? "HW " : "LW ") + hm(e.u) + "</span>"); });
+      var clsr = ["hr", ph || "", c.s >= 7 ? "good" : "", isPast(u) ? "past" : "", darkU(u) ? "dark" : "", u === nu ? "nowh" : ""].join(" ");
+      var pct = Math.max(3, Math.min(100, c.v / 2 * 100)), lim = Math.min(100, L.wave / 2 * 100);
+      var wk = wcls(c.w.kn, c.w.deg, L);
+      var tip = "Claude " + pad(l.h) + ": score " + c.s + ", golf " + nf(c.v) + " m" + (c.p ? " (" + Math.round(c.p) + " s)" : "") + (k && k.e !== undefined ? ", energie " + nf(k.e) + " kW/m" : "") + ", wind " + Math.round(c.w.kn) + " kn uit " + compass(c.w.deg) + " (" + kindW(kind(c.w.deg)) + ")" + (phl ? ", getij " + phl : "") + (k && k.nc && k.nc.w > 0 ? ", " + Math.round(k.nc.w * 100) + "% uit de boeien" : "");
+      h += "<div class='" + clsr.replace(/\s+/g, " ").trim() + "' data-u='" + u + "' title='" + esc(tip) + "'>" +
+        "<div class='hr-t'><b>" + (l.h < 10 ? "0" : "") + l.h + "<small>:00</small></b>" + (phl ? "<em>" + phl + "</em>" : "") + (ev.length ? "<span class='ev'>" + ev.join("<br>") + "</span>" : "") + "</div>" +
+        "<div class='hr-sc" + (c.s >= 8 ? " w" : "") + "' style='background:" + scCol(c.s) + "'>" + c.s + "</div>" +
+        "<div class='hr-wv'><span><b" + (c.v >= L.wave ? " class='ok'" : "") + ">" + nf(c.v) + " m</b>" + (c.p ? Math.round(c.p) + " s" : "") + "</span>" +
+          "<div class='hr-bar'><i style='width:" + pct.toFixed(0) + "%;background:" + scCol(c.s) + "'></i><u style='left:" + lim.toFixed(0) + "%'></u></div></div>" +
+        "<div class='hr-wd " + wk + "'><b><i style='transform:rotate(" + Math.round(c.w.deg) + "deg)'>↓</i>" + Math.round(c.w.kn) + "</b><small>" + compass(c.w.deg) + " · " + { af: "af", aan: "aan", zij: "zij" }[kind(c.w.deg)] + "</small></div>" +
+        "<div class='hr-wx'>" + (c.wc !== undefined ? wxIcon(c.wc, c.day) : "") + (c.t !== undefined ? tmp(c.t) : "") + "</div>" +
+        "</div>";
+    });
+    return "<div class='hours'>" + h + "</div>";
+  }
+  function miniHtml(an) {
+    var us = an.us.filter(function (u) { return an.cells["Klodde|" + u]; });
+    if (!us.length) return "";
+    var seg = us.map(function (u) { var c = an.cells["Klodde|" + u]; return "<i class='" + (isPast(u) ? "past" : "") + "' style='background:" + scCol(c.s) + "' title='" + pad(local(u).h) + ": " + c.s + "'></i>"; }).join("");
+    return "<div class='mini' aria-hidden='true'>" + seg + "</div><div class='mini-ax' aria-hidden='true'><span>" + pad(local(us[0]).h) + "</span><span>" + pad(local(us[us.length - 1]).h) + "</span></div>";
   }
   // Laat de tabel beginnen bij het beste uur van de dag, of anders bij 08:00.
   function scrollToTarget(det) {
@@ -780,9 +874,14 @@ a { color: var(--accent); }
       var target = bs >= 7 ? bu : (function () { var t = an.us.filter(function (u) { return local(u).h >= 8 && !isPast(u); }); return t.length ? t[0] : an.us[an.us.length - 1]; })();
       var bestTxt = bs >= 0 ? "beste " + bs + " om " + pad(local(bu).h) : "voorbij";
       sum += "<p><b>" + dayShort(day) + "</b><span><strong>Meerderheid goed: " + fmtRuns(maj) + "</strong><span class='sm'>Alle drie goed: " + fmtRuns(all3) + "</span><span class='sm'>Golven: " + ranges + "</span></span></p>";
-      dh += "<details data-day='" + day + "'" + (S.open[day] ? " open" : "") + " data-target='" + target + "'><summary><span>" + dayLong(day) + "</span><span class='cnt" + (bs >= 7 ? " good" : "") + "'>" + bestTxt + (maj.length ? " · " + maj.length + (maj.length === 1 ? " uur" : " uren") + " goed" : "") + "</span></summary><div class='scroll'><table class='grid'>" + tableHtml(day, an) + "</table></div>" + tidesHtml(day) + "</details>";
+      var goodN = cand.filter(function (u) { return an.cells["Klodde|" + u].s >= 7; }).length;
+      dh += "<details class='day' data-day='" + day + "'" + (S.open[day] ? " open" : "") + " data-target='" + target + "'><summary><div class='dsum-top'><span class='dname'>" + dayLong(day) + "</span>" +
+        "<span class='bestchip' style='background:" + (bs >= 0 ? scCol(bs) : "var(--line)") + (bs >= 8 ? ";color:#fff" : "") + "'>" + bestTxt + (goodN ? " · " + goodN + (goodN === 1 ? " uur" : " uren") + " goed" : "") + "</span><span class='chev' aria-hidden='true'>▾</span></div>" + miniHtml(an) + "</summary>" +
+        hoursHtml(day, an) + tidesHtml(day) +
+        "<details class='more'><summary>Alle modellen vergelijken (tabel)</summary><div class='scroll'><table class='grid'>" + tableHtml(day, an) + "</table></div></details></details>";
     });
     if ($("summary")) $("summary").innerHTML = sum;
+    $("sc-legend").innerHTML = "<span style='background:" + scCol(2) + "'>0–3</span><span style='background:" + scCol(5) + "'>4–6</span><span style='background:" + scCol(7) + "'>7</span><span style='background:" + scCol(9) + ";color:#fff'>8–10</span>";
     $("days").innerHTML = dh;
     [].forEach.call($("days").querySelectorAll("details[open]"), scrollToTarget);
     renderBest(ans, days);
@@ -833,7 +932,6 @@ a { color: var(--accent); }
     var box = $("nowbar"), wv = D.rws && D.rws.wave_now, wn = D.rws && D.rws.wind_now, tiles = [], times = [], src = [];
     if (wv && nowU() - wv.t / 3600 < 3 && wv.hm0) {
       tiles.push(["Golf", nf(wv.hm0 / 100) + " m", (wv.tm10 ? "periode " + nf(wv.tm10) + " s" : "") + (wv.tm02 ? "<br>gem. " + nf(wv.tm02) + " s" : "")]);
-      if (wv.hmax || wv.tmax) tiles.push(["Grootste golf", wv.hmax ? nf(wv.hmax / 100) + " m" : "·", wv.tmax ? "langste golf " + nf(wv.tmax) + " s" : ""]);
       times.push(hm(wv.t / 3600)); src.push("golven: boei IJmuiden Munitiestort 2 (" + hm(wv.t / 3600) + ")");
     } else {
       var mh = lastMeas(D, "ms2", 3), mt = lastMeas(D, "ms2_tm10", 3) || lastMeas(D, "ms2_tm02", 3);
@@ -900,8 +998,7 @@ a { color: var(--accent); }
     var a = $("alert"), day = a.getAttribute("data-day"), u = a.getAttribute("data-u"); if (!day) return;
     var det = $("days").querySelector("details[data-day='" + day + "']"); if (!det) return;
     det.open = true; S.open[day] = true; if (u) det.setAttribute("data-target", u);
-    det.scrollIntoView({ behavior: "smooth", block: "start" });
-    setTimeout(function () { scrollToTarget(det); var th = det.querySelector("thead th[data-u='" + u + "']"); if (th) { th.classList.add("flash"); setTimeout(function () { th.classList.remove("flash"); }, 1600); } }, 60);
+    setTimeout(function () { var r = det.querySelector(".hr[data-u='" + u + "']"); if (r) { r.scrollIntoView({ behavior: "smooth", block: "center" }); r.classList.add("flash"); setTimeout(function () { r.classList.remove("flash"); }, 1800); } }, 60);
   }
   $("alert").addEventListener("click", goAlert);
   $("alert").addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); goAlert(); } });
