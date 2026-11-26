@@ -24,7 +24,7 @@
 
   var NAMES = ["N","NNO","NO","ONO","O","OZO","ZO","ZZO","Z","ZZW","ZW","WZW","W","WNW","NW","NNW"];
 
-  function kind(deg) { return (deg >= 45 && deg <= 155) ? "af" : ((deg >= 245 && deg <= 335) ? "aan" : "zij"); }
+  function kind(deg) { return (deg >= 55 && deg <= 165) ? "af" : ((deg >= 245 && deg <= 335) ? "aan" : "zij"); }
 
   function compass(deg) { return NAMES[Math.round(deg / 22.5) % 16]; }
 

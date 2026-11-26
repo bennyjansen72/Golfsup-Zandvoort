@@ -41,7 +41,7 @@ def sun_times(d):
 
 
 def kind(deg):
-    if 45 <= deg <= 155:
+    if 55 <= deg <= 165:
         return "af"
     if 245 <= deg <= 335:
         return "aan"

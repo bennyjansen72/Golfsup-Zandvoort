@@ -24,7 +24,7 @@ Laten zien wanneer de golven bij Zandvoort goed zijn om te golfsuppen, met een S
 
 - Golfhoogte: goed vanaf 0,8 m (was eerst 0,5 m), mag tot 2 m of hoger.
 - Wind in knopen, niet in Beaufort. Aflandig tot 16 kn, zij- of aanlandig tot 6 kn.
-- Aflandig = wind uit 45° tot 155°, aanlandig = 245° tot 335°, de rest zijwaarts.
+- Aflandig = wind uit 55° tot 165° (26 nov aangepast aan de kustlijn bij Zandvoort, normaal 290°; was 45°–155°), aanlandig = 245° tot 335°, de rest zijwaarts.
 - Swellperiode vanaf 5,5 s.
 - Score 0 tot 10: golfhoogte is de basis (0,7 m = 7 … vanaf 1 m = 10), wind boven de grens en een korte periode verlagen hem. Groen vanaf 7.
 - SUP ALERT: Claude-score 7 of hoger, golf vanaf de alertgrens, tussen zonsopkomst en zonsondergang.
@@ -91,4 +91,4 @@ In de code heet het model nog `Klodde` (oude naam); op het scherm staat "Claude"
 - 21 nov 2026: het oorspronkelijke bouwgesprek was per ongeluk verwijderd; de app zelf stond nog volledig op GitHub. Dit bestand gemaakt. Service worker bewaart rws.json niet meer bij elke verversing opnieuw, windtabel-fix, `__pycache__` weg, metingen naar de branch `data` (één commit) in plaats van elk kwartier een commit op main. Webcams Zandvoort en Wijk aan Zee toegevoegd; temperatuur en weericonen toegevoegd. Piekperiode en richting van K14, L9 en Eierlandse Gat erbij; aantal golven weg uit de opbouw van de golven. Rij Stroming (getijdestroom) toegevoegd.
 - 22 nov 2026: map `dag/` voor deelbare dagoverzichten van alertdagen (losse interactieve pagina met golven, periode, wind, temperatuur, getij en stroming, sessie gemarkeerd). Eerste: `dag/2026-11-22.html`.
 - 24 nov 2026: dagoverzichten automatisch voor elke alertdag (zie "Alertdagen").
-- 26 nov 2026: "Grootste golf" uit Nu gemeten; nieuwe kleurrijke dagweergave per uur. Rekenkern naar `engine.js`; GitHub-taak rekent de voorspelling uit (`forecast.json`), houdt bij hoe goed Claude voorspelt en leert daarvan, en stuurt pushmeldingen via ntfy. WebP-foto's en eigen lettertype. Daarna meldingen teruggebracht tot 18:00 de avond ervoor en een uur voor zonsopkomst. 's Avonds rekenkern realistischer: alleen golven richting strand, kalibratie alleen op golven uit zee, energiegewogen periode, deining apart.
+- 26 nov 2026: "Grootste golf" uit Nu gemeten; nieuwe kleurrijke dagweergave per uur. Rekenkern naar `engine.js`; GitHub-taak rekent de voorspelling uit (`forecast.json`), houdt bij hoe goed Claude voorspelt en leert daarvan, en stuurt pushmeldingen via ntfy. WebP-foto's en eigen lettertype. Daarna meldingen teruggebracht tot 18:00 de avond ervoor en een uur voor zonsopkomst. 's Avonds rekenkern realistischer: alleen golven richting strand, kalibratie alleen op golven uit zee, energiegewogen periode, deining apart. Aflandige sector naar 55°–165°. Wijk aan Zee als tweede spot bewust niet gedaan (te complex, wens gebruiker).
