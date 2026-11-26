@@ -750,7 +750,7 @@ details.more .scroll { padding: 0 8px 8px 0; }
     S.first = false;
   }
   function renderStatus() {
-    var t = D.packed ? "Voorspelling berekend om " + hm(D.made / 36e5) + " (Open-Meteo, elk kwartier)" : "Voorspelling Open-Meteo opgehaald om " + hm(D.fetched / 36e5);
+    var t = D.packed ? "Voorspelling berekend om " + hm(D.made / 36e5) + " (Open-Meteo)" : "Voorspelling Open-Meteo opgehaald om " + hm(D.fetched / 36e5);
     if (!D.tides.length) t += " · geen getij beschikbaar";
     if (D.end !== null && D.end !== undefined) t += " · metingen Rijkswaterstaat tot " + hm(D.end + 1);
     $("status").textContent = t;
