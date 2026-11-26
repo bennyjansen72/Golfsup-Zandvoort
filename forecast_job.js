@@ -6,7 +6,8 @@
 //    De app leest dat ene bestand in plaats van zelf zes bestanden op te halen.
 // 2. Houdt bij hoe goed Claude voorspelt (<uitmap>/verif.json): elke voorspelling wordt bewaard en later naast
 //    de meting bij Munitiestort 2 gelegd. Daaruit volgt een kleine correctie per vooruittermijn.
-// 3. Stuurt een pushmelding via ntfy bij een nieuwe SUP ALERT (<uitmap>/meldingen.json onthoudt wat al gemeld is).
+// 3. Pushmelding via ntfy: om 18:00 de avond voor een alertdag en een uur voor zonsopkomst op de dag zelf
+//    (<uitmap>/meldingen.json onthoudt wat al gemeld is).
 //
 // Bestaande verif.json en meldingen.json in <uitmap> worden ingelezen en bijgewerkt.
 "use strict";
@@ -59,46 +60,71 @@ async function main() {
 }
 
 // ---------- Pushmelding (ntfy) ----------
+// Per alertdag hooguit twee berichten (wens gebruiker 26 nov):
+//  - avond: om 18:00 de dag ervoor, "morgen SUP ALERT …";
+//  - ochtend: een uur voor zonsopkomst op de dag zelf, alleen als de alert dan nog staat.
+// GitHub draait de taak niet op de minuut, dus: valt een run tot 2,5 uur vóór het moment, dan krijgt ntfy het
+// bericht met "delay" en bezorgt het precies op tijd. Was er geen run vooraf, dan gaat het mee met de eerste
+// run erna (avond tot 21:00, ochtend tot zonsopkomst). meldingen.json onthoudt wat al verstuurd of ingepland is.
+const LEAD_MAX = 2.5;   // uren vooruit inplannen
+function startOfDayU(day) { // uurindex van 00:00 lokale tijd op die dag
+  let u = Math.floor(Date.parse(day + "T00:00:00Z") / 36e5) - 3;
+  while (E.local(u).day !== day) u++;
+  return u;
+}
+function nextDay(day) { return E.local(startOfDayU(day) + 30).day; }
+function prevDay(day) { return E.local(startOfDayU(day) - 6).day; }
+
 async function notify(d) {
   const cfg = readJSON(path.join(__dirname, "melding.json"), {});
   const topic = process.env.NTFY_TOPIC || cfg.topic;
   if (!topic) { console.log("Geen ntfy-onderwerp, geen meldingen."); return; }
   const sPath = path.join(outDir, "meldingen.json");
-  const S = readJSON(sPath, { days: {} });
-  const runs = E.alertRuns(d, E.LIM0);
-  // Per dag het beste blok (hoogste totaalscore, dan meeste energie).
+  const S = readJSON(sPath, {});
+  if (!S.sent) S.sent = {};   // {"avond:JJJJ-MM-DD": tijd, "ochtend:JJJJ-MM-DD": tijd} (datum = alertdag)
+  const now = E.nowU(), today = E.local(now).day;
+  // Per dag het beste alert-blok (hoogste totaalscore, dan meeste energie).
   const best = {};
-  runs.forEach((r) => { const b = best[r.day]; if (!b || r.sum > b.sum || (r.sum === b.sum && r.en > b.en)) best[r.day] = r; });
-  const today = E.local(E.nowU()).day, msgs = [];
-  Object.keys(best).sort().forEach((day) => {
-    const r = best[day], u0 = r.us[0], u1 = r.us[r.us.length - 1] + 1, prev = S.days[day];
+  E.alertRuns(d, E.LIM0).forEach((r) => { const b = best[r.day]; if (!b || r.sum > b.sum || (r.sum === b.sum && r.en > b.en)) best[r.day] = r; });
+
+  function text(r) {
+    const u0 = r.us[0], u1 = r.us[r.us.length - 1] + 1;
     const v = r.cs.map((c) => c.v), kn = r.cs.map((c) => Math.round(c.w.kn)), ps = r.cs.map((c) => c.p).filter(Boolean);
     const rg = (a, f, unit) => { const lo = f(Math.min(...a)), hi = f(Math.max(...a)); return lo + (hi !== lo ? "–" + hi : "") + unit; };
     const c0 = r.cs[0], kindW = { af: "aflandig", aan: "aanlandig", zij: "zijwaarts" }[E.kind(c0.w.deg)];
-    const body = "Golf " + rg(v, (x) => nf(x), " m") + (ps.length ? ", periode " + rg(ps, (x) => String(Math.round(x)), " s") : "") +
-      "\nWind " + E.compass(c0.w.deg) + " " + rg(kn, String, " kn") + " (" + kindW + ")\nBeste score " + Math.max(...r.cs.map((c) => c.s));
-    const when = (day === today ? "vandaag " : "") + dayTxt(day) + " " + hhmm(u0) + "–" + hhmm(u1);
-    if (!prev) msgs.push({ title: "SUP ALERT " + when, message: body, tags: ["ocean", "surfer"], priority: 4 });
-    // Al begonnen: de verstreken uren vallen weg, dat is geen verschuiving.
-    else if (prev.u0 > E.nowU() && (Math.abs(prev.u0 - u0) >= 2 || Math.abs(prev.u1 - u1) >= 2)) msgs.push({ title: "SUP ALERT verschoven: " + when, message: body, tags: ["ocean"], priority: 3 });
-    else { prev.miss = 0; return; }
-    S.days[day] = { u0, u1, t: Date.now(), miss: 0 };
+    return { when: hhmm(u0) + "–" + hhmm(u1),
+      body: "Golf " + rg(v, (x) => nf(x), " m") + (ps.length ? ", periode " + rg(ps, (x) => String(Math.round(x)), " s") : "") +
+        "\nWind " + E.compass(c0.w.deg) + " " + rg(kn, String, " kn") + " (" + kindW + ")\nBeste score " + Math.max(...r.cs.map((c) => c.s)) };
+  }
+  const msgs = [];
+  // Avondbericht voor de alertdag van morgen (en eventueel overmorgen als we al ver vooruit inplannen).
+  Object.keys(best).forEach((day) => {
+    const key = "avond:" + day, at = startOfDayU(prevDay(day)) + 18;   // 18:00 de dag ervoor
+    if (S.sent[key] || now < at - LEAD_MAX || now > at + 3) return;
+    const t = text(best[day]);
+    msgs.push({ key, at, title: "Morgen SUP ALERT: " + dayTxt(day) + " " + t.when, message: t.body, tags: ["ocean", "surfer"], priority: 4 });
   });
-  // Gemelde dagen waar de alert verdwenen is (en die nog niet voorbij zijn).
-  Object.keys(S.days).forEach((day) => {
-    if (best[day]) return;
-    const x = S.days[day];
-    // Pas na 3 runs (ongeveer 45 minuten) zonder alert melden, zodat een score die rond de 7 schommelt niet steeds piept.
-    if (day >= today && x.u1 > E.nowU() && (x.miss = (x.miss || 0) + 1) < 3) return;
-    if (day >= today && x.u1 > E.nowU()) msgs.push({ title: "SUP ALERT vervallen: " + dayTxt(day), message: "Volgens de nieuwste voorspelling haalt " + dayTxt(day) + " de grens niet meer.", tags: ["ocean", "x"], priority: 2 });
-    delete S.days[day];
+  // Ochtendbericht een uur voor zonsopkomst, alleen als de alert van vandaag (of morgen, bij vooruit inplannen) nog staat.
+  Object.keys(best).forEach((day) => {
+    const sun = d.sun && d.sun[day]; if (!sun) return;
+    const key = "ochtend:" + day, at = sun.rise - 1;
+    if (S.sent[key] || now < at - LEAD_MAX || now > sun.rise) return;
+    const t = text(best[day]);
+    msgs.push({ key, at, title: "Vandaag SUP ALERT " + t.when, message: t.body + "\nZon op " + hhmm(sun.rise) + ".", tags: ["ocean", "surfer", "sunrise"], priority: 4 });
   });
   for (const m of msgs) {
+    const body = { topic, click: APP, title: m.title, message: m.message, tags: m.tags, priority: m.priority };
+    const wait = (m.at - E.nowU()) * 3600;   // seconden
+    if (wait > 15) body.delay = String(Math.round(m.at * 3600));   // ntfy bezorgt op dit tijdstip (unix-tijd)
     try {
-      const r = await fetch("https://ntfy.sh/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ topic, click: APP, ...m }) });
-      console.log("Melding:", m.title, r.status);
+      const r = await fetch("https://ntfy.sh/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+      console.log("Melding:", m.title, body.delay ? "(ingepland " + hhmm(m.at) + ")" : "(nu)", r.status);
+      if (r.ok) S.sent[m.key] = Date.now();
     } catch (e) { console.log("Melding mislukt:", m.title, e.message); }
   }
+  // Oude sleutels opruimen.
+  Object.keys(S.sent).forEach((k) => { if (k.split(":")[1] < prevDay(today)) delete S.sent[k]; });
+  delete S.days;
   fs.writeFileSync(sPath, JSON.stringify(S));
 }
 

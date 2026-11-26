@@ -60,7 +60,8 @@ In de code heet het model nog `Klodde` (oude naam); op het scherm staat "Claude"
 ## Pushmelding (26 nov)
 
 - Via ntfy.sh, onderwerp `golfsup-zandvoort-c4e6121205` (in `melding.json`; een GitHub-secret `NTFY_TOPIC` gaat voor). In de app staat een blok "Melding bij een SUP ALERT" met uitleg en link.
-- `forecast_job.js` meldt per dag het beste alert-blok (standaardgrenzen, overdag, score ≥ 7, golf ≥ 0,8 m): nieuw, verschoven (≥ 2 uur, alleen als het nog niet begonnen is) of vervallen (pas na 3 runs zonder alert). `meldingen.json` op `data` onthoudt wat al gemeld is.
+- Wens gebruiker (26 nov): per alertdag alleen deze twee berichten, met het beste alert-blok van die dag (standaardgrenzen, overdag, score ≥ 7, golf ≥ 0,8 m): om 18:00 de avond ervoor ("Morgen SUP ALERT …") en een uur voor zonsopkomst op de dag zelf ("Vandaag SUP ALERT …", alleen als de alert dan nog staat). Geen berichten over verschuiven of vervallen.
+- Omdat GitHub de taak niet op tijd draait: een run tot 2,5 uur vóór het moment plant het bericht in bij ntfy (`delay`, unix-tijd), zodat het precies op tijd komt. Geen run vooraf: dan bij de eerste run erna (avond tot 21:00, ochtend tot zonsopkomst). `meldingen.json` op `data` onthoudt per sleutel `avond:<dag>` / `ochtend:<dag>` wat verstuurd of ingepland is.
 
 ## Alertdagen (map `dag/`)
 
@@ -85,4 +86,4 @@ In de code heet het model nog `Klodde` (oude naam); op het scherm staat "Claude"
 - 21 nov 2026: het oorspronkelijke bouwgesprek was per ongeluk verwijderd; de app zelf stond nog volledig op GitHub. Dit bestand gemaakt. Service worker bewaart rws.json niet meer bij elke verversing opnieuw, windtabel-fix, `__pycache__` weg, metingen naar de branch `data` (één commit) in plaats van elk kwartier een commit op main. Webcams Zandvoort en Wijk aan Zee toegevoegd; temperatuur en weericonen toegevoegd. Piekperiode en richting van K14, L9 en Eierlandse Gat erbij; aantal golven weg uit de opbouw van de golven. Rij Stroming (getijdestroom) toegevoegd.
 - 22 nov 2026: map `dag/` voor deelbare dagoverzichten van alertdagen (losse interactieve pagina met golven, periode, wind, temperatuur, getij en stroming, sessie gemarkeerd). Eerste: `dag/2026-11-22.html`.
 - 24 nov 2026: dagoverzichten automatisch voor elke alertdag (zie "Alertdagen").
-- 26 nov 2026: "Grootste golf" uit Nu gemeten; nieuwe kleurrijke dagweergave per uur. Rekenkern naar `engine.js`; GitHub-taak rekent de voorspelling uit (`forecast.json`), houdt bij hoe goed Claude voorspelt en leert daarvan, en stuurt pushmeldingen via ntfy. WebP-foto's en eigen lettertype.
+- 26 nov 2026: "Grootste golf" uit Nu gemeten; nieuwe kleurrijke dagweergave per uur. Rekenkern naar `engine.js`; GitHub-taak rekent de voorspelling uit (`forecast.json`), houdt bij hoe goed Claude voorspelt en leert daarvan, en stuurt pushmeldingen via ntfy. WebP-foto's en eigen lettertype. Daarna meldingen teruggebracht tot 18:00 de avond ervoor en een uur voor zonsopkomst.
