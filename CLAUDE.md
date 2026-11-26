@@ -10,9 +10,13 @@ Laten zien wanneer de golven bij Zandvoort goed zijn om te golfsuppen, met een S
 - Repo: https://github.com/bennyjansen72/Golfsup-Zandvoort (GitHub Pages vanaf main)
 - Claude-Project: "zandvoort golfsup", met een kopie van dit bestand als `claude/golfsup-app-projectnotities.md`. Houd beide gelijk.
 - De gebruiker wil volledige controle over de app houden en altijd de nieuwste voorspelling zien (de oude wens "elke ochtend" is vervangen).
-- Verversen: de app haalt de voorspelling van Open-Meteo zelf op bij het openen, elke 10 minuten zolang hij open staat, en opnieuw bij terugkomen na meer dan 5 minuten. Op de achtergrond doet een dichte web-app niets. ECMWF en GFS worden ongeveer vier keer per dag nieuw berekend, dus vaker ophalen geeft meestal dezelfde modelwaarden. De boeimetingen komen elk kwartier binnen (GitHub Actions) en sturen de Claude-voorspelling voor de komende uren bij.
+- Rekenkern: alle voorspellingslogica (bouwen uit Open-Meteo, kalibratie, nowcast, getijfactor, score, alert-blokken) staat in `engine.js` en wordt gedeeld door de app en de GitHub-taak (`forecast_job.js`, Node). Pas de voorspelling alleen daar aan. In `index.html` staan alleen weergave en bediening.
+- Klaargezette voorspelling (26 nov): de GitHub-taak rekent elk kwartier de voorspelling uit en zet `forecast.json` op de branch `data`. De app laadt die plus `rws.json` (2 bestanden in plaats van 6). Is `forecast.json` ouder dan 75 minuten of niet bereikbaar, dan haalt de app zelf alles bij Open-Meteo en rekent zelf (oude manier). In de kopregel staat dan "Voorspelling berekend om …" of "Voorspelling Open-Meteo opgehaald om …".
+- Verversen: de app haalt de voorspelling op bij het openen, elke 10 minuten zolang hij open staat, en opnieuw bij terugkomen na meer dan 5 minuten. Op de achtergrond doet een dichte web-app niets. ECMWF en GFS worden ongeveer vier keer per dag nieuw berekend, dus vaker ophalen geeft meestal dezelfde modelwaarden. De boeimetingen komen elk kwartier binnen (GitHub Actions) en sturen de Claude-voorspelling voor de komende uren bij.
 - Bovenaan staan links naar de live webcams, in deze volgorde: Reddingsbrigade Bloemendaal, Surfweer.nl Zandvoort, Surfweer.nl Alohacam Wijk aan Zee.
 - Opbouw van de golven: blok onder "Nu gemeten" met de laatste 10-minutenmeting van Munitiestort 2: Hmax, H1/50, H1/10, H1/3, deining (HTE3) als balkjes, periodes (Tm02, T1/3, piek uit Fp, Tmax), aandeel windzee/deining (energie = hoogte²), en richting (Th0) en watertemperatuur (T) als die er zijn. Schatting met ≈: gemiddelde golf = 0,63 × H1/3. Het aantal golven staat er op verzoek niet meer in (21 nov). Rijkswaterstaat publiceert geen gemiddelde of laagste golf. Fp komt binnen als 140 bij eenheid Hz en is in werkelijkheid mHz (0,14 Hz).
+- "Nu gemeten" toont Golf, Wind en Weer; de tegel "Grootste golf" is op verzoek weg (26 nov). Hmax staat nog wel in "Opbouw van de golven".
+- Dagweergave (26 nov, telefoonvriendelijk): per dag dicht een kleurenbalk met de Claude-score per daglichtuur en een label "beste X om HH:00"; open een regel per uur met scorevak (grijs 0–3, geel 4–6, groen 7, donkergroen 8–10), golf + periode met balkje en streepje bij de alertgrens, windvakje (blauw/oranje/rood, af/zij/aan) en weer; getij als gekleurde rand links (blauw push, paars afgaand/laag), HW/LW en zon bij het uur. De oude modeltabel zit inklapbaar onder "Alle modellen vergelijken (tabel)". Tik op de SUP ALERT springt naar het uur.
 - Op verzoek van de gebruiker niet (meer) in de app: de tabel "Wind gemeten en voorspeld", "Hoe goed klopt het?" en "Bronnen en werkwijze" (21 nov). De kalibratie draait nog wel op de achtergrond voor Claude.
 - Weer: "Nu gemeten" heeft een tegel Weer (icoon, temperatuur, gevoelstemperatuur) uit de actuele modelwaarde van Open-Meteo voor Zandvoort (`current`, geen meting). In de scoreregels van ECMWF, GFS en Claude staan per uur een weericoon en de temperatuur (Open-Meteo `temperature_2m`, `weather_code`, `is_day`). Claude: gemiddelde temperatuur van beide modellen; als het weer verschilt het nattere/slechtere weer (`wxRank`).
 
@@ -47,6 +51,17 @@ In de code heet het model nog `Klodde` (oude naam); op het scherm staat "Claude"
 2. Kleine getijfactor (`TF`).
 3. Tot 3 uur na de laatste meting uit de boeien (`NOWC`), daarna aflopend tot 0 bij 12 uur.
 
+## Leren van eerdere voorspellingen (26 nov)
+
+- `forecast_job.js` bewaart elk uur de Claude-voorspelling (en ECMWF/GFS) voor de termijnen 1, 3, 6, 12, 24, 36, 48, 72, 96 en 120 uur vooruit in `verif.json` (branch `data`) en rekent die af zodra Munitiestort 2 (Hm0) gemeten is: per termijn aantal, gemiddelde absolute fout en gemiddelde afwijking. Oude uren doven uit (halveringstijd ~30 dagen).
+- Correctie per termijn (`applyLeadBias`): de gemiddelde afwijking, afgezwakt met n/(n+150) en hoogstens 10 cm, gaat van de Claude-golf af (`KL.lb`). Pas vanaf 20 afgerekende voorspellingen per termijn.
+- In de app onder de kleurenbalk van een dag: "±X cm zit Claude er op deze afstand gemiddeld naast (ECMWF ±…, GFS ±…)", groen tot 12 cm, geel tot 22, oranje daarboven. Verschijnt na ongeveer een week.
+
+## Pushmelding (26 nov)
+
+- Via ntfy.sh, onderwerp `golfsup-zandvoort-c4e6121205` (in `melding.json`; een GitHub-secret `NTFY_TOPIC` gaat voor). In de app staat een blok "Melding bij een SUP ALERT" met uitleg en link.
+- `forecast_job.js` meldt per dag het beste alert-blok (standaardgrenzen, overdag, score ≥ 7, golf ≥ 0,8 m): nieuw, verschoven (≥ 2 uur, alleen als het nog niet begonnen is) of vervallen (pas na 3 runs zonder alert). `meldingen.json` op `data` onthoudt wat al gemeld is.
+
 ## Alertdagen (map `dag/`)
 
 - Overzicht: https://bennyjansen72.github.io/Golfsup-Zandvoort/dag/ ; één dag: `dag/?d=JJJJ-MM-DD`. Zelfde grafiek als het eerste dagoverzicht (golven, periode, wind, temperatuur, getij, stroming), met de alert-uren als groene strook en een tabel per uur.
@@ -60,6 +75,7 @@ In de code heet het model nog `Klodde` (oude naam); op het scherm staat "Claude"
 
 - Na elke wijziging het versienummer in `sw.js` ophogen.
 - Pas pushen naar GitHub als de gebruiker akkoord geeft: de site wordt dan meteen bijgewerkt.
+- Foto's als WebP (`bg.webp`, `alert2.webp`; de jpg's blijven voor de deelplaatjes van `dag/`), lettertype Outfit zelf meegeleverd in `fonts/` (geen Google Fonts meer in de app).
 - De automatische taak zet de metingen elk kwartier op de branch `data` (één commit, force-push); main blijft schoon. De app leest `raw.githubusercontent.com/bennyjansen72/Golfsup-Zandvoort/data/rws.json`, met `data/rws.json` in main als reserve.
 - Haal voor het pushen toch even de laatste versie op (`git pull --rebase`).
 
@@ -69,3 +85,4 @@ In de code heet het model nog `Klodde` (oude naam); op het scherm staat "Claude"
 - 21 nov 2026: het oorspronkelijke bouwgesprek was per ongeluk verwijderd; de app zelf stond nog volledig op GitHub. Dit bestand gemaakt. Service worker bewaart rws.json niet meer bij elke verversing opnieuw, windtabel-fix, `__pycache__` weg, metingen naar de branch `data` (één commit) in plaats van elk kwartier een commit op main. Webcams Zandvoort en Wijk aan Zee toegevoegd; temperatuur en weericonen toegevoegd. Piekperiode en richting van K14, L9 en Eierlandse Gat erbij; aantal golven weg uit de opbouw van de golven. Rij Stroming (getijdestroom) toegevoegd.
 - 22 nov 2026: map `dag/` voor deelbare dagoverzichten van alertdagen (losse interactieve pagina met golven, periode, wind, temperatuur, getij en stroming, sessie gemarkeerd). Eerste: `dag/2026-11-22.html`.
 - 24 nov 2026: dagoverzichten automatisch voor elke alertdag (zie "Alertdagen").
+- 26 nov 2026: "Grootste golf" uit Nu gemeten; nieuwe kleurrijke dagweergave per uur. Rekenkern naar `engine.js`; GitHub-taak rekent de voorspelling uit (`forecast.json`), houdt bij hoe goed Claude voorspelt en leert daarvan, en stuurt pushmeldingen via ntfy. WebP-foto's en eigen lettertype.

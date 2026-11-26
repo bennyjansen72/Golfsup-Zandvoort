@@ -28,6 +28,8 @@ jobs:
           if git fetch --depth=1 origin data 2>/dev/null; then
             git show FETCH_HEAD:rws.json > /tmp/rws.json
             mkdir -p /tmp/dag && (git archive FETCH_HEAD dag 2>/dev/null | tar -x -C /tmp) || true   # archief alertdagen
+            mkdir -p /tmp/fc
+            for f in verif.json meldingen.json; do git show FETCH_HEAD:$f > /tmp/fc/$f 2>/dev/null || rm -f /tmp/fc/$f; done   # bijgehouden voorspellingen en gemelde alerts
           elif [ -s data/rws.json ]; then
             cp data/rws.json /tmp/rws.json   # eerste keer: oude kopie uit main
           fi
@@ -36,6 +38,11 @@ jobs:
       - name: Alertdagen bijwerken
         continue-on-error: true   # een fout hier mag de metingen niet tegenhouden
         run: mkdir -p /tmp/dag && python3 dag_archive.py /tmp/rws.json /tmp/dag
+      - name: Voorspelling Claude, bijhouden en pushmelding
+        continue-on-error: true   # een fout hier mag de metingen niet tegenhouden
+        env:
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+        run: mkdir -p /tmp/fc && node forecast_job.js /tmp/rws.json /tmp/fc
       - name: Opslaan op de branch data
         env:
           TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -43,11 +50,13 @@ jobs:
           [ -s /tmp/rws.json ] || { echo "Geen metingen"; exit 0; }
           mkdir /tmp/out && cp /tmp/rws.json /tmp/out/rws.json
           [ -d /tmp/dag ] && cp -r /tmp/dag /tmp/out/dag || true
+          for f in forecast.json verif.json meldingen.json; do [ -s /tmp/fc/$f ] && cp /tmp/fc/$f /tmp/out/$f || true; done
           cd /tmp/out
           git init -q -b data
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add rws.json
           [ -d dag ] && git add dag || true
+          for f in forecast.json verif.json meldingen.json; do [ -f $f ] && git add $f; done; true
           git commit -q -m "Metingen Rijkswaterstaat"
           git push -q -f "https://x-access-token:${TOKEN}@github.com/${GITHUB_REPOSITORY}.git" data
