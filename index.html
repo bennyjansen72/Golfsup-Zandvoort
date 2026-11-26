@@ -223,6 +223,27 @@ details.day[open] .dsum-top .chev { transform: rotate(180deg); }
 .pushtopic { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 10px 0 0; }
 .pushtopic code { font-size: 15px; font-weight: 600; background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; user-select: all; }
 .pushtopic a { text-decoration: none; }
+details.more table.grid { border-spacing: 3px; }
+details.more table.grid thead th { font-size: 12px; font-weight: 700; color: var(--fg); padding: 2px 0 4px; }
+details.more table.grid thead th.nowh { color: #fff; background: var(--accent); border-radius: 6px; }
+details.more td.c { min-width: 44px; height: 34px; border-radius: 9px; }
+details.more td.c.cur svg.curv { width: 47px; margin-left: -1.5px; }
+details.more td.c { width: 44px; }
+details.more td.c.push, details.more td.c.ebb, details.more td.c.rise { font-size: 10px; letter-spacing: -0.2px; }
+details.more td.c.nowc { box-shadow: inset 0 0 0 2px var(--accent); }
+details.more td.c.scc b.sc { font-size: 17px; }
+details.more td.c.scc small.wx { opacity: 0.85; }
+details.more td.c.wv { border: 1px solid var(--line); background-color: var(--surface); }
+details.more td.c.wv.ok { border-color: #26B26A; }
+details.more td.c.en { background: var(--surface); color: var(--fg); font-weight: 600; }
+details.more th.rn { font-size: 12.5px; padding: 0 6px 0 4px; background: var(--rn-bg); border-radius: 8px; }
+details.more th.rn small { display: block; margin: 0; font-size: 10px; line-height: 1.1; }
+details.more i.md { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 5px; vertical-align: 1px; }
+.md-ec { background: #2A78D6; } .md-gf { background: #EB6834; } .md-cl { background: #1BAF7A; }
+details.more tr.grp th { text-align: left; padding: 10px 0 2px; background: transparent; }
+details.more tr.grp th span { position: sticky; left: 0; display: block; width: 290px; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); }
+details.more tr.grp th span small { display: block; text-transform: none; letter-spacing: 0; font-weight: 400; font-size: 11px; color: var(--muted); white-space: normal; }
+@media (max-width: 560px) { details.more th.rn { max-width: 74px; white-space: normal; line-height: 1.15; } }
 .hours { display: flex; flex-direction: column; gap: 5px; padding: 0 10px 10px; }
 .hr { display: grid; grid-template-columns: 46px 42px minmax(0, 1fr) 62px 38px; align-items: center; gap: 7px; padding: 6px 8px 6px 6px; border-radius: 12px;
   background: var(--surface); border-left: 5px solid transparent; font-variant-numeric: tabular-nums; scroll-margin-top: 70px; transition: box-shadow 0.3s; }
@@ -517,12 +538,16 @@ details.more .scroll { padding: 0 8px 8px 0; }
   // ---------- Weergave ----------
   function tableHtml(day, an) {
     var us = an.us, L = limits(), h = "<thead><tr><th class='rn'></th>";
-    us.forEach(function (u) { var l = local(u); h += "<th data-u='" + u + "' class='" + (darkU(u) ? "dk" : "") + "' scope='col'" + (isPast(u) ? " style='opacity:.45'" : "") + ">" + (l.h < 10 ? "0" : "") + l.h + "</th>"; });
+    us.forEach(function (u) { var l = local(u); h += "<th data-u='" + u + "' class='" + (darkU(u) ? "dk" : "") + (u === Math.floor(nowU()) ? " nowh" : "") + "' scope='col'" + (isPast(u) ? " style='opacity:.45'" : "") + ">" + (l.h < 10 ? "0" : "") + l.h + "</th>"; });
     h += "</tr></thead><tbody>";
-    function td(cl, inner, u, title) { return "<td class='c " + cl + "'" + (isPast(u) ? " style='opacity:.45'" : "") + (title ? " title='" + esc(title) + "'" : "") + ">" + inner + "</td>"; }
+    var nu = Math.floor(nowU()), nc1 = us.length + 1;
+    function td(cl, inner, u, title, st) { return "<td class='c " + cl + (u === nu ? " nowc" : "") + "'" + ((isPast(u) || st) ? " style='" + (isPast(u) ? "opacity:.45;" : "") + (st || "") + "'" : "") + (title ? " title='" + esc(title) + "'" : "") + ">" + inner + "</td>"; }
+    function grp(t, sub) { return "<tr class='grp'><th colspan='" + nc1 + "' scope='colgroup'><span>" + t + (sub ? "<small>" + sub + "</small>" : "") + "</span></th></tr>"; }
+    function lab(m, extra) { var k = m === "Klodde" ? "cl" : m === "ECMWF" ? "ec" : "gf"; return "<th class='rn' scope='row'><i class='md md-" + k + "' aria-hidden='true'></i>" + mname(m) + (extra ? "<small>" + extra + "</small>" : "") + "</th>"; }
     var sn = D.sun && D.sun[day], tev = D.tides.filter(function (e) { return local(e.u).day === day; });
+    h += grp("Zon, getij en stroming", "push = 2 uur voor hoogwater · stroming in kn, boven de lijn noord (vloed), onder zuid (eb)");
     if (sn || tev.length) {
-      h += "<tr><th class='rn' scope='row'>Zon en getij</th>";
+      h += "<tr><th class='rn' scope='row'>Zon/getij</th>";
       us.forEach(function (u) {
         var parts = [], tips = [];
         if (sn && Math.floor(sn.rise) === u) { parts.push(sunIcon(true) + "<small class='per'>" + hm(sn.rise) + "</small>"); tips.push("Zonsopkomst " + hm(sn.rise)); }
@@ -537,14 +562,14 @@ details.more .scroll { padding: 0 8px 8px 0; }
       });
       h += "</tr>";
     }
-    h += "<tr><th class='rn' scope='row'>Getij<small>push = 2 u voor HW</small></th>";
+    h += "<tr><th class='rn' scope='row'>Getij</th>";
     us.forEach(function (u) {
       var ph = phase(D, u), lab = { push: "push", rise: "stijgt", ebb: "afgaand", low: "laag ↓" }[ph];
       h += ph ? td(ph === "low" ? "ebb" : ph, lab, u) : td("na", "·", u);
     });
     h += "</tr>";
     if (Object.keys(D.cur.v).length) {
-      h += "<tr><th class='rn' scope='row'>Stroming<small>kn · boven = noord (vloed)</small></th>";
+      h += "<tr><th class='rn' scope='row'>Stroming</th>";
       us.forEach(function (u) {
         var v = D.cur.v[u], dr = D.cur.dir[u];
         if (v === undefined || dr === undefined) { h += td("na", "·", u); return; }
@@ -553,8 +578,9 @@ details.more .scroll { padding: 0 8px 8px 0; }
       });
       h += "</tr>";
     }
+    h += grp("Score en weer", "0 tot 10 per model, met weer en temperatuur");
     MODELS.forEach(function (m) {
-      h += "<tr><th class='rn' scope='row'>" + mname(m) + "<small>score · weer</small></th>";
+      h += "<tr>" + lab(m);
       us.forEach(function (u) {
         var c = an.cells[m + "|" + u];
         if (!c) { h += td("na", "·", u); return; }
@@ -565,25 +591,29 @@ details.more .scroll { padding: 0 8px 8px 0; }
           wx = "<small class='wx'>" + (c.wc !== undefined ? wxIcon(c.wc, c.day) : "") + (c.t !== undefined ? tmp(c.t) : "") + "</small>";
           t += ", " + (c.t !== undefined ? tmp(c.t) + "C " : "") + (c.wc !== undefined ? wxText(c.wc) : "");
         }
-        h += td(cls(c.s), "<b class='sc'>" + c.s + "</b>" + wx, u, t);
+        h += td("scc", "<b class='sc'>" + c.s + "</b>" + wx, u, t, "background:" + scCol(c.s) + ";color:" + (c.s >= 8 ? "#fff" : "#0B2A3C"));
       });
       h += "</tr>";
     });
+    h += grp("Golf richting strand", "hoogte in m en periode in s · balkje tot 2 m · stippelrand = deels uit de boeien");
     MODELS.forEach(function (m, i) {
-      h += "<tr" + (i === 0 ? " class='sepr'" : "") + "><th class='rn' scope='row'>" + (m === "Klodde" ? "Golf Claude" : m === "ECMWF" ? "ECMWF WAM" : "GFS Wave") + "<small>m · s</small></th>";
+      h += "<tr>" + lab(m, m === "ECMWF" ? "WAM" : m === "GFS" ? "Wave" : "");
       us.forEach(function (u) {
         var c = cell(m, u);
         if (!c) { h += td("na", "·", u); return; }
         var nc = m === "Klodde" && D.KL[u].nc && D.KL[u].nc.w > 0;
-        h += td("wv" + (c.v >= L.wave ? " ok" : "") + (nc ? " nc" : ""), nf(c.v) + (c.p ? "<small class='per'>" + Math.round(c.p) + " s</small>" : ""), u);
+        var pc = Math.max(4, Math.min(100, c.v / 2 * 100)).toFixed(0), bc = c.v >= L.wave ? "rgba(38,178,106,.38)" : "rgba(14,107,140,.20)";
+        h += td("wv" + (c.v >= L.wave ? " ok" : "") + (nc ? " nc" : ""), nf(c.v) + (c.p ? "<small class='per'>" + Math.round(c.p) + " s</small>" : ""), u,
+          mname(m) + " " + pad(local(u).h) + ": " + nf(c.v) + " m richting strand" + (c.raw !== undefined ? " (op zee " + nf(c.raw) + " m)" : ""), "background:linear-gradient(to top," + bc + " " + pc + "%,transparent " + pc + "%)");
       });
       h += "</tr>";
     });
-    h += "<tr><th class='rn' scope='row'>Energie Claude<small>kW/m</small></th>";
+    h += "<tr>" + lab("Klodde", "kW/m").replace(">Claude<", ">Energie<");
     us.forEach(function (u) { var k = D.KL[u]; h += k && k.e !== undefined ? td("en", nf(k.e), u) : td("na", "·", u); });
     h += "</tr>";
+    h += grp("Wind in knopen", "kleur = binnen of boven je grens · pijl = waarheen, letters = waarvandaan");
     ["ECMWF", "GFS"].forEach(function (m, i) {
-      h += "<tr" + (i === 0 ? " class='sepr'" : "") + "><th class='rn' scope='row'>Wind " + m + "<small>kn</small></th>";
+      h += "<tr>" + lab(m);
       us.forEach(function (u) {
         var M = D.M[m], kn = M.kn[u], deg = M.deg[u];
         if (kn === undefined) { h += td("na", "·", u); return; }
