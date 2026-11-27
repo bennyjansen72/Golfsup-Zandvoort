@@ -236,10 +236,16 @@ details.more td.c.scc small.wx { opacity: 0.85; }
 details.more td.c.wv { border: 1px solid var(--line); background-color: var(--surface); }
 details.more td.c.wv.ok { border-color: #26B26A; }
 details.more td.c.en { background: var(--surface); color: var(--fg); font-weight: 600; }
+details.more td.c.dirc, details.more td.c.swc, details.more td.c.msc { background: var(--surface); color: var(--fg); font-weight: 600; font-size: 12.5px; }
+details.more td.c.dirc .dc i { font-style: normal; display: inline-block; margin-right: 1px; }
+details.more td.c.swc.long { background: #DDF1FA; color: #0B5C80; }
+details.more td.c.msc { border: 1px dashed var(--line); }
+details.more td.c.swc small.per, details.more td.c.msc small.per { white-space: nowrap; font-size: 9.5px; letter-spacing: -0.2px; }
+@media (prefers-color-scheme: dark) { details.more td.c.swc.long { background: #123F55; color: #BFE8F8; } }
 details.more th.rn { font-size: 12.5px; padding: 0 6px 0 4px; background: var(--rn-bg); border-radius: 8px; }
 details.more th.rn small { display: block; margin: 0; font-size: 10px; line-height: 1.1; }
 details.more i.md { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 5px; vertical-align: 1px; }
-.md-ec { background: #2A78D6; } .md-gf { background: #EB6834; } .md-cl { background: #1BAF7A; }
+.md-ec { background: #2A78D6; } .md-ms { background: #8A8F98; } .md-gf { background: #EB6834; } .md-cl { background: #1BAF7A; }
 details.more tr.grp th { text-align: left; padding: 10px 0 2px; background: transparent; }
 details.more tr.grp th span { position: sticky; left: 0; display: block; width: 290px; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); }
 details.more tr.grp th span small { display: block; text-transform: none; letter-spacing: 0; font-weight: 400; font-size: 11px; color: var(--muted); white-space: normal; }
@@ -615,6 +621,28 @@ details.more .scroll { padding: 0 8px 8px 0; }
     });
     h += "<tr>" + lab("Klodde", "kW/m").replace(">Claude<", ">Energie<");
     us.forEach(function (u) { var k = D.KL[u]; h += k && k.e !== undefined ? td("en", nf(k.e), u) : td("na", "·", u); });
+    h += "</tr>";
+    // Deining en golfrichting: modelwaarden met bron; gemeten waarden alleen voor uren die al geweest zijn.
+    h += grp("Deining en golfrichting", "pijl = waarheen, letters = waarvandaan · ECMWF levert geen aparte deining · gemeten: deininghoogte Munitiestort 2 (10–33 s), richting boei K13a (anders Eierlandse Gat)");
+    ["ECMWF", "GFS"].forEach(function (m) {
+      h += "<tr>" + lab(m, "richting");
+      us.forEach(function (u) { var dg = D.M[m].dir[u]; h += dg === undefined ? td("na", "·", u) : td("dirc", "<span class='dc'><i style='transform:rotate(" + Math.round(dg) + "deg)'>↓</i>" + compass(dg) + "</span><small class='per'>" + Math.round(dg) + "°</small>", u, mname(m) + " " + pad(local(u).h) + ": golven uit " + compass(dg) + " " + Math.round(dg) + "°"); });
+      h += "</tr>";
+    });
+    h += "<tr>" + lab("GFS", "deining");
+    us.forEach(function (u) {
+      var G = D.M.GFS.sw, sh = G && G.h[u], sp = G && G.p[u], sd = G && G.dir[u];
+      if (!sh) { h += td("na", "·", u); return; }
+      h += td("swc" + (sp >= 9 ? " long" : ""), nf(sh) + "<small class='per'>" + (sp ? Math.round(sp) + "s " : "") + (sd !== undefined ? "<i style='display:inline-block;transform:rotate(" + Math.round(sd) + "deg)'>↓</i>" + compass(sd) : "") + "</small>", u,
+        "GFS-deining " + pad(local(u).h) + ": " + nf(sh) + " m" + (sp ? ", " + nf(sp) + " s" : "") + (sd !== undefined ? ", uit " + compass(sd) + " " + Math.round(sd) + "°" + (E.seaSide(sd) ? " (vanuit zee)" : " (van het land af, bereikt het strand niet)") : ""));
+    });
+    h += "</tr><tr><th class='rn' scope='row'><i class='md md-ms' aria-hidden='true'></i>Meting<small>deining</small></th>";
+    us.forEach(function (u) {
+      var ht = D.meas.ms2_hte3 && D.meas.ms2_hte3[u], dk = (D.meas.k13a_dir && D.meas.k13a_dir[u]), de = (D.meas.eg_dir && D.meas.eg_dir[u]), dg = dk !== undefined ? dk : de, bn = dk !== undefined ? "K13a" : "Eierlandse Gat";
+      if (ht === undefined && dg === undefined) { h += td("na", "·", u); return; }
+      h += td("msc", (ht !== undefined ? nf(ht / 100) : "·") + "<small class='per'>" + (dg !== undefined ? "<i style='display:inline-block;transform:rotate(" + Math.round(dg) + "deg)'>↓</i>" + compass(dg) : "") + "</small>", u,
+        "Gemeten " + pad(local(u).h) + ":" + (ht !== undefined ? " deining " + nf(ht / 100) + " m bij Munitiestort 2" : "") + (dg !== undefined ? ", richting deining uit " + compass(dg) + " " + Math.round(dg) + "° bij boei " + bn : ", richting niet gemeten"));
+    });
     h += "</tr>";
     h += grp("Wind in knopen", "kleur = binnen of boven je grens · pijl = waarheen, letters = waarvandaan");
     ["ECMWF", "GFS"].forEach(function (m, i) {
