@@ -246,7 +246,10 @@ details.more th.rn { font-size: 12.5px; padding: 0 6px 0 4px; background: var(--
 details.more th.rn small { display: block; margin: 0; font-size: 10px; line-height: 1.1; }
 details.more i.md { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 5px; vertical-align: 1px; }
 .md-ec { background: #2A78D6; } .md-ms { background: #8A8F98; } .md-gf { background: #EB6834; } .md-cl { background: #1BAF7A; }
-details.more tr.grp th { text-align: left; padding: 10px 0 2px; background: transparent; }
+details.more tr.grp th { text-align: left; padding: 14px 0 2px; background: transparent; }
+details.more tr.sgrp th { text-align: left; padding: 8px 0 1px; background: transparent; }
+details.more tr.sgrp th span { position: sticky; left: 0; display: block; width: 290px; font-size: 12px; font-weight: 700; color: var(--fg); }
+details.more tr.sgrp th span small { font-weight: 400; font-size: 11px; color: var(--muted); }
 details.more tr.grp th span { position: sticky; left: 0; display: block; width: 290px; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); }
 details.more tr.grp th span small { display: block; text-transform: none; letter-spacing: 0; font-weight: 400; font-size: 11px; color: var(--muted); white-space: normal; }
 @media (max-width: 560px) { details.more th.rn { max-width: 74px; white-space: normal; line-height: 1.15; } }
@@ -280,6 +283,13 @@ details.more tr.grp th span small { display: block; text-transform: none; letter
 .hdir i { font-style: normal; display: inline-block; margin-right: 1px; }
 i.dar { display: inline-block; margin-right: 3px; font-style: normal; font-size: inherit; }
 .alert-stats em small { font-size: 10px; opacity: 0.75; }
+.hr-x { grid-column: 2 / -1; display: flex; flex-wrap: wrap; gap: 3px 6px; margin-top: -2px; font-size: 11px; line-height: 1.3; }
+.hr-x span { border-radius: 6px; padding: 1px 6px; background: var(--bg); color: var(--muted); white-space: nowrap; }
+.hr-x span i { font-style: normal; display: inline-block; margin-right: 3px; }
+.hr-x .xd { color: var(--fg); }
+.hr-x .xs { background: #DDF1FA; color: #0B5C80; font-weight: 600; }
+.hr-x .xo { color: var(--muted); }
+@media (prefers-color-scheme: dark) { .hr-x .xs { background: #123F55; color: #BFE8F8; } }
 .hr-bar { height: 7px; border-radius: 4px; background: var(--line); overflow: hidden; position: relative; }
 .hr-bar i { display: block; height: 100%; border-radius: 4px; }
 .hr-bar u { position: absolute; top: -2px; bottom: -2px; width: 2px; background: var(--fg); opacity: 0.45; }
@@ -292,7 +302,7 @@ i.dar { display: inline-block; margin-right: 3px; font-style: normal; font-size:
 .hr-wx .wxi { display: block; font-size: 17px; }
 .hr-head { display: grid; grid-template-columns: 46px 42px minmax(0, 1fr) 62px 38px; gap: 7px; padding: 0 8px 0 11px; font-size: 10px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
 .hr-head span:nth-child(4), .hr-head span:nth-child(5), .hr-head span:nth-child(2) { text-align: center; }
-details.more { margin: 0 10px 12px; background: transparent; }
+details.more { margin: 0 10px 12px; background: var(--surface); border-radius: 14px; padding: 2px 8px 6px; border: 1px solid var(--line); }
 details.more > summary { font-size: 13.5px; color: var(--accent); }
 details.more .scroll { padding: 0 8px 8px 0; }
 @media (prefers-color-scheme: dark) { .hr-wv span b.ok { color: #6BE3A2; } .hr.ebb .hr-t em, .hr.low .hr-t em { color: #CDB0F2; } .hr.push .hr-t em { color: #7FD8F5; } }
@@ -384,7 +394,7 @@ details.more .scroll { padding: 0 8px 8px 0; }
     <h2 id="h-read">Zo lees je de tabellen</h2>
     <ul class="plain">
       <li>Per dag eerst een kleurenbalk met alle uren, open de dag voor de uren van Claude: score, golf met periode (het streepje is je alertgrens), wind (af = aflandig, zij = zijwaarts, aan = aanlandig) en weer. De gekleurde rand links is het getij. "Alle modellen vergelijken" opent de tabel met ECMWF, GFS en Claude naast elkaar.</li>
-      <li>Claude telt alleen golven die naar het strand lopen. Golven die van de kust af lopen (bij aflandige wind, of als de modellen ze uit het oosten laten komen) bereiken Zandvoort niet; dan staat er "zee loopt van kust af". Hoe groot dat deel is volgt uit de golfrichting van ECMWF en GFS met de gangbare cos²-richtingsspreiding. "Deining … s" is de deining van GFS die vanuit zee komt, met periode en richting.</li>
+      <li>Claude telt alleen golven die naar het strand lopen. Golven die van de kust af lopen (bij aflandige wind, of als de modellen ze uit het oosten laten komen) bereiken Zandvoort niet; dan staat er "lopen van de kust af". Hoe groot dat deel is volgt uit de golfrichting van ECMWF en GFS met de gangbare cos²-richtingsspreiding. "Deining … s" is de deining van GFS die vanuit zee komt, met periode en richting.</li>
       <li>Golfrichting: bij de uren de richting waar de golven vandaan komen volgens ECMWF (pijl = waarheen), bij "deining" die van GFS. In Nu gemeten de gemeten richting van de deining (golven van 10–33 s, Rijkswaterstaat Th3) bij boei K13a, of anders Eierlandse Gat; Munitiestort 2 meet zelf geen richting. Is er geen meting, dan staat er "richting niet gemeten".</li>
       <li>"±… cm" onder de kleurenbalk: hoeveel Claude er op die afstand in de tijd gemiddeld naast zat bij Munitiestort 2 (groen tot 12 cm, geel tot 22 cm, oranje daarboven). Dit verschijnt zodra er genoeg voorspellingen zijn afgerekend, na ongeveer een week. Claude corrigeert zichzelf daar ook een beetje mee.</li>
       <li>Per uur een score van 0 tot 10 voor ECMWF, GFS en Claude (de eigen voorspelling van de app). Achter de modelnaam staat "score". De golfhoogte is de basis: 0,7 m geeft een 7, 0,8 m een 8, 0,9 m een 9 en vanaf 1 m een 10. Te veel wind (boven je grenzen) of een te korte periode verlaagt de score. Groen is 7 of hoger: goed. Geel is 4 tot 6, grijs lager.</li>
@@ -553,9 +563,77 @@ details.more .scroll { padding: 0 8px 8px 0; }
     h += "</tr></thead><tbody>";
     var nu = Math.floor(nowU()), nc1 = us.length + 1;
     function td(cl, inner, u, title, st) { return "<td class='c " + cl + (u === nu ? " nowc" : "") + "'" + ((isPast(u) || st) ? " style='" + (isPast(u) ? "opacity:.45;" : "") + (st || "") + "'" : "") + (title ? " title='" + esc(title) + "'" : "") + ">" + inner + "</td>"; }
+    function sub(t, x) { return "<tr class='sgrp'><th colspan='" + nc1 + "' scope='colgroup'><span>" + t + (x ? " <small>" + x + "</small>" : "") + "</span></th></tr>"; }
     function grp(t, sub) { return "<tr class='grp'><th colspan='" + nc1 + "' scope='colgroup'><span>" + t + (sub ? "<small>" + sub + "</small>" : "") + "</span></th></tr>"; }
     function lab(m, extra) { var k = m === "Klodde" ? "cl" : m === "ECMWF" ? "ec" : "gf"; return "<th class='rn' scope='row'><i class='md md-" + k + "' aria-hidden='true'></i>" + mname(m) + (extra ? "<small>" + extra + "</small>" : "") + "</th>"; }
     var sn = D.sun && D.sun[day], tev = D.tides.filter(function (e) { return local(e.u).day === day; });
+    h += grp("Score en weer", "0 tot 10 per model, met weer en temperatuur");
+    MODELS.forEach(function (m) {
+      h += "<tr>" + lab(m);
+      us.forEach(function (u) {
+        var c = an.cells[m + "|" + u];
+        if (!c) { h += td("na", "·", u); return; }
+        var k = D.KL[u], t = mname(m) + " " + pad(local(u).h) + ": golf " + nf(c.v) + " m" + (c.p ? " (" + Math.round(c.p) + " s)" : "") + ", wind " + Math.round(c.w.kn) + " kn uit " + compass(c.w.deg) + " (" + kindW(kind(c.w.deg)) + ")";
+        if (m === "Klodde" && k && k.nc) t += ", " + Math.round(k.nc.w * 100) + "% uit de boeien (" + nf(k.nc.h) + " m)";
+        var wx = "";
+        if (c.t !== undefined || c.wc !== undefined) {
+          wx = "<small class='wx'>" + (c.wc !== undefined ? wxIcon(c.wc, c.day) : "") + (c.t !== undefined ? tmp(c.t) : "") + "</small>";
+          t += ", " + (c.t !== undefined ? tmp(c.t) + "C " : "") + (c.wc !== undefined ? wxText(c.wc) : "");
+        }
+        h += td("scc", "<b class='sc'>" + c.s + "</b>" + wx, u, t, "background:" + scCol(c.s) + ";color:" + (c.s >= 8 ? "#fff" : "#0B2A3C"));
+      });
+      h += "</tr>";
+    });
+    h += grp("Golven", "alle golfinformatie bij elkaar") + sub("Hoogte richting strand", "m en periode in s · balkje tot 2 m · stippelrand = deels uit de boeien");
+    MODELS.forEach(function (m, i) {
+      h += "<tr>" + lab(m, m === "ECMWF" ? "WAM" : m === "GFS" ? "Wave" : "");
+      us.forEach(function (u) {
+        var c = cell(m, u);
+        if (!c) { h += td("na", "·", u); return; }
+        var nc = m === "Klodde" && D.KL[u].nc && D.KL[u].nc.w > 0;
+        var pc = Math.max(4, Math.min(100, c.v / 2 * 100)).toFixed(0), bc = c.v >= L.wave ? "rgba(38,178,106,.38)" : "rgba(14,107,140,.20)";
+        h += td("wv" + (c.v >= L.wave ? " ok" : "") + (nc ? " nc" : ""), nf(c.v) + (c.p ? "<small class='per'>" + Math.round(c.p) + " s</small>" : ""), u,
+          mname(m) + " " + pad(local(u).h) + ": " + nf(c.v) + " m richting strand" + (c.raw !== undefined ? " (op zee " + nf(c.raw) + " m)" : "") + (m !== "Klodde" && D.M[m].dir[u] !== undefined ? ", golven uit " + compass(D.M[m].dir[u]) + " " + Math.round(D.M[m].dir[u]) + "°" : "") + (m === "GFS" && D.M.GFS.sw && D.M.GFS.sw.dir[u] !== undefined ? ", deining uit " + compass(D.M.GFS.sw.dir[u]) + " " + Math.round(D.M.GFS.sw.dir[u]) + "°" : ""), "background:linear-gradient(to top," + bc + " " + pc + "%,transparent " + pc + "%)");
+      });
+      h += "</tr>";
+    });
+    // Deining en golfrichting: modelwaarden met bron; gemeten waarden alleen voor uren die al geweest zijn.
+    h += sub("Deining", "voorspeld door GFS (ECMWF geeft geen aparte deining) · meting: hoogte Munitiestort 2, richting K13a");
+    h += "<tr>" + lab("GFS", "deining");
+    us.forEach(function (u) {
+      var G = D.M.GFS.sw, sh = G && G.h[u], sp = G && G.p[u], sd = G && G.dir[u];
+      if (!sh) { h += td("na", "·", u); return; }
+      h += td("swc" + (sp >= 9 ? " long" : ""), nf(sh) + "<small class='per'>" + (sp ? Math.round(sp) + "s " : "") + (sd !== undefined ? "<i style='display:inline-block;transform:rotate(" + Math.round(sd) + "deg)'>↓</i>" + compass(sd) : "") + "</small>", u,
+        "GFS-deining " + pad(local(u).h) + ": " + nf(sh) + " m" + (sp ? ", " + nf(sp) + " s" : "") + (sd !== undefined ? ", uit " + compass(sd) + " " + Math.round(sd) + "°" + (E.seaSide(sd) ? " (vanuit zee)" : " (van het land af, bereikt het strand niet)") : ""));
+    });
+    h += "</tr><tr><th class='rn' scope='row'><i class='md md-ms' aria-hidden='true'></i>Meting<small>deining</small></th>";
+    us.forEach(function (u) {
+      var ht = D.meas.ms2_hte3 && D.meas.ms2_hte3[u], dk = (D.meas.k13a_dir && D.meas.k13a_dir[u]), de = (D.meas.eg_dir && D.meas.eg_dir[u]), dg = dk !== undefined ? dk : de, bn = dk !== undefined ? "K13a" : "Eierlandse Gat";
+      if (ht === undefined && dg === undefined) { h += td("na", "·", u); return; }
+      h += td("msc", (ht !== undefined ? nf(ht / 100) : "·") + "<small class='per'>" + (dg !== undefined ? "<i style='display:inline-block;transform:rotate(" + Math.round(dg) + "deg)'>↓</i>" + compass(dg) : "") + "</small>", u,
+        "Gemeten " + pad(local(u).h) + ":" + (ht !== undefined ? " deining " + nf(ht / 100) + " m bij Munitiestort 2" : "") + (dg !== undefined ? ", richting deining uit " + compass(dg) + " " + Math.round(dg) + "° bij boei " + bn : ", richting niet gemeten"));
+    });
+    h += "</tr>";
+    h += sub("Richting", "letters = waar de golven vandaan komen, pijl = waarheen");
+    ["ECMWF", "GFS"].forEach(function (m) {
+      h += "<tr>" + lab(m, "richting");
+      us.forEach(function (u) { var dg = D.M[m].dir[u]; h += dg === undefined ? td("na", "·", u) : td("dirc", "<span class='dc'><i style='transform:rotate(" + Math.round(dg) + "deg)'>↓</i>" + compass(dg) + "</span><small class='per'>" + Math.round(dg) + "°</small>", u, mname(m) + " " + pad(local(u).h) + ": golven uit " + compass(dg) + " " + Math.round(dg) + "°"); });
+      h += "</tr>";
+    });
+    h += sub("Energie", "kW per meter golffront, volgens Claude");
+    h += "<tr>" + lab("Klodde", "kW/m").replace(">Claude<", ">Energie<");
+    us.forEach(function (u) { var k = D.KL[u]; h += k && k.e !== undefined ? td("en", nf(k.e), u) : td("na", "·", u); });
+    h += "</tr>";
+    h += grp("Wind in knopen", "kleur = binnen of boven je grens · pijl = waarheen, letters = waarvandaan");
+    ["ECMWF", "GFS"].forEach(function (m, i) {
+      h += "<tr>" + lab(m);
+      us.forEach(function (u) {
+        var M = D.M[m], kn = M.kn[u], deg = M.deg[u];
+        if (kn === undefined) { h += td("na", "·", u); return; }
+        h += td(wcls(kn, deg, L), Math.round(kn) + "<small class='per'><span style='display:inline-block;transform:rotate(" + Math.round(deg) + "deg)'>↓</span> " + compass(deg) + "</small>", u, m + ": " + Math.round(kn) + " kn uit " + compass(deg) + " " + Math.round(deg) + "°, vlagen " + Math.round(M.g[u] || 0) + " kn, " + kindW(kind(deg)));
+      });
+      h += "</tr>";
+    });
     h += grp("Zon, getij en stroming", "push = 2 uur voor hoogwater · stroming in kn, boven de lijn noord (vloed), onder zuid (eb)");
     if (sn || tev.length) {
       h += "<tr><th class='rn' scope='row'>Zon/getij</th>";
@@ -589,71 +667,6 @@ details.more .scroll { padding: 0 8px 8px 0; }
       });
       h += "</tr>";
     }
-    h += grp("Score en weer", "0 tot 10 per model, met weer en temperatuur");
-    MODELS.forEach(function (m) {
-      h += "<tr>" + lab(m);
-      us.forEach(function (u) {
-        var c = an.cells[m + "|" + u];
-        if (!c) { h += td("na", "·", u); return; }
-        var k = D.KL[u], t = mname(m) + " " + pad(local(u).h) + ": golf " + nf(c.v) + " m" + (c.p ? " (" + Math.round(c.p) + " s)" : "") + ", wind " + Math.round(c.w.kn) + " kn uit " + compass(c.w.deg) + " (" + kindW(kind(c.w.deg)) + ")";
-        if (m === "Klodde" && k && k.nc) t += ", " + Math.round(k.nc.w * 100) + "% uit de boeien (" + nf(k.nc.h) + " m)";
-        var wx = "";
-        if (c.t !== undefined || c.wc !== undefined) {
-          wx = "<small class='wx'>" + (c.wc !== undefined ? wxIcon(c.wc, c.day) : "") + (c.t !== undefined ? tmp(c.t) : "") + "</small>";
-          t += ", " + (c.t !== undefined ? tmp(c.t) + "C " : "") + (c.wc !== undefined ? wxText(c.wc) : "");
-        }
-        h += td("scc", "<b class='sc'>" + c.s + "</b>" + wx, u, t, "background:" + scCol(c.s) + ";color:" + (c.s >= 8 ? "#fff" : "#0B2A3C"));
-      });
-      h += "</tr>";
-    });
-    h += grp("Golf richting strand", "hoogte in m en periode in s · balkje tot 2 m · stippelrand = deels uit de boeien");
-    MODELS.forEach(function (m, i) {
-      h += "<tr>" + lab(m, m === "ECMWF" ? "WAM" : m === "GFS" ? "Wave" : "");
-      us.forEach(function (u) {
-        var c = cell(m, u);
-        if (!c) { h += td("na", "·", u); return; }
-        var nc = m === "Klodde" && D.KL[u].nc && D.KL[u].nc.w > 0;
-        var pc = Math.max(4, Math.min(100, c.v / 2 * 100)).toFixed(0), bc = c.v >= L.wave ? "rgba(38,178,106,.38)" : "rgba(14,107,140,.20)";
-        h += td("wv" + (c.v >= L.wave ? " ok" : "") + (nc ? " nc" : ""), nf(c.v) + (c.p ? "<small class='per'>" + Math.round(c.p) + " s</small>" : ""), u,
-          mname(m) + " " + pad(local(u).h) + ": " + nf(c.v) + " m richting strand" + (c.raw !== undefined ? " (op zee " + nf(c.raw) + " m)" : "") + (m !== "Klodde" && D.M[m].dir[u] !== undefined ? ", golven uit " + compass(D.M[m].dir[u]) + " " + Math.round(D.M[m].dir[u]) + "°" : "") + (m === "GFS" && D.M.GFS.sw && D.M.GFS.sw.dir[u] !== undefined ? ", deining uit " + compass(D.M.GFS.sw.dir[u]) + " " + Math.round(D.M.GFS.sw.dir[u]) + "°" : ""), "background:linear-gradient(to top," + bc + " " + pc + "%,transparent " + pc + "%)");
-      });
-      h += "</tr>";
-    });
-    h += "<tr>" + lab("Klodde", "kW/m").replace(">Claude<", ">Energie<");
-    us.forEach(function (u) { var k = D.KL[u]; h += k && k.e !== undefined ? td("en", nf(k.e), u) : td("na", "·", u); });
-    h += "</tr>";
-    // Deining en golfrichting: modelwaarden met bron; gemeten waarden alleen voor uren die al geweest zijn.
-    h += grp("Deining en golfrichting", "pijl = waarheen, letters = waarvandaan · ECMWF levert geen aparte deining · gemeten: deininghoogte Munitiestort 2 (10–33 s), richting boei K13a (anders Eierlandse Gat)");
-    ["ECMWF", "GFS"].forEach(function (m) {
-      h += "<tr>" + lab(m, "richting");
-      us.forEach(function (u) { var dg = D.M[m].dir[u]; h += dg === undefined ? td("na", "·", u) : td("dirc", "<span class='dc'><i style='transform:rotate(" + Math.round(dg) + "deg)'>↓</i>" + compass(dg) + "</span><small class='per'>" + Math.round(dg) + "°</small>", u, mname(m) + " " + pad(local(u).h) + ": golven uit " + compass(dg) + " " + Math.round(dg) + "°"); });
-      h += "</tr>";
-    });
-    h += "<tr>" + lab("GFS", "deining");
-    us.forEach(function (u) {
-      var G = D.M.GFS.sw, sh = G && G.h[u], sp = G && G.p[u], sd = G && G.dir[u];
-      if (!sh) { h += td("na", "·", u); return; }
-      h += td("swc" + (sp >= 9 ? " long" : ""), nf(sh) + "<small class='per'>" + (sp ? Math.round(sp) + "s " : "") + (sd !== undefined ? "<i style='display:inline-block;transform:rotate(" + Math.round(sd) + "deg)'>↓</i>" + compass(sd) : "") + "</small>", u,
-        "GFS-deining " + pad(local(u).h) + ": " + nf(sh) + " m" + (sp ? ", " + nf(sp) + " s" : "") + (sd !== undefined ? ", uit " + compass(sd) + " " + Math.round(sd) + "°" + (E.seaSide(sd) ? " (vanuit zee)" : " (van het land af, bereikt het strand niet)") : ""));
-    });
-    h += "</tr><tr><th class='rn' scope='row'><i class='md md-ms' aria-hidden='true'></i>Meting<small>deining</small></th>";
-    us.forEach(function (u) {
-      var ht = D.meas.ms2_hte3 && D.meas.ms2_hte3[u], dk = (D.meas.k13a_dir && D.meas.k13a_dir[u]), de = (D.meas.eg_dir && D.meas.eg_dir[u]), dg = dk !== undefined ? dk : de, bn = dk !== undefined ? "K13a" : "Eierlandse Gat";
-      if (ht === undefined && dg === undefined) { h += td("na", "·", u); return; }
-      h += td("msc", (ht !== undefined ? nf(ht / 100) : "·") + "<small class='per'>" + (dg !== undefined ? "<i style='display:inline-block;transform:rotate(" + Math.round(dg) + "deg)'>↓</i>" + compass(dg) : "") + "</small>", u,
-        "Gemeten " + pad(local(u).h) + ":" + (ht !== undefined ? " deining " + nf(ht / 100) + " m bij Munitiestort 2" : "") + (dg !== undefined ? ", richting deining uit " + compass(dg) + " " + Math.round(dg) + "° bij boei " + bn : ", richting niet gemeten"));
-    });
-    h += "</tr>";
-    h += grp("Wind in knopen", "kleur = binnen of boven je grens · pijl = waarheen, letters = waarvandaan");
-    ["ECMWF", "GFS"].forEach(function (m, i) {
-      h += "<tr>" + lab(m);
-      us.forEach(function (u) {
-        var M = D.M[m], kn = M.kn[u], deg = M.deg[u];
-        if (kn === undefined) { h += td("na", "·", u); return; }
-        h += td(wcls(kn, deg, L), Math.round(kn) + "<small class='per'><span style='display:inline-block;transform:rotate(" + Math.round(deg) + "deg)'>↓</span> " + compass(deg) + "</small>", u, m + ": " + Math.round(kn) + " kn uit " + compass(deg) + " " + Math.round(deg) + "°, vlagen " + Math.round(M.g[u] || 0) + " kn, " + kindW(kind(deg)));
-      });
-      h += "</tr>";
-    });
     return h + "</tbody>";
   }
   // Stroming langs de kust (kust loopt ongeveer naar 20°): positief = noordwaarts (vloed), negatief = zuidwaarts (eb).
@@ -757,15 +770,19 @@ details.more .scroll { padding: 0 8px 8px 0; }
       var wk = wcls(c.w.kn, c.w.deg, L);
       var tip = "Claude " + pad(l.h) + ": score " + c.s + ", golf " + nf(c.v) + " m" + (c.p ? " (" + Math.round(c.p) + " s)" : "") + (k && k.e !== undefined ? ", energie " + nf(k.e) + " kW/m" : "") + ", wind " + Math.round(c.w.kn) + " kn uit " + compass(c.w.deg) + " (" + kindW(kind(c.w.deg)) + ")" + (phl ? ", getij " + phl : "") + (k && k.nc && k.nc.w > 0 ? ", " + Math.round(k.nc.w * 100) + "% uit de boeien" : "") +
         (D.M.ECMWF.dir[u] !== undefined ? ", golven uit " + compass(D.M.ECMWF.dir[u]) + " " + Math.round(D.M.ECMWF.dir[u]) + "° (ECMWF)" : "") + (k && k.raw !== undefined ? ". Op zee (gemiddelde modellen): " + nf(k.raw) + " m" + (k.Fe !== undefined && k.Fe < 0.5 ? ", maar die golven lopen grotendeels van de kust af" : "") : "");
-      var swTxt = k && k.sw && k.sw.h >= 0.05 && k.sw.p >= 8 ? "<em class='swb'>deining " + nf(k.sw.h) + " m · " + Math.round(k.sw.p) + " s " + compass(k.sw.dir) + "</em>" : "";
-      var offTxt = k && k.Fe !== undefined && k.Fe < 0.5 && k.raw >= 0.3 ? "<em class='offb'>zee loopt van kust af</em>" : "";
+      // Extra regel onder het uur: golfrichting (ECMWF), deining (GFS) en of de zee van de kust af loopt.
+      var ed = D.M.ECMWF.dir[u], xs = [], off = k && k.Fe !== undefined && k.Fe < 0.5 && k.raw >= 0.3;
+      if (ed !== undefined) xs.push("<span class='xd" + (off ? " xo" : "") + "'><i style='transform:rotate(" + Math.round(ed) + "deg)'>↓</i>golven uit " + compass(ed) + (off ? " · lopen van de kust af" : "") + "</span>");
+      if (k && k.sw && k.sw.h >= 0.05 && k.sw.p >= 8) xs.push("<span class='xs'>deining " + nf(k.sw.h) + " m · " + Math.round(k.sw.p) + " s uit " + compass(k.sw.dir) + "</span>");
+      else if (off) xs.push("<span class='xo'>zee loopt van kust af</span>");
+      var xLine = xs.length ? "<div class='hr-x'>" + xs.join("") + "</div>" : "";
       h += "<div class='" + clsr.replace(/\s+/g, " ").trim() + "' data-u='" + u + "' title='" + esc(tip) + "'>" +
         "<div class='hr-t'><b>" + (l.h < 10 ? "0" : "") + l.h + "<small>:00</small></b>" + (phl ? "<em>" + phl + "</em>" : "") + (ev.length ? "<span class='ev'>" + ev.join("<br>") + "</span>" : "") + "</div>" +
         "<div class='hr-sc" + (c.s >= 8 ? " w" : "") + "' style='background:" + scCol(c.s) + "'>" + c.s + "</div>" +
-        "<div class='hr-wv'><span><b" + (c.v >= L.wave ? " class='ok'" : "") + ">" + nf(c.v) + " m</b>" + (c.p ? Math.round(c.p) + " s" : "") + (D.M.ECMWF.dir[u] !== undefined ? " <span class='hdir' title='golfrichting ECMWF'><i style='transform:rotate(" + Math.round(D.M.ECMWF.dir[u]) + "deg)'>↓</i>" + compass(D.M.ECMWF.dir[u]) + "</span>" : "") + "</span>" + swTxt + offTxt +
+        "<div class='hr-wv'><span><b" + (c.v >= L.wave ? " class='ok'" : "") + ">" + nf(c.v) + " m</b>" + (c.p ? Math.round(c.p) + " s" : "") + "</span>" +
           "<div class='hr-bar'><i style='width:" + pct.toFixed(0) + "%;background:" + scCol(c.s) + "'></i><u style='left:" + lim.toFixed(0) + "%'></u></div></div>" +
         "<div class='hr-wd " + wk + "'><b><i style='transform:rotate(" + Math.round(c.w.deg) + "deg)'>↓</i>" + Math.round(c.w.kn) + "</b><small>" + compass(c.w.deg) + " · " + { af: "af", aan: "aan", zij: "zij" }[kind(c.w.deg)] + "</small></div>" +
-        "<div class='hr-wx'>" + (c.wc !== undefined ? wxIcon(c.wc, c.day) : "") + (c.t !== undefined ? tmp(c.t) : "") + "</div>" +
+        "<div class='hr-wx'>" + (c.wc !== undefined ? wxIcon(c.wc, c.day) : "") + (c.t !== undefined ? tmp(c.t) : "") + "</div>" + xLine +
         "</div>";
     });
     return "<div class='hours'>" + h + "</div>";
